@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Точки</title>
-</head>
-<body>
-<h1>Точки</h1>>
-</body>
-</html>
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+<ul>
+    {% for s in stores %}
+    <li>
+        <p>{{ s.name }}</p>
+        <hr>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
