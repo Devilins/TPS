@@ -1,0 +1,87 @@
+body {
+    background: #F5FFFA;
+}
+
+aside {
+    float: left;
+    font-size: 20px;
+    background:#F0FFF0;
+    width: 20%;
+    padding: 1%;
+    height: 100vh;
+    border-right: 5px solid #98FB98;
+}
+
+aside img {
+    float: left;
+    width: 30px;
+}
+
+aside h2 {
+    margin-bottom: 50px;
+    font-size: 30px;
+    color: #855c1e;
+}
+
+aside ul li:hover, aside ul a:hover {
+    color: #d500ff;
+    transform: scale(1.05);
+    transition: all 0.1s ease;
+}
+
+.nomarker {
+    list-style-type: none;
+    margin: 0
+}
+
+.nomarker li {
+    margin: 25px 0;
+    position: relative;
+    left: -1%;
+}
+
+.nomarker a {
+    text-decoration: none;
+    position: relative;
+    width: 100%;
+    color: #1a401f;
+    padding-left: 10px;
+}
+
+main {
+    background-color: #F5FFFA;
+}
+
+main .data_left {
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    text-align: center;
+    width: 20%;
+    font-size: 20px;
+}
+
+main .data_left h1 {
+    font-size: 25px;
+    margin: 0;
+    text-align: center;
+}
+
+main .data_left .list-group {
+    margin-top: 35px;
+}
+
+main .data_left a {
+    text-decoration: none;
+    position: relative;
+    width: 100%;
+    color: #1a401f;
+}
+
+form {
+    margin-top: 30px;
+}
+
+.data_left button {
+    margin-top: 20px;
+}

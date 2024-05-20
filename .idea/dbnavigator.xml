@@ -17,16 +17,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910">
-      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select * from tph_system_store]]></console>
+      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select * from tph_system_consumablessales]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />

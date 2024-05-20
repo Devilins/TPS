@@ -10,14 +10,9 @@ class StaffViewSet(ModelViewSet):
     serializer_class = StaffSerializer
 
 
-menu = ["Главная страница", "График сотрудников", "Продажи", "Расходники", "Сотрудники", "Точки", "Зарплаты",
-        "Финансовая отчетность"]
-
-
 def main_page(request):
     return render(request, 'tph_system/main_page.html', {
         'title': 'Главная страница',
-        'menu': menu
     })
 
 
@@ -26,6 +21,10 @@ def store(request):
 
     return render(request, 'tph_system/store.html', {
         'title': 'Точки',
-        'menu': menu,
-        'stores': stores
+        'stores': stores,
+    })
+
+def store_create(request):
+    return render(request, 'tph_system/store_create.html', {
+        'title': 'Добавление новой точки',
     })

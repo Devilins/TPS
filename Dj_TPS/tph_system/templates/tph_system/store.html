@@ -1,12 +1,18 @@
 {% extends 'tph_system/base.html' %}
 
 {% block content %}
-<ul>
-    {% for s in stores %}
-    <li>
-        <p>{{ s.name }}</p>
-        <hr>
-    </li>
-    {% endfor %}
-</ul>
+<div class="data_left">
+    <h1>Список фототочек</h1>
+    <ul class="list-group">
+        {% for s in stores %}
+        <li class="list-group-item">
+            <p>{{ s.name }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <button class="btn btn-warning">
+            <a href="{% url 'store_create' %}">Новая точка</a>
+    </button>
+</div>
+
 {% endblock %}
