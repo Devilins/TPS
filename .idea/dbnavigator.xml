@@ -17,7 +17,7 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910">
-      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select * from tph_system_consumablessales]]></console>
+      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select * from tph_system_staff]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

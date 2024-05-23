@@ -5,9 +5,11 @@
     <h1>Добавление новой точки</h1>
     <form method="post">
         {% csrf_token %}
-        <input type="text" placeholder="Полное наименование" class="form-control"><br>
-        <input type="text" placeholder="Сокращение" class="form-control"><br>
+        {{ form.name }}<br>
+        {{ form.short_name }}
+        <span>{{ error }}</span>
         <button class="btn btn-success" type="submit">Добавить</button>
+        <button class="btn btn-danger" type="reset" onclick="location.href = '{% url 'store' %}';">Отмена</button>
     </form>
 </div>
 

@@ -2,19 +2,19 @@
 
 {% block content %}
 <div class="data_left">
-    <h1>Список фототочек</h1>
+    <h1>Список сотрудников</h1>
     <ul class="list-group">
-        {% for s in stores %}
+        {% for s in staffs %}
         <li class="list-group-item">
-            <p>{{ s.name }}</p>
+            <p>{{ s.f_name }} {{ s.name }}</p>
         </li>
         {% endfor %}
     </ul>
     <button class="btn btn-info">
-            <a href="{% url 'store_create' %}">Новая точка</a>
+        <a href="{% url 'staff_create' %}">Новый сотрудник</a>
     </button>
     <button class="btn btn-warning">
-        <a href="{% url 'store_create' %}">Изменить список</a>
+        <a href="{% url 'staff_create' %}">Изменить список</a>
     </button>
 </div>
 
