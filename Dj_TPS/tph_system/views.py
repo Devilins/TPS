@@ -45,9 +45,23 @@ def store_create(request):
 
 def staff(request):
     staffs = Staff.objects.all()
+
+    error = ''
+    if request.method == 'POST':
+        form_p = StaffForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('staff')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = StaffForm()
+
     return render(request, 'tph_system/staff.html', {
         'title': 'Сотрудники',
         'staffs': staffs,
+        'form': form,
+        'error': error
     })
 
 

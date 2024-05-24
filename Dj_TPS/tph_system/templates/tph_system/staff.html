@@ -1,21 +1,100 @@
 {% extends 'tph_system/base.html' %}
 
+{% block head %}
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css"
+    integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js"
+    integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script>
+{% endblock head %}
+
 {% block content %}
-<div class="data_left">
-    <h1>Список сотрудников</h1>
-    <ul class="list-group">
-        {% for s in staffs %}
-        <li class="list-group-item">
-            <p>{{ s.f_name }} {{ s.name }}</p>
-        </li>
-        {% endfor %}
-    </ul>
-    <button class="btn btn-info">
-        <a href="{% url 'staff_create' %}">Новый сотрудник</a>
-    </button>
-    <button class="btn btn-warning">
-        <a href="{% url 'staff_create' %}">Изменить список</a>
-    </button>
+<div class="container data_left staffs">
+    <div class="card" style="width: 70%;">
+        <div class="card-header">
+            <h4 class="card-title">
+                Список сотрудников
+            </h4>
+        </div>
+
+        <!-- Карточка сотрудников -->
+        <div class="card-body">
+            <div class="list-group" id="staffList" role="tablist">
+            {% for s in staffs %}
+            <a class="list-group-item list-group-item-action" data-toggle="list"
+               href="#{{ s.f_name }}_{{ s.name }}" role="tab">{{ s.f_name }} {{ s.name }}
+            </a>
+            {% endfor %}
+            </div>
+
+            <div class="tab-content" id="staffData">
+                {% for s in staffs %}
+                <div class="tab-pane" id="{{ s.f_name }}_{{ s.name }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            <p>ФИО: {{ s.f_name }} {{ s.name }} {{s.o_name}}</p>
+                            <p>Дата найма: {{ s.date_empl }}</p>
+                            <p><span>Дата увольнения:{{ s.date_dism }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Кнопка модального окна для ввода новых сотрудников -->
+                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-staff-form"
+                        style="margin-right: 25px; margin-top: 25px;">
+                    Новый сотрудник
+                </button>
+
+                <!-- Кнопка для вызова страницы изменения данных сотрудников -->
+                <button class="btn btn-warning" style="margin-top: 25px;">
+                    <a href="{% url 'staff_create' %}">Изменить список</a>
+                </button>
+
+                <!-- Модальное окно - ввод новых сотрудников -->
+                <div class="modal fade" id="modal-staff-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Добавление нового сотрудника</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <!-- Форма ввода данных -->
+                            <form method="post">
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    {{ form.f_name }}<br>
+                                    {{ form.name }}<br>
+                                    {{ form.o_name }}<br>
+                                    {{ form.date_empl }}
+                                    <span>{{ error }}</span>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit">Сохранить</button>
+                                    <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    {% for s in staffs %}
+    $('#staffList a[href="#{{ s.f_name }}_{{ s.name }}"]').on('click', function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
+    {% endfor %}
+
+    $(function () {
+        {% for s in staffs %}
+        $('#staffList a[href="#{{ s.f_name }}_{{ s.name }}"]').tab('show')
+        {% endfor %}
+    })
+</script>
 
 {% endblock %}

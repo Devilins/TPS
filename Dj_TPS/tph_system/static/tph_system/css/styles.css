@@ -1,15 +1,24 @@
-body {
-    background: #F5FFFA;
+head {
+    min-with: 320px
 }
+
+.navbar-dark .navbar-brand {
+    color: #000000;
+}
+
+.navbar-nav .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
 
 aside {
     float: left;
     font-size: 20px;
-    background:#F0FFF0;
-    width: 20%;
-    padding: 1%;
+    background:#d8c3a5;  /* Цвет боковой панели меню */
+    width: 18%;
     height: 100vh;
-    border-right: 5px solid #98FB98;
+    border-right: 6px solid #8e8d8a;    /* Цвет вертикальной линии меню */
 }
 
 aside img {
@@ -17,14 +26,8 @@ aside img {
     width: 30px;
 }
 
-aside h2 {
-    margin-bottom: 50px;
-    font-size: 30px;
-    color: #855c1e;
-}
-
 aside ul li:hover, aside ul a:hover {
-    color: #d500ff;
+    color: #e85a4f;                    /* Цвет ссылок меню при наведении */
     transform: scale(1.05);
     transition: all 0.1s ease;
 }
@@ -44,12 +47,17 @@ aside ul li:hover, aside ul a:hover {
     text-decoration: none;
     position: relative;
     width: 100%;
-    color: #1a401f;
+    color: #470020;           /* Цвет ссылок меню */
     padding-left: 10px;
 }
 
+/* Контент */
+body {
+    background: #eae7dc;  /* Основной цвет фона контента */
+}
+
 main {
-    background-color: #F5FFFA;
+    background-color: #eae7dc;  /* Цвет Main */
 }
 
 main .data_left {
@@ -58,13 +66,7 @@ main .data_left {
     margin-top: 0px;
     text-align: center;
     width: 20%;
-    font-size: 20px;
-}
-
-main .data_left h1 {
-    font-size: 25px;
-    margin: 0;
-    text-align: center;
+    font-size: 18px;
 }
 
 main .data_left .list-group {
@@ -79,9 +81,37 @@ main .data_left a {
 }
 
 form {
-    margin-top: 30px;
+    margin-top: 0px;
+}
+/*   Цепляет кнопки в модальном окне staff. Нужны для отображения кнопок на staff_create и stores (их надо переделать)
+.data_left button {
+    float: center;
+    margin-top: 20px;
+}
+*/
+main #staffList {
+    text-align: center;
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    width: 40%;
+    font-size: 18px;
 }
 
-.data_left button {
-    margin-top: 20px;
+main #staffData {
+    text-align: center;
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    width: 60%;
+    font-size: 18px;
+}
+
+main .staffs{
+    width: 100%;
+}
+
+
+main #tps_name {
+    color: #000000;
 }
