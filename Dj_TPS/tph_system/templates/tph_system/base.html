@@ -27,9 +27,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'store' %}" style="color: #ffffff;">Точки</a>
-                    </li>
+                    </li>  -->
                     <!-- Выпадающий список пользователя справва -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">
@@ -55,7 +56,7 @@
             <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
             <li><a href=""><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
             <li><a href=""><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
-            <li><a href=""><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
+            <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
             <li><a href="{% url 'staff' %}"><img src="{% static 'tph_system/images/i_staff.png' %}"> Сотрудники </a></li>
             <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
             <li><a href=""><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>

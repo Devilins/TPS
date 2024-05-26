@@ -16,15 +16,18 @@ def main_page(request):
     })
 
 
-def store(request):
-    stores = Store.objects.all()
-    return render(request, 'tph_system/store.html', {
-        'title': 'Точки',
-        'stores': stores,
+def cons_store(request):
+    con_store = ConsumablesStore.objects.all()
+
+    return render(request, 'tph_system/сonsumablesStore.html', {
+        'title': 'Расходники',
+        'con_store': con_store
     })
 
 
-def store_create(request):
+def store(request):
+    stores = Store.objects.all()
+
     error = ''
     if request.method == 'POST':
         form_p = StoreForm(request.POST)
@@ -36,8 +39,9 @@ def store_create(request):
 
     form = StoreForm()
 
-    return render(request, 'tph_system/store_create.html', {
-        'title': 'Добавление новой точки',
+    return render(request, 'tph_system/store.html', {
+        'title': 'Точки',
+        'stores': stores,
         'form': form,
         'error': error
     })
@@ -60,25 +64,6 @@ def staff(request):
     return render(request, 'tph_system/staff.html', {
         'title': 'Сотрудники',
         'staffs': staffs,
-        'form': form,
-        'error': error
-    })
-
-
-def staff_create(request):
-    error = ''
-    if request.method == 'POST':
-        form_p = StaffForm(request.POST)
-        if form_p.is_valid():
-            form_p.save()
-            return redirect('staff')
-        else:
-            error = 'Ошибка в заполнении формы'
-
-    form = StaffForm()
-
-    return render(request, 'tph_system/staff_create.html', {
-        'title': 'Добавление нового сотрудника',
         'form': form,
         'error': error
     })

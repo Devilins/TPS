@@ -9,27 +9,25 @@
 {% endblock head %}
 
 {% block content %}
-<div class="container data_left staffs">
+<div class="container staffs">
     <div class="card" style="width: 70%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Список сотрудников
-            </h4>
+            <h4 class="card-title">Список сотрудников</h4>
         </div>
 
         <!-- Карточка сотрудников -->
         <div class="card-body">
             <div class="list-group" id="staffList" role="tablist">
-            {% for s in staffs %}
-            <a class="list-group-item list-group-item-action" data-toggle="list"
-               href="#{{ s.f_name }}_{{ s.name }}" role="tab">{{ s.f_name }} {{ s.name }}
-            </a>
-            {% endfor %}
+                {% for s in staffs %}
+                <a class="list-group-item list-group-item-action" data-toggle="list"
+                   href="#{{ s.id }}" role="tab">{{ s.f_name }} {{ s.name }}
+                </a>
+                {% endfor %}
             </div>
 
             <div class="tab-content" id="staffData">
                 {% for s in staffs %}
-                <div class="tab-pane" id="{{ s.f_name }}_{{ s.name }}" role="tabpanel">
+                <div class="tab-pane" id="{{ s.id }}" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
                             <p>ФИО: {{ s.f_name }} {{ s.name }} {{s.o_name}}</p>
@@ -48,7 +46,7 @@
 
                 <!-- Кнопка для вызова страницы изменения данных сотрудников -->
                 <button class="btn btn-warning" style="margin-top: 25px;">
-                    <a href="{% url 'staff_create' %}">Изменить список</a>
+                    <a href="#">Изменить список</a>
                 </button>
 
                 <!-- Модальное окно - ввод новых сотрудников -->
@@ -84,7 +82,7 @@
 
 <script>
     {% for s in staffs %}
-    $('#staffList a[href="#{{ s.f_name }}_{{ s.name }}"]').on('click', function (e) {
+    $('#staffList a[href="#{{ s.id }}"]').on('click', function (e) {
         e.preventDefault()
         $(this).tab('show')
     })
@@ -92,7 +90,7 @@
 
     $(function () {
         {% for s in staffs %}
-        $('#staffList a[href="#{{ s.f_name }}_{{ s.name }}"]').tab('show')
+        $('#staffList a[href="#{{ s.id }}"]').tab('show')
         {% endfor %}
     })
 </script>

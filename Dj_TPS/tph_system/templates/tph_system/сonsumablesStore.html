@@ -1,0 +1,75 @@
+{% extends 'tph_system/base.html' %}
+
+{% block head %}
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css"
+    integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js"
+    integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script>
+{% endblock head %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card" style="width: 70%;">
+        <div class="card-header">
+            <h4 class="card-title">Расходники на точке</h4>
+        </div>
+
+        <!-- Карточка расходников -->
+        <div class="card-body">
+            <div class="list-group" id="consList" role="tablist">
+                {% for s in con_store %}
+                <a class="list-group-item list-group-item-action" data-toggle="list"
+                    href="#{{ s.id }}" role="tab">{{ s.store }} - {{ s.consumable }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <div class="tab-content" id="consData">
+                {% for s in con_store %}
+                <div class="tab-pane" id="{{ s.id }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            <p>Точка: {{ s.store }}</p>
+                            <p>Расходник: {{ s.consumable }}</p>
+                            <p>Количество: {{ s.count }}</p>
+                            <p>Дата изменения: {{ s.change_data }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Кнопка модального окна для ввода новых сотрудников -->
+                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form"
+                        style="margin-right: 25px; margin-top: 25px;">
+                    Новый расходник
+                </button>
+
+                <!-- Кнопка для вызова страницы изменения данных сотрудников -->
+                <button class="btn btn-warning" style="margin-top: 25px;">
+                    <a href="#">Изменить список</a>
+                </button>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    {% for s in con_store %}
+    $('#consList a[href="#{{ s.id }}"]').on('click', function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
+    {% endfor %}
+
+    $(function () {
+        {% for s in con_store %}
+        $('#consList a[href="#{{ s.id }}"]').tab('show')
+        {% endfor %}
+    })
+</script>
+
+{% endblock %}

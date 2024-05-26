@@ -1,18 +1,20 @@
-head {
+
+/* Головное меню и т.д */
+head {      /* Настройки минимального размера экрана сайта для navbar*/
     min-with: 320px
 }
 
-.navbar-dark .navbar-brand {
+.navbar-dark .navbar-brand {      /* Цвет названия navbar */
     color: #000000;
 }
 
-.navbar-nav .dropdown-menu {
+.navbar-nav .dropdown-menu {     /* Настройки для выпадающего списка "Пользователь" справа */
     right: 0;
     left: auto;
 }
 
-
-aside {
+/* aside - часть base в body, для левой панели и может футера (его пока нет) */
+aside {   /* Левая менюшка */
     float: left;
     font-size: 20px;
     background:#d8c3a5;  /* Цвет боковой панели меню */
@@ -28,22 +30,22 @@ aside img {
 
 aside ul li:hover, aside ul a:hover {
     color: #e85a4f;                    /* Цвет ссылок меню при наведении */
-    transform: scale(1.05);
+    transform: scale(1.05);            /* Эффекты */
     transition: all 0.1s ease;
 }
 
-.nomarker {
+.nomarker {   /* Класс для правильного отображения в ul */
     list-style-type: none;
     margin: 0
 }
 
-.nomarker li {
+aside .nomarker li {   /* Стили списка меню слева */
     margin: 25px 0;
     position: relative;
     left: -1%;
 }
 
-.nomarker a {
+aside .nomarker a {    /* Стили ссылок меню слева */
     text-decoration: none;
     position: relative;
     width: 100%;
@@ -60,58 +62,74 @@ main {
     background-color: #eae7dc;  /* Цвет Main */
 }
 
-main .data_left {
+main .cont_store {  /* Стили для изменения всего контейнера с точками */
     padding: 1%;
     float: left;
     margin-top: 0px;
-    text-align: center;
-    width: 20%;
     font-size: 18px;
 }
 
-main .data_left .list-group {
-    margin-top: 35px;
+main .cont_store .list-group {     /* Стили для списка точек */
+    pading: 1%;
+    text-align: left;
 }
 
-main .data_left a {
+main .cont_store  a {    /* Стиль для ссылок в .data_left (Используется в кнопках со ссылками...) */
     text-decoration: none;
     position: relative;
-    width: 100%;
     color: #1a401f;
 }
 
-form {
+main .cont_store .card-body{
+    text-align: center;
+}
+
+form {    /* Стили формы ввода данных (в модальном окне поля)  */
     margin-top: 0px;
 }
-/*   Цепляет кнопки в модальном окне staff. Нужны для отображения кнопок на staff_create и stores (их надо переделать)
-.data_left button {
-    float: center;
-    margin-top: 20px;
+
+main .staffs, .cont_store{    /* Стили для изменения всего контейнера с сотрудниками */
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    width: 100%;
+    font-size: 18px;
 }
-*/
-main #staffList {
+
+main .staffs  a, .cont_store a {    /* Стиль для ссылок в .staffs (Используется в кнопках со ссылками...) */
+    text-decoration: none;
+    position: relative;
+    color: #1a401f;
+}
+
+main #staffList, #consList {     /* Стили для карточки сотрудников - список сотрудников */
+    text-align: left;
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    font-size: 18px;
+}
+
+main #staffData,#consData {      /* Стили для карточки сотрудников - подробные данные */
     text-align: center;
     padding: 1%;
     float: left;
     margin-top: 0px;
-    width: 40%;
     font-size: 18px;
+}
+
+main #staffList {
+    width: 35%;
 }
 
 main #staffData {
-    text-align: center;
-    padding: 1%;
-    float: left;
-    margin-top: 0px;
-    width: 60%;
-    font-size: 18px;
+    width: 65%;
 }
 
-main .staffs{
-    width: 100%;
+main #consList {
+    width: 45%;
 }
 
-
-main #tps_name {
-    color: #000000;
+main #consData {
+    width: 55%;
 }
