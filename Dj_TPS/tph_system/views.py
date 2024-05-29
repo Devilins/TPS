@@ -3,7 +3,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm
+
 
 class StaffViewSet(ModelViewSet):
     queryset = Staff.objects.all()
@@ -13,15 +14,6 @@ class StaffViewSet(ModelViewSet):
 def main_page(request):
     return render(request, 'tph_system/main_page.html', {
         'title': 'Главная страница',
-    })
-
-
-def cons_store(request):
-    con_store = ConsumablesStore.objects.all()
-
-    return render(request, 'tph_system/сonsumablesStore.html', {
-        'title': 'Расходники',
-        'con_store': con_store
     })
 
 
@@ -64,6 +56,28 @@ def staff(request):
     return render(request, 'tph_system/staff.html', {
         'title': 'Сотрудники',
         'staffs': staffs,
+        'form': form,
+        'error': error
+    })
+
+
+def cons_store(request):
+    con_store = ConsumablesStore.objects.all()
+
+    error = ''
+    if request.method == 'POST':
+        form_p = ConsStoreForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('cons_store')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = ConsStoreForm()
+
+    return render(request, 'tph_system/сonsumablesStore.html', {
+        'title': 'Расходники',
+        'con_store': con_store,
         'form': form,
         'error': error
     })

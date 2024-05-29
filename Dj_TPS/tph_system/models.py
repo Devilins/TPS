@@ -41,9 +41,10 @@ class Schedule(models.Model):
     def __str__(self):
         return f'{self.date} - {self.staff} - {self.store}'
 
+
 class ConsumablesStore(models.Model):
-    consumable = models.CharField(max_length=60, default='Название расходника')
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    consumable = models.CharField(max_length=60)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, default="Точка")
     count = models.IntegerField()
     change_data = models.DateField()
 

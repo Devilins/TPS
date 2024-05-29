@@ -39,21 +39,47 @@
                 </div>
                 {% endfor %}
 
-                <!-- Кнопка модального окна для ввода новых сотрудников -->
+                <!-- Кнопка модального окна для ввода новых расходников -->
                 <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form"
                         style="margin-right: 25px; margin-top: 25px;">
                     Новый расходник
                 </button>
 
-                <!-- Кнопка для вызова страницы изменения данных сотрудников -->
+                <!-- Кнопка для вызова страницы изменения данных расходников -->
                 <button class="btn btn-warning" style="margin-top: 25px;">
                     <a href="#">Изменить список</a>
                 </button>
 
-
-
+            <!-- Модальное окно - ввод новых расходников -->
+                <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
+                     tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Добавление нового расходника</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <!-- Форма ввода данных -->
+                            <form method="post">
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    {{ form.store }}<br>
+                                    {{ form.consumable }}<br>
+                                    {{ form.count }}<br>
+                                    {{ form.change_data }}
+                                    <span>{{ error }}</span>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="submit">Сохранить</button>
+                                    <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 </div>
 

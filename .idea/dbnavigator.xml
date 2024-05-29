@@ -17,7 +17,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910">
-      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select * from tph_system_consumablesstore]]></console>
+      <console name="tps_db" type="STANDARD" schema="public" session="Main"><![CDATA[select s.name from tph_system_consumablesstore c
+inner join tph_system_store s on c.store_id = s.id
+group by s.name order by s.name;
+
+select c.consumable, c."count", c.change_data, s."name" from tph_system_consumablesstore c
+inner join tph_system_store s on c.store_id = s.id
+where s."name" = 'Big Wall Airsport Vegas'
+order by c.consumable;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -34,6 +41,9 @@
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />
+  </component>
+  <component name="DBNavigator.Project.FileConnectionMappingManager">
+    <mapping file-url="file://$PROJECT_DIR$/Dj_TPS/tps_db_sketches.sql" connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" session-id="MAIN" current-schema="public" />
   </component>
   <component name="DBNavigator.Project.ObjectQuickFilterManager">
     <last-used-operator value="EQUAL" />

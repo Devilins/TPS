@@ -1,5 +1,5 @@
 from .models import *
-from django.forms import ModelForm, TextInput, DateInput, NumberInput
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, ModelChoiceField, Select
 
 
 class FengyuanChenDatePickerInput(DateInput):
@@ -49,6 +49,7 @@ class StaffForm(ModelForm):
 
 
 class ConsStoreForm(ModelForm):
+
     class Meta:
         model = ConsumablesStore
         fields = ['consumable', 'store', 'count', 'change_data']
@@ -58,9 +59,9 @@ class ConsStoreForm(ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Расходник'
             }),
-            "store": TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Точка'
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка'
             }),
             "count": NumberInput(attrs={
                 'class': 'form-control',
