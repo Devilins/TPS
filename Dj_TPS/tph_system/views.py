@@ -4,6 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm
+from .filters import ConsumablesStoreFilter
 
 
 class StaffViewSet(ModelViewSet):
@@ -63,6 +64,10 @@ def staff(request):
 
 def cons_store(request):
     con_store = ConsumablesStore.objects.all()
+    stores = Store.objects.all()
+
+    cs_filter = ConsumablesStoreFilter(request.GET, queryset=con_store)
+    con_store = cs_filter.qs
 
     error = ''
     if request.method == 'POST':
@@ -79,5 +84,7 @@ def cons_store(request):
         'title': 'Расходники',
         'con_store': con_store,
         'form': form,
-        'error': error
+        'error': error,
+        'stores': stores,
+        'cs_filter': cs_filter
     })

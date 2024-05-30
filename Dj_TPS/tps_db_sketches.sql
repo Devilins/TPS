@@ -6,3 +6,5 @@ select c.consumable, c."count", c.change_data, s."name" from tph_system_consumab
 inner join tph_system_store s on c.store_id = s.id
 where s."name" = 'Big Wall Airsport Vegas'
 order by c.consumable;
+
+select * from tph_system_consumablesstore;

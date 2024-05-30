@@ -12,69 +12,78 @@
 <div class="container cont_store">
     <div class="card" style="width: 70%;">
         <div class="card-header">
-            <h4 class="card-title">Расходники на точке</h4>
+            <h4 class="card-title">
+                Расходники на точке
+
+                <div class="card card-body" id="cs_filter">
+                    <form method="get">
+                        Точка: {{ cs_filter.form.store }}
+                        Расходник: {{ cs_filter.form.consumable }}
+                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                    </form>
+                </div>
+            </h4>
         </div>
 
+        <!-- Таблица расходников -->
+        <table class="table table-hover" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col">Точка</th>
+                    <th scope="col">Расходник</th>
+                    <th scope="col">Количество</th>
+                    <th scope="col">Дата изменения</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cn in con_store %}
+                <tr>
+                    <td>{{ cn.store }}</td>
+                    <td>{{ cn.consumable }}</td>
+                    <td>{{ cn.count }}</td>
+                    <td>{{ cn.change_data }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
         <!-- Карточка расходников -->
-        <div class="card-body">
-            <div class="list-group" id="consList" role="tablist">
-                {% for s in con_store %}
-                <a class="list-group-item list-group-item-action" data-toggle="list"
-                    href="#{{ s.id }}" role="tab">{{ s.store }} - {{ s.consumable }}
-                </a>
-                {% endfor %}
-            </div>
+        <div class="tab-content" id="consData">
+            <!-- Кнопка модального окна для ввода новых расходников -->
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form"
+                    style="margin-right: 25px; margin-top: 0px;">
+                Новый расходник
+            </button>
 
-            <div class="tab-content" id="consData">
-                {% for s in con_store %}
-                <div class="tab-pane" id="{{ s.id }}" role="tabpanel">
-                    <div class="card">
-                        <div class="card-body">
-                            <p>Точка: {{ s.store }}</p>
-                            <p>Расходник: {{ s.consumable }}</p>
-                            <p>Количество: {{ s.count }}</p>
-                            <p>Дата изменения: {{ s.change_data }}</p>
+            <!-- Кнопка для вызова страницы изменения данных расходников -->
+            <button class="btn btn-warning" style="margin-top: 0px;">
+                <a href="#">Изменить список</a>
+            </button>
+
+        <!-- Модальное окно - ввод новых расходников -->
+            <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
+                 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Добавление нового расходника</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                <!-- Кнопка модального окна для ввода новых расходников -->
-                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form"
-                        style="margin-right: 25px; margin-top: 25px;">
-                    Новый расходник
-                </button>
-
-                <!-- Кнопка для вызова страницы изменения данных расходников -->
-                <button class="btn btn-warning" style="margin-top: 25px;">
-                    <a href="#">Изменить список</a>
-                </button>
-
-            <!-- Модальное окно - ввод новых расходников -->
-                <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
-                     tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="staticBackdropLabel">Добавление нового расходника</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <!-- Форма ввода данных -->
+                        <form method="post">
+                            <div class="modal-body">
+                                {% csrf_token %}
+                                {{ form.store }}<br>
+                                {{ form.consumable }}<br>
+                                {{ form.count }}<br>
+                                {{ form.change_data }}
+                                <span>{{ error }}</span>
                             </div>
-                            <!-- Форма ввода данных -->
-                            <form method="post">
-                                <div class="modal-body">
-                                    {% csrf_token %}
-                                    {{ form.store }}<br>
-                                    {{ form.consumable }}<br>
-                                    {{ form.count }}<br>
-                                    {{ form.change_data }}
-                                    <span>{{ error }}</span>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-primary" type="submit">Сохранить</button>
-                                    <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
-                                </div>
-                            </form>
-                        </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit">Сохранить</button>
+                                <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -82,20 +91,12 @@
 
     </div>
 </div>
-
+<!--
 <script>
-    {% for s in con_store %}
-    $('#consList a[href="#{{ s.id }}"]').on('click', function (e) {
-        e.preventDefault()
-        $(this).tab('show')
-    })
-    {% endfor %}
-
     $(function () {
-        {% for s in con_store %}
-        $('#consList a[href="#{{ s.id }}"]').tab('show')
-        {% endfor %}
+        var value = $('#choozeStore').val();
+        $('#{{ value }}').tab('show')
     })
 </script>
-
+-->
 {% endblock %}

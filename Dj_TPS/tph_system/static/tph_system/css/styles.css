@@ -102,7 +102,7 @@ main .staffs  a, .cont_store a {    /* Стиль для ссылок в .staffs
     color: #1a401f;
 }
 
-main #staffList, #consList {     /* Стили для карточки сотрудников - список сотрудников */
+main #staffList, #consList, #cs_filter {     /* Стили для карточки сотрудников - список сотрудников */
     text-align: left;
     padding: 1%;
     float: left;
@@ -132,4 +132,8 @@ main #consList {
 
 main #consData {
     width: 55%;
+}
+
+main #cs_filter{
+    margin-top: 10px;
 }
