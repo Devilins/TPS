@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from rest_framework.viewsets import ModelViewSet
+from django.views.generic import UpdateView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
@@ -10,6 +11,13 @@ from .filters import ConsumablesStoreFilter
 class StaffViewSet(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+
+
+class StoreUpdateView(UpdateView):
+    model = Store
+    template_name = 'tph_system/store.html'
+
+    fields = ['name', 'short_name']
 
 
 def main_page(request):

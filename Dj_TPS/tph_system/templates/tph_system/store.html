@@ -24,8 +24,9 @@
             </button>
 
             <!-- Кнопка для вызова страницы изменения данных точек -->
-            <button class="btn btn-warning" style="margin-top: 15px;">
-                <a href="#">Изменить список</a>
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modal-store_upd-form"
+                    style="margin-top: 15px;">
+                Изменить список
             </button>
 
             <!-- Модальное окно - ввод новых точек -->
@@ -53,6 +54,11 @@
                 </div>
             </div>
         </div>
+
+        <form method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Update">
+        </form>
     </div>
 </div>
 
