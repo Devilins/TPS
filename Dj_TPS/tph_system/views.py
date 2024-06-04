@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from django.views.generic import UpdateView
+from django.views.generic import UpdateView, DeleteView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
@@ -15,10 +15,20 @@ class StaffViewSet(ModelViewSet):
 
 class StoreUpdateView(UpdateView):
     model = Store
-    template_name = 'tph_system/store.html'
+    form_class = StoreForm
+    template_name = 'tph_system/store_update.html'
 
-    fields = ['name', 'short_name']
 
+class StoreDeleteView(DeleteView):
+    model = Store
+    success_url = '/store/'
+    template_name = 'tph_system/store_delete.html'
+
+   # def get(self, request, *args, **kwargs):
+    #    obj = get_object_or_404(Store, id=self.kwargs.get('id'))
+
+     #   obj.delete()
+      #  return redirect('/store/')
 
 def main_page(request):
     return render(request, 'tph_system/main_page.html', {

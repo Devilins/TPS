@@ -1,8 +1,9 @@
 {% extends 'tph_system/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card" style="width: 35%;">
+    <div class="card" style="width: 40%;">
         <div class="card-header">
             <h4 class="card-title">Список фототочек</h4>
         </div>
@@ -12,7 +13,16 @@
             <ul class="list-group">
                 {% for s in stores %}
                 <li class="list-group-item">
-                    <p>{{ s.name }} - {{ s.short_name }}</p>
+                    <div class="row justify-content-md-center">
+                        <div class="col">
+                            <p>{{ s.name }} - {{ s.short_name }}</p>
+                        </div>
+                        <div class="col-2">
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'store_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </div>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
@@ -23,12 +33,12 @@
                 Новая точка
             </button>
 
-            <!-- Кнопка для вызова страницы изменения данных точек -->
+            <!-- Кнопка для вызова страницы изменения данных точек
             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modal-store_upd-form"
                     style="margin-top: 15px;">
                 Изменить список
             </button>
-
+            -->
             <!-- Модальное окно - ввод новых точек -->
             <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -53,12 +63,8 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <form method="post">{% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Update">
-        </form>
+        </div>
     </div>
 </div>
 

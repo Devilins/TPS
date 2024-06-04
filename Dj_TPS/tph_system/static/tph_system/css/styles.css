@@ -96,7 +96,7 @@ main .staffs, .cont_store{    /* Стили для изменения всего
     font-size: 18px;
 }
 
-main .staffs  a, .cont_store a {    /* Стиль для ссылок в .staffs (Используется в кнопках со ссылками...) */
+main .staffs  a {    /* Стиль для ссылок в .staffs (Используется в кнопках со ссылками...) */
     text-decoration: none;
     position: relative;
     color: #1a401f;

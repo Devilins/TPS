@@ -11,6 +11,7 @@ class Staff(models.Model):
     class Meta:
         verbose_name = 'Сотрудники'
         verbose_name_plural = 'Сотрудники'
+        ordering = ['f_name', 'name']
 
     def __str__(self):
         return f'{self.f_name} {self.name}'
@@ -23,9 +24,13 @@ class Store(models.Model):
     class Meta:
         verbose_name = 'Точки'
         verbose_name_plural = 'Точки'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return '/store/'
 
 
 class Schedule(models.Model):
@@ -51,6 +56,7 @@ class ConsumablesStore(models.Model):
     class Meta:
         verbose_name = 'Расходники на точке'
         verbose_name_plural = 'Расходники на точке'
+        ordering = ['store', 'consumable']
 
     def __str__(self):
         return f'{self.store} - {self.consumable}'

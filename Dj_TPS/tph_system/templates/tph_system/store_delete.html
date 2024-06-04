@@ -1,0 +1,23 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card" style="width: 40%;">
+        <div class="card-header">
+            <h4 class="card-title">Удаление фототочки</h4>
+        </div>
+
+        <div class="card-body cont_store">
+            <!-- Форма ввода данных -->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                Подтверждаете удаление точки <b>{{ store.name }}</b> ?<br>
+                <br>
+                <button class="btn btn-danger" type="submit">Удалить</button>
+                <button class="btn btn-warning" type="button"><a href="{% url 'store' %}">Отмена</a></button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
