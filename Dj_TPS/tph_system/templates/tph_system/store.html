@@ -1,6 +1,13 @@
 {% extends 'tph_system/base.html' %}
 {% load static %}
 
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода новых точек -->
+<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+    Новая точка
+</button>
+{% endblock func_buttons %}
+
 {% block content %}
 <div class="container cont_store">
     <div class="card" style="width: 40%;">
@@ -17,7 +24,7 @@
                         <div class="col">
                             <p>{{ s.name }} - {{ s.short_name }}</p>
                         </div>
-                        <div class="col-2">
+                        <div class="col-md-auto">
                             <button type="button" class="btn btn-link">
                                 <a href="{% url 'store_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
@@ -27,18 +34,6 @@
                 {% endfor %}
             </ul>
 
-            <!-- Кнопка модального окна для ввода новых точек -->
-            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modal-store-form"
-                    style="margin-right: 25px; margin-top: 15px;">
-                Новая точка
-            </button>
-
-            <!-- Кнопка для вызова страницы изменения данных точек
-            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modal-store_upd-form"
-                    style="margin-top: 15px;">
-                Изменить список
-            </button>
-            -->
             <!-- Модальное окно - ввод новых точек -->
             <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">

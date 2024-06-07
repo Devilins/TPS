@@ -1,0 +1,32 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card" style="width: 40%;">
+        <div class="card-header">
+            <h4 class="card-title">Изменение данных сотрудника</h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма изменения данных -->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                <i>Фамилия:</i>
+                {{ form.f_name }}
+                <i>Имя:</i>
+                {{ form.name }}
+                <i>Отчество:</i>
+                {{ form.o_name }}
+                <i>Дата найма:</i>
+                {{ form.date_empl }}
+                <i>Дата увольнения:</i>
+                {{ form.date_dism }} <br>
+                <button class="btn btn-success" type="submit">Сохранить</button>
+                <button class="btn btn-warning" type="button"><a href="{% url 'staff' %}">Отмена</a></button>
+                <button class="btn btn-danger" type="button" style="margin-left : 20px;"><a href="{%url 'staff_delete' staff.id %}">Удалить</a></button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

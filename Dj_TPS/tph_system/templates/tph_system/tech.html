@@ -3,8 +3,8 @@
 
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода новых расходников -->
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
-    Новый расходник
+<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
+    Новая Техника
 </button>
 {% endblock func_buttons %}
 
@@ -13,40 +13,49 @@
     <div class="card" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
-                Расходники на точке <br>
+                Учет техники <br>
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ cs_filter.form.store }}
-                        Расходник: {{ cs_filter.form.consumable }}
+                        Точка: {{ t_filter.form.store }}
+                        Название техники: {{ t_filter.form.name }}
+                        Серийный номер: {{ t_filter.form.serial_num }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
                     </form>
                 </div>
             </h4>
         </div>
 
-        <!-- Таблица расходников -->
+        <!-- Таблица техники -->
         <table class="table table-hover table-bordered align-middle" id="tableCons">
             <thead>
                 <tr>
                     <th scope="col">Точка</th>
-                    <th scope="col">Расходник</th>
-                    <th scope="col">Количество</th>
-                    <th scope="col">Дата изменения</th>
+                    <th scope="col">Название техники</th>
+                    <th scope="col">Серийный номер</th>
+                    <th scope="col">Дата покупки</th>
+                    <th scope="col">Дата окончания гарантии</th>
+                    <th scope="col">Дата внесения изменений</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
-                {% for cn in con_store %}
+                {% for t in tech %}
                 <tr>
-                    <td>{{ cn.store }}</td>
-                    <td>{{ cn.consumable }}</td>
-                    <td>{{ cn.count }}</td>
-                    <td>{{ cn.change_data }}</td>
+                    <td>{{ t.store }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.serial_num }}</td>
+                    <td>{{ t.date_buy }}</td>
+                    {% if t.warranty_date != null %}
+                        <td>{{ t.warranty_date }}</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td>{{ t.date_change }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'con_store_update' cn.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'tech_update' t.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -54,13 +63,13 @@
             </tbody>
         </table>
 
-        <!-- Модальное окно - ввод новых расходников -->
-        <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
+        <!-- Модальное окно - ввод новой техники -->
+        <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"
              tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Добавление нового расходника</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">Добавление новой техники</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <!-- Форма ввода данных -->
@@ -68,9 +77,10 @@
                         <div class="modal-body">
                             {% csrf_token %}
                             {{ form.store }}<br>
-                            {{ form.consumable }}<br>
-                            {{ form.count }}<br>
-                            {{ form.change_data }}
+                            {{ form.name }}<br>
+                            {{ form.serial_num }}<br>
+                            {{ form.date_buy }}<br>
+                            {{ form.warranty_date }}
                             <span>{{ error }}</span>
                         </div>
                         <div class="modal-footer">

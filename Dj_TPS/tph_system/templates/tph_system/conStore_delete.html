@@ -5,17 +5,17 @@
 <div class="container cont_store">
     <div class="card" style="width: 40%;">
         <div class="card-header">
-            <h4 class="card-title">Удаление фототочки</h4>
+            <h4 class="card-title">Удаление расходника</h4>
         </div>
 
         <div class="card-body cont_store">
-            <!-- Форма удаления данных -->
+            <!-- Форма удаления -->
             <form method="post" class="form-control">
                 {% csrf_token %}
-                Подтверждаете удаление точки <b>{{ store.name }}</b> ?<br>
+                Подтверждаете удаление расходника <b>{{ consumablesstore.consumable }}</b> c точки <i>{{ consumablesstore.store }}</i>?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url 'store' %}">Отмена</a></button>
+                <button class="btn btn-warning" type="button"><a href="{% url 'cons_store' %}">Отмена</a></button>
             </form>
         </div>
     </div>

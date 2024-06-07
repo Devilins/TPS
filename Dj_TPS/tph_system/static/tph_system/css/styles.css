@@ -1,7 +1,7 @@
 
 /* Головное меню и т.д */
 head {      /* Настройки минимального размера экрана сайта для navbar*/
-    min-with: 320px
+    min-width: 320px
 }
 
 .navbar-dark .navbar-brand {      /* Цвет названия navbar */
@@ -48,7 +48,6 @@ aside .nomarker li {   /* Стили списка меню слева */
 aside .nomarker a {    /* Стили ссылок меню слева */
     text-decoration: none;
     position: relative;
-    width: 100%;
     color: #470020;           /* Цвет ссылок меню */
     padding-left: 10px;
 }
@@ -92,7 +91,6 @@ main .staffs, .cont_store{    /* Стили для изменения всего
     padding: 1%;
     float: left;
     margin-top: 0px;
-    width: 100%;
     font-size: 18px;
 }
 
@@ -102,7 +100,7 @@ main .staffs  a {    /* Стиль для ссылок в .staffs (Исполь�
     color: #1a401f;
 }
 
-main #staffList, #consList, #cs_filter {     /* Стили для карточки сотрудников - список сотрудников */
+main #staffList, #consList, #cs_filter, #s_filter {     /* Стили для карточки сотрудников - список сотрудников */
     text-align: left;
     padding: 1%;
     float: left;
@@ -117,7 +115,7 @@ main #staffData,#consData {      /* Стили для карточки сотр�
     margin-top: 0px;
     font-size: 18px;
 }
-
+/*
 main #staffList {
     width: 35%;
 }
@@ -133,7 +131,7 @@ main #consList {
 main #consData {
     width: 55%;
 }
-
-main #cs_filter{
+*/
+main #cs_filter, #s_filter{
     margin-top: 10px;
 }

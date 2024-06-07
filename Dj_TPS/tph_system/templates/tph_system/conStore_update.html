@@ -1,0 +1,30 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card" style="width: 40%;">
+        <div class="card-header">
+            <h4 class="card-title">Изменение расходника</h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма изменения расходника -->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                <i>Точка:</i>
+                {{ form.store }}
+                <i>Расходник:</i>
+                {{ form.consumable }}
+                <i>Количество:</i>
+                {{ form.count }}
+                <i>Дата изменения:</i>
+                {{ form.change_data }}<br>
+                <button class="btn btn-success" type="submit">Сохранить</button>
+                <button class="btn btn-warning" type="button"><a href="{% url 'cons_store' %}">Отмена</a></button>
+                <button class="btn btn-danger" type="button" style="margin-left : 20px;"><a href="{% url 'con_store_delete' consumablesstore.id %}">Удалить</a></button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

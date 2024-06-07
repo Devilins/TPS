@@ -26,7 +26,7 @@ class StoreForm(ModelForm):
 class StaffForm(ModelForm):
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism']
 
         widgets = {
             "f_name": TextInput(attrs={
@@ -44,12 +44,15 @@ class StaffForm(ModelForm):
             "date_empl": FengyuanChenDatePickerInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Дата найма'
+            }),
+            "date_dism": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата увольнения'
             })
         }
 
 
 class ConsStoreForm(ModelForm):
-
     class Meta:
         model = ConsumablesStore
         fields = ['consumable', 'store', 'count', 'change_data']
@@ -70,5 +73,34 @@ class ConsStoreForm(ModelForm):
             "change_data": FengyuanChenDatePickerInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Дата изменения данных'
+            })
+        }
+
+
+class TechForm(ModelForm):
+    class Meta:
+        model = Tech
+        fields = ['store', 'name', 'serial_num', 'date_buy', 'warranty_date']
+
+        widgets = {
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка'
+            }),
+            "name": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Название техники'
+            }),
+            "serial_num": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Серийный номер'
+            }),
+            "date_buy": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата покупки'
+            }),
+            "warranty_date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата окончания гарантии'
             })
         }

@@ -10,9 +10,17 @@
         integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.css"
+        integrity="sha256-b88RdwbRJEzRx95nCuuva+hO5ExvXXnpX+78h8DjyOE=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/0.6.5/datepicker.min.js"
+        integrity="sha256-/7FLTdzP6CfC1VBAj/rsp3Rinuuu9leMRGd354hvk0k=" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="{% static 'tph_system/css/styles.css' %}" type="text/css" />
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css">
 
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #8e8d8a;">
@@ -26,20 +34,30 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
+
+                <nav class="navbar ms-5">
+                    <div class="container-fluid">
+                        {% block func_buttons %}
+
+                        {% endblock func_buttons %}
+                    </div>
+                </nav>
+
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <!--
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'store' %}" style="color: #ffffff;">Точки</a>
                     </li>  -->
+
                     <!-- Выпадающий список пользователя справва -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">
                             Пользователь
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Настройки пользователя</a></li>
-                            <li><a class="dropdown-item" href="#">Сменить пароль</a></li>
-                            <li><a class="dropdown-item" href="#">Выход</a></li>
+                            <a class="dropdown-item" href="#">Настройки пользователя</a>
+                            <a class="dropdown-item" href="#">Сменить пароль</a>
+                            <a class="dropdown-item" href="#">Выход</a>
                         </ul>
                     </li>
                 </ul>
@@ -61,7 +79,7 @@
             <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
             <li><a href=""><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
             <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
-            <li><a href=""><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
+            <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
         </ul>
 
     </aside>
@@ -69,5 +87,7 @@
         {% block content %}
         {% endblock content %}
     </main>
+
 </body>
+
 </html>
