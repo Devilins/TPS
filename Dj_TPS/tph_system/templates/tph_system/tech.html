@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card" style="width: 100%;">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
         <div class="card-header">
             <h4 class="card-title">
                 Учет техники <br>
@@ -34,6 +34,7 @@
                     <th scope="col">Точка</th>
                     <th scope="col">Название техники</th>
                     <th scope="col">Серийный номер</th>
+                    <th scope="col">Количество</th>
                     <th scope="col">Дата покупки</th>
                     <th scope="col">Дата окончания гарантии</th>
                     <th scope="col">Дата внесения изменений</th>
@@ -46,6 +47,7 @@
                     <td>{{ t.store }}</td>
                     <td>{{ t.name }}</td>
                     <td>{{ t.serial_num }}</td>
+                    <td>{{ t.count }}</td>
                     <td>{{ t.date_buy }}</td>
                     {% if t.warranty_date != null %}
                         <td>{{ t.warranty_date }}</td>
@@ -79,7 +81,9 @@
                             {{ form.store }}<br>
                             {{ form.name }}<br>
                             {{ form.serial_num }}<br>
+                            {{ form.count }}<br>
                             {{ form.date_buy }}<br>
+                            <div class="form-error">{{ form.date_buy.errors }}</div>
                             {{ form.warranty_date }}
                             <span>{{ error }}</span>
                         </div>

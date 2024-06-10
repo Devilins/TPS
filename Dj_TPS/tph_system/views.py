@@ -151,14 +151,14 @@ def tech_mtd(request):
 
     error = ''
     if request.method == 'POST':
-        form_t = TechForm(request.POST)
-        if form_t.is_valid():
-            form_t.save()
+        form = TechForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('tech')
         else:
             error = 'Ошибка в заполнении формы'
-
-    form = TechForm()
+    else:
+        form = TechForm()
 
     return render(request, 'tph_system/tech.html', {
         'title': 'Техника',

@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container cont_store">
-    <div class="card" style="width: 40%;">
+    <div class="card shadow" style="width: 30%;">
         <div class="card-header">
             <h4 class="card-title">Изменение техники</h4>
         </div>
@@ -12,16 +12,19 @@
             <!-- Форма изменения техники -->
             <form method="post" class="form-control">
                 {% csrf_token %}
-                <i>Точка:</i>
+                <b>Точка:</b>
                 {{ form.store }}
-                <i>Название техники:</i>
+                <b>Название техники:</b>
                 {{ form.name }}
-                <i>Серийный номер:</i>
+                <b>Серийный номер:</b>
                 {{ form.serial_num }}
-                <i>Дата покупки:</i>
+                <b>Количество:</b>
+                {{ form.count }}
+                <b>Дата покупки:</b>
                 {{ form.date_buy }}
-                <i>Дата окончания гарантии:</i>
+                <b>Дата окончания гарантии:</b>
                 {{ form.warranty_date }}<br>
+                <span>{{ error }}</span>
                 <button class="btn btn-success" type="submit">Сохранить</button>
                 <button class="btn btn-warning" type="button"><a href="{% url 'tech' %}">Отмена</a></button>
                 <button class="btn btn-danger" type="button" style="margin-left : 20px;"><a href="{% url 'tech_delete' tech.id %}">Удалить</a></button>

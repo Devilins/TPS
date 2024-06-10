@@ -14,11 +14,11 @@ head {      /* Настройки минимального размера экр
 }
 
 /* aside - часть base в body, для левой панели и может футера (его пока нет) */
-aside {   /* Левая менюшка */
+aside #leftpanel {   /* Левая менюшка */
     float: left;
     font-size: 20px;
     background:#d8c3a5;  /* Цвет боковой панели меню */
-    width: 18%;
+    width: 17%;
     height: 100vh;
     border-right: 6px solid #8e8d8a;    /* Цвет вертикальной линии меню */
 }
@@ -61,13 +61,6 @@ main {
     background-color: #eae7dc;  /* Цвет Main */
 }
 
-main .cont_store {  /* Стили для изменения всего контейнера с точками */
-    padding: 1%;
-    float: left;
-    margin-top: 0px;
-    font-size: 18px;
-}
-
 main .cont_store .list-group {     /* Стили для списка точек */
     pading: 1%;
     text-align: left;
@@ -91,7 +84,8 @@ main .staffs, .cont_store{    /* Стили для изменения всего
     padding: 1%;
     float: left;
     margin-top: 0px;
-    font-size: 18px;
+    font-size: 17px;
+    max-width: 83%;
 }
 
 main .staffs  a {    /* Стиль для ссылок в .staffs (Используется в кнопках со ссылками...) */
@@ -100,38 +94,10 @@ main .staffs  a {    /* Стиль для ссылок в .staffs (Исполь�
     color: #1a401f;
 }
 
-main #staffList, #consList, #cs_filter, #s_filter {     /* Стили для карточки сотрудников - список сотрудников */
+main #cs_filter, #s_filter {     /* Стили для фильтров данных в таблицах */
     text-align: left;
     padding: 1%;
     float: left;
-    margin-top: 0px;
-    font-size: 18px;
-}
-
-main #staffData,#consData {      /* Стили для карточки сотрудников - подробные данные */
-    text-align: center;
-    padding: 1%;
-    float: left;
-    margin-top: 0px;
-    font-size: 18px;
-}
-/*
-main #staffList {
-    width: 35%;
-}
-
-main #staffData {
-    width: 65%;
-}
-
-main #consList {
-    width: 45%;
-}
-
-main #consData {
-    width: 55%;
-}
-*/
-main #cs_filter, #s_filter{
     margin-top: 10px;
+    font-size: 17px;
 }

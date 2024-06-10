@@ -1,4 +1,5 @@
 from django.db import models
+from django.core import validators
 
 
 class Staff(models.Model):
@@ -138,6 +139,7 @@ class Tech(models.Model):
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     name = models.CharField(max_length=50)
     serial_num = models.CharField(max_length=30, blank=True)
+    count = models.IntegerField(default=1)
     date_buy = models.DateField()
     warranty_date = models.DateField(null=True, blank=True)
     date_change = models.DateTimeField(auto_now=True, editable=False, blank=True)
