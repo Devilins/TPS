@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import SimpleRouter
 
-from tph_system.views import StaffViewSet, main_page, store
+from tph_system.views import StaffViewSet
 
 router = SimpleRouter()
 

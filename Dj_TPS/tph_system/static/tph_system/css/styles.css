@@ -101,3 +101,7 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     margin-top: 10px;
     font-size: 17px;
 }
+
+#upd_del_forms, #store_card {
+    width: 500px;
+}

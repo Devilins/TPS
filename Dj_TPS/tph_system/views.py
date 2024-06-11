@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from django.views.generic import UpdateView, DeleteView
+from django.views.generic import UpdateView, DeleteView, TemplateView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
@@ -61,10 +61,11 @@ class TechDeleteView(DeleteView):
     template_name = 'tph_system/tech_delete.html'
 
 
-def main_page(request):
-    return render(request, 'tph_system/main_page.html', {
+class MainPage(TemplateView):
+    template_name = 'tph_system/main_page.html'
+    extra_context = {
         'title': 'Главная страница',
-    })
+    }
 
 
 def store(request):
