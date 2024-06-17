@@ -105,3 +105,21 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
 #upd_del_forms, #store_card {
     width: 500px;
 }
+
+.cont_login {
+    position: relative;
+    text-align: center;
+    float: center;
+    margin-top: 15%;
+    font-size: 17px;
+    width: 500px;
+}
+
+.error_style {
+    color: #ff2626;
+}
+
+.errorlist {
+    list-style-type: none;
+    color: #ff2626;
+}

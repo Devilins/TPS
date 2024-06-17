@@ -26,7 +26,7 @@ inner join tph_system_store s on c.store_id = s.id
 where s."name" = 'Big Wall Airsport Vegas'
 order by c.consumable;
 
-select * from tph_system_consumablesstore;]]></console>
+select * from auth_permission;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -39,6 +39,7 @@ select * from tph_system_consumablesstore;]]></console>
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-actions connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" dataset="public.auth_user" active-filter-id="" />
     <filter-actions connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" dataset="public.tph_system_staff" active-filter-id="" />
   </component>
   <component name="DBNavigator.Project.ExecutionManager">

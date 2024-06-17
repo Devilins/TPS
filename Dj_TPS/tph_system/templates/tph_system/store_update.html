@@ -12,10 +12,15 @@
             <!-- Форма изменения данных -->
             <form method="post" class="form-control">
                 {% csrf_token %}
-                <i>Наименование:</i>
-                {{ form.name }}
-                <i>Короткое имя:</i>
-                {{ form.short_name }} <br>
+                <div class="error_style">
+                    {% for error in form.non_field_errors %}
+                        <i>{{error}}</i>
+                    {% endfor %}
+                </div>
+                {% for f in form %}
+                <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
+                <div class="form-error">{{ f.errors }}</div>
+                {% endfor %}
                 <button class="btn btn-success" type="submit">Сохранить</button>
                 <button class="btn btn-warning" type="button"><a href="{% url 'store' %}">Отмена</a></button>
                 <button class="btn btn-danger" type="button" style="margin-left : 20px;"><a href="{%url 'store_delete' store.id %}">Удалить</a></button>

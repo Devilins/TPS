@@ -5,7 +5,7 @@
 <div class="container cont_store">
     <div class="card shadow" id="upd_del_forms">
         <div class="card-header">
-            <h4 class="card-title">Удаление техники</h4>
+            <h4 class="card-title"> {{card_title}} </h4>
         </div>
 
         <div class="card-body">
@@ -15,7 +15,7 @@
                 Подтверждаете удаление техники <b>{{ tech.name }}</b> c серийным номером <i>{{ tech.serial_num }}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url 'tech' %}">Отмена</a></button>
+                <button class="btn btn-warning" type="button"><a href="{% url url_cancel %}">Отмена</a></button>
             </form>
         </div>
     </div>

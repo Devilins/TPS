@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="shortcut icon" href="{% static 'tph_system/images/logo_TPS_round.png'%}">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="{% static 'tph_system/css/styles.css' %}" type="text/css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css">
+</head>
+<body>
+    <div class="container cont_login">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="card-title">Take Photo System</h4>
+            </div>
+
+            <div class="card-body">
+                <!-- Форма авторизации -->
+                <form method="post" class="form-control">
+                    {% csrf_token %}
+                    <div class="error_style">
+                        {% for error in form.non_field_errors %}
+                            <i>{{error}}</i>
+                        {% endfor %}
+                    </div>
+                    {% for f in form %}
+                    <p><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label><br>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
+                    {% endfor %}
+                    <p><button class="btn btn-success" type="submit">Войти</button></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

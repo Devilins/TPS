@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-p6o_li@=q1d!-)y#3yey&7bsea)1=jp%@p@i3y773xc9m=nw0^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django_filters',
 
     'tph_system.apps.TphSystemConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,7 @@ STATICFILES_DIRS = []
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = 'main_page'
+LOGOUT_REDIRECT_URL = 'users:login'
+LOGIN_URL = 'users:login'

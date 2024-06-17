@@ -3,9 +3,11 @@
 
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода новых расходников -->
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
-    Новый Расходник
-</button>
+{% if perms.tph_system.add_consumablesstore %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
+        Новый Расходник
+    </button>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}

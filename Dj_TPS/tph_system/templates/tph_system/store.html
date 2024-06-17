@@ -3,9 +3,11 @@
 
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода новых точек -->
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
-    Новая Точка
-</button>
+{% if perms.tph_system.add_store %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+        Новая Точка
+    </button>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}

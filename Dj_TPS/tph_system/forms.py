@@ -15,6 +15,11 @@ class StoreForm(ModelForm):
         model = Store
         fields = ['name', 'short_name']
 
+        labels = {
+            'name': 'Полное наименование',
+            'short_name': 'Сокращение'
+        }
+
         widgets = {
             "name": TextInput(attrs={
                 'class': 'form-control',
@@ -31,6 +36,14 @@ class StaffForm(ModelForm):
     class Meta:
         model = Staff
         fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism']
+
+        labels = {
+            'f_name': 'Фамилия',
+            'name': 'Имя',
+            'o_name': 'Отчество',
+            'date_empl': 'Дата найма',
+            'date_dism': 'Дата увольнения'
+        }
 
         widgets = {
             "f_name": TextInput(attrs={
@@ -65,6 +78,13 @@ class ConsStoreForm(ModelForm):
         model = ConsumablesStore
         fields = ['consumable', 'store', 'count', 'change_data']
 
+        labels = {
+            'consumable': 'Расходник',
+            'store': 'Точка',
+            'count': 'Количество',
+            'change_data': 'Дата изменения данных'
+        }
+
         widgets = {
             "consumable": TextInput(attrs={
                 'class': 'form-control',
@@ -94,10 +114,20 @@ class TechForm(ModelForm):
         model = Tech
         fields = ['store', 'name', 'serial_num', 'count', 'date_buy', 'warranty_date']
 
+        labels = {
+            'store': 'Точка',
+            'name': 'Название техники',
+            'serial_num': 'Серийный номер',
+            'count': 'Количество',
+            'date_buy': 'Дата покупки',
+            'warranty_date': 'Дата окончания гарантии'
+        }
+
         widgets = {
             "store": Select(attrs={
                 'class': 'form-select',
-                'aria-label': 'Точка'
+                'aria-label': 'Точка',
+                'label': 'Точка'
             }),
             "name": TextInput(attrs={
                 'class': 'form-control',
@@ -121,16 +151,8 @@ class TechForm(ModelForm):
             })
         }
 
-        def clean_date_buy(self):
-            date_buy = self.cleaned_data["date_buy"]
-            if not datetime.datetime.strptime(date_buy, "%d.%m.%Y"):
-                raise ValidationError('Неправильный формат даты. Введите Д.М.Г')
-            if date_buy > datetime.date:
-                raise ValidationError('Дата не может быть в будущем')
-            return date_buy
-
-        def clean_serial_num(self):
-            serial_num = self.cleaned_data["serial_num"]
-            if len(serial_num) > 10:
-                raise ValidationError('Длина серийного номера превышает 10 символов')
-            return serial_num
+    def clean_date_buy(self):
+        date_buy = self.cleaned_data["date_buy"]
+        if date_buy > datetime.date.today():
+            raise ValidationError('Дата не может быть в будущем')
+        return date_buy

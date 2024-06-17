@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% block title %}
+    {% endblock title %}
     <title>{{ title }}</title>
     <link rel="shortcut icon" href="{% static 'tph_system/images/logo_TPS_round.png'%}">
 
@@ -51,12 +53,12 @@
                     <!-- Выпадающий список пользователя справва -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">
-                            Пользователь
+                            {{ user.last_name }} {{ user.first_name }}
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <a class="dropdown-item" href="#">Настройки пользователя</a>
-                            <a class="dropdown-item" href="#">Сменить пароль</a>
-                            <a class="dropdown-item" href="#">Выход</a>
+                    <!--    <a class="dropdown-item" href="#">Настройки пользователя</a>  -->
+                            <a class="dropdown-item" href="{% url 'users:password_change' %}">Сменить пароль</a>
+                            <a class="dropdown-item" href="{% url 'users:logout' %}">Выход</a>
                         </ul>
                     </li>
                 </ul>
@@ -72,15 +74,33 @@
         <div class="container-md" id="leftpanel"> <!-- style="min-width: 320px"-->
             <nav class="navbar navbar-expand-lg">
                 <ul class="nomarker">
+                    {% if perms.tph_system.view_main_page %}
                     <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_schedule %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_sales %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_consumablesstore %}
                     <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_staff %}
                     <li><a href="{% url 'staff' %}"><img src="{% static 'tph_system/images/i_staff.png' %}"> Сотрудники </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_store %}
                     <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_salary %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_finance %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_tech %}
                     <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>

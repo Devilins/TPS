@@ -3,9 +3,11 @@
 
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода новых сотрудников -->
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-staff-form">
-    Новый Сотрудник
-</button>
+{% if perms.tph_system.add_staff %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-staff-form">
+        Новый Сотрудник
+    </button>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}

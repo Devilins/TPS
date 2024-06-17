@@ -13,6 +13,7 @@ router.register(r'staff', StaffViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('tph_system.tph_urls')),
+    path('users/', include('users.urls', namespace="users")),
 ]
 
 urlpatterns += router.urls

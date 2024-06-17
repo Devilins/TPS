@@ -17,9 +17,6 @@ class Staff(models.Model):
     def __str__(self):
         return f'{self.f_name} {self.name}'
 
-    def get_absolute_url(self):
-        return '/staff/'
-
 
 class Store(models.Model):
     name = models.CharField(max_length=30)
@@ -32,9 +29,6 @@ class Store(models.Model):
 
     def __str__(self):
         return self.name
-
-    def get_absolute_url(self):
-        return '/store/'
 
 
 class Schedule(models.Model):
@@ -65,9 +59,6 @@ class ConsumablesStore(models.Model):
 
     def __str__(self):
         return f'{self.store} - {self.consumable}'
-
-    def get_absolute_url(self):
-        return '/consumables/'
 
 
 class Sales(models.Model):
@@ -151,6 +142,3 @@ class Tech(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.serial_num}'
-
-    def get_absolute_url(self):
-        return '/tech/'
