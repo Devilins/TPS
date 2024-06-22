@@ -1,0 +1,21 @@
+{% extends 'tph_system/base.html' %}
+
+{% block title %}
+<title>Ошибка 404 - страница не найдена</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" id="upd_del_forms">
+        <div class="card-header">
+            <h4 class="card-title">Ошибка 404</h4>
+        </div>
+
+        <div class="card-body" style="color: #ff2626">
+            <!-- Текст ошибки -->
+            <i>Такой страницы не существует</i><br>
+            <button class="btn btn-warning" type="button" style="margin-top: 20px;"><a href="{% url 'main_page' %}">На главную страницу</a></button>
+        </div>
+    </div>
+</div>
+{% endblock %}

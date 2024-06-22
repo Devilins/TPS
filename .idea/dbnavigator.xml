@@ -26,7 +26,12 @@ inner join tph_system_store s on c.store_id = s.id
 where s."name" = 'Big Wall Airsport Vegas'
 order by c.consumable;
 
-select * from auth_permission;]]></console>
+select l.* , u.first_name from django_admin_log l
+inner join auth_user u on u.id = l.user_id;
+
+select * from django_session;
+
+delete from django_session;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

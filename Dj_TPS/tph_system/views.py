@@ -122,6 +122,10 @@ class MainPage(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
 
 
 @login_required
+def index(request):
+    return redirect('main_page', permanent=True)
+
+@login_required
 @permission_required(perm='tph_system.view_store', raise_exception=True)
 def store(request):
     stores = Store.objects.all()
