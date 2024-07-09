@@ -8,6 +8,7 @@ urlpatterns = [
     path('staff/', staff, name='staff'),
     path('consumables/', cons_store, name='cons_store'),
     path('tech/', tech_mtd, name='tech'),
+    path('schedule/', schedule_mtd, name='schedule'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
     path('store/<int:pk>/delete', StoreDeleteView.as_view(), name='store_delete'),
     path('staff/<int:pk>/update', StaffUpdateView.as_view(), name='staff_update'),

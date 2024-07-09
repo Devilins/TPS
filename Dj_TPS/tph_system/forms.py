@@ -156,3 +156,42 @@ class TechForm(ModelForm):
         if date_buy > datetime.date.today():
             raise ValidationError('Дата не может быть в будущем')
         return date_buy
+
+
+class ScheduleForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].empty_label = "Выберите точку"
+
+    class Meta:
+        model = Schedule
+        fields = ['staff', 'store', 'position', 'date']
+
+        labels = {
+            'staff': 'Сотрудник',
+            'store': 'Точка',
+            'position': 'Должность в смене',
+            'date': 'Дата смены'
+        }
+
+        widgets = {
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Сотрудник',
+                'label': 'Сотрудник'
+            }),
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка',
+                'label': 'Точка'
+            }),
+            "position": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Должность в смене'
+            }),
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата смены'
+            })
+        }

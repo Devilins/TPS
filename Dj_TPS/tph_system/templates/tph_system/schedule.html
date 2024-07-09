@@ -1,0 +1,76 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода графика -->
+{% if perms.tph_system.add_schedule %}
+<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-schedule-form">
+    Новая Запись
+</button>
+{% endif %}
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <!-- Таблица техники -->
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Понедельник</th>
+                    <th scope="col">Вторник</th>
+                    <th scope="col">Среда</th>
+                    <th scope="col">Четверг</th>
+                    <th scope="col">Пятница</th>
+                    <th scope="col">Суббота</th>
+                    <th scope="col">Воскресенье</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staffs %}
+                <tr>
+                    <td>{{ s.name }} {{ s.f_name }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Модальное окно - ввод новой техники -->
+        <div class="modal fade" id="modal-schedule-form" data-bs-backdrop="static" data-bs-keyboard="false"
+             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Добавление новой записи в график</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Форма ввода данных -->
+                    <form method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            {{ form.staff }}<br>
+                            {{ form.store }}<br>
+                            {{ form.position }}<br>
+                            {{ form.date }}<br>
+                            <span>{{ error }}</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Сохранить</button>
+                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

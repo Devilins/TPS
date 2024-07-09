@@ -78,7 +78,7 @@
                     <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_schedule %}
-                    <li><a href=""><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
+                    <li><a href="{% url 'schedule' %}"><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_sales %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>

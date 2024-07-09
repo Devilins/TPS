@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'tph_system.apps.TphSystemConfig',
     'users.apps.UsersConfig',
+    'schedule',
 ]
 
 MIDDLEWARE = [

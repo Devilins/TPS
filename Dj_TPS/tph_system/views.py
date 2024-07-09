@@ -6,7 +6,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm
 from .filters import *
 
 
@@ -125,6 +125,7 @@ class MainPage(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
 def index(request):
     return redirect('main_page', permanent=True)
 
+
 @login_required
 @permission_required(perm='tph_system.view_store', raise_exception=True)
 def store(request):
@@ -228,4 +229,25 @@ def tech_mtd(request):
         'tech': tech,
         'form': form,
         't_filter': t_filter
+    })
+
+
+@login_required
+def schedule_mtd(request):
+    staffs = Staff.objects.all()
+    schedule = Schedule.objects.all()
+
+    if request.method == 'POST':
+        form = ScheduleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('schedule')
+    else:
+        form = ScheduleForm()
+
+    return render(request, 'tph_system/schedule.html', {
+        'title': 'График сотрудников',
+        'staffs': staffs,
+        'schedule': schedule,
+        'form': form
     })

@@ -29,6 +29,8 @@ order by c.consumable;
 select l.* , u.first_name from django_admin_log l
 inner join auth_user u on u.id = l.user_id;
 
+select * from tph_system_schedule;
+
 select * from django_session;
 
 delete from django_session;]]></console>
@@ -38,7 +40,9 @@ delete from django_session;]]></console>
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />
