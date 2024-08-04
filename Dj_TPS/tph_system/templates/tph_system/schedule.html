@@ -12,35 +12,6 @@
 {% block content %}
 <div class="container cont_store">
     <div class="card shadow" style="width: 100%; min-width: 1000px">
-        <!-- Таблица техники -->
-        <table class="table table-hover table-bordered align-middle" id="tableCons">
-            <thead>
-                <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Понедельник</th>
-                    <th scope="col">Вторник</th>
-                    <th scope="col">Среда</th>
-                    <th scope="col">Четверг</th>
-                    <th scope="col">Пятница</th>
-                    <th scope="col">Суббота</th>
-                    <th scope="col">Воскресенье</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in staffs %}
-                <tr>
-                    <td>{{ s.name }} {{ s.f_name }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
 
         <!-- Модальное окно - ввод новой техники -->
         <div class="modal fade" id="modal-schedule-form" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -71,6 +42,92 @@
         </div>
 
     </div>
+
+    <!-- Таблица с графиком -->
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <div class="card-header">
+            <h4 class="card-title">
+                График работы сотрудников <br>
+
+                <div class="card card-body" id="cs_filter">
+                    <div class="schedule-controls">
+                        <button class="btn btn-primary" id="prev-week" style="margin-right: 20px">← Предыдущая неделя</button>
+                        <span id="current-week">Неделя с {{ start_of_week|date:"d.m.Y" }}</span>
+                        <button class="btn btn-primary" id="next-week" style="margin-left: 20px">Следующая неделя →</button>
+                    </div>
+                </div>
+            </h4>
+        </div>
+
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th>Сотрудник</th>
+                    {% for date in dates %}
+                        <th>{{ date|date:"D d.m" }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staffs %}
+                    <tr>
+                        <td>{{ s.name }} {{ s.f_name }}</td>
+                        {% for date in dates %}
+                            <td>
+                                <select class="schedule-select" data-employee="{{ s.id }}" data-date="{{ date|date:'Y-m-d' }}">
+                                    <option value="">-</option>
+                                    {% for store in stores %}
+                                    <option value="{{ store.short_name }}">{{ store.short_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const prevWeekBtn = document.getElementById('prev-week');
+    const nextWeekBtn = document.getElementById('next-week');
+    const currentWeekSpan = document.getElementById('current-week');
+
+    let currentDate = new Date('{{ start_of_week|date:"Y-m-d" }}');
+
+    function updateTable(newDate) {
+        // Здесь должен быть AJAX-запрос к серверу для получения данных новой недели
+        // и обновления таблицы
+        currentWeekSpan.textContent = 'Неделя с ' + newDate.toLocaleDateString('ru-RU');
+    }
+
+    prevWeekBtn.addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        updateTable(currentDate);
+    });
+
+    nextWeekBtn.addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        updateTable(currentDate);
+    });
+
+    // Обработчик изменения значения в select
+    document.querySelectorAll('.schedule-select').forEach(function(select) {
+        select.addEventListener('change', function() {
+            const employeeId = this.dataset.employee;
+            const date = this.dataset.date;
+            const value = this.value;
+
+            // Здесь должен быть AJAX-запрос к серверу для сохранения выбранного значения
+            console.log(`Сотрудник ${employeeId}, дата ${date}, значение ${value}`);
+        });
+    });
+});
+</script>
 
 {% endblock %}

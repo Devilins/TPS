@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import render, redirect
@@ -236,7 +238,9 @@ def tech_mtd(request):
 def schedule_mtd(request):
     staffs = Staff.objects.all()
     schedule = Schedule.objects.all()
+    stores = Store.objects.all()
 
+    #Форма ввода графика в модельном окне
     if request.method == 'POST':
         form = ScheduleForm(request.POST)
         if form.is_valid():
@@ -245,9 +249,19 @@ def schedule_mtd(request):
     else:
         form = ScheduleForm()
 
+    # Получаем текущую дату и начало недели
+    current_date = datetime.now().date()
+    start_of_week = current_date - timedelta(days=current_date.weekday())
+
+    # Создаем список дат для недели
+    dates = [start_of_week + timedelta(days=i) for i in range(7)]
+
     return render(request, 'tph_system/schedule.html', {
         'title': 'График сотрудников',
         'staffs': staffs,
         'schedule': schedule,
-        'form': form
+        'form': form,
+        'start_of_week': start_of_week,
+        'dates': dates,
+        'stores': stores
     })
