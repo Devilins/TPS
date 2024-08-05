@@ -12,10 +12,10 @@ class Staff(models.Model):
     class Meta:
         verbose_name = 'Сотрудники'
         verbose_name_plural = 'Сотрудники'
-        ordering = ['f_name', 'name']
+        ordering = ['name', 'f_name']
 
     def __str__(self):
-        return f'{self.f_name} {self.name}'
+        return f'{self.name} {self.f_name}'
 
 
 class Store(models.Model):
@@ -40,7 +40,7 @@ class Schedule(models.Model):
     class Meta:
         verbose_name = 'График сотрудников'
         verbose_name_plural = 'График сотрудников'
-        ordering = ['date', 'store']
+        ordering = ['-date', 'store']
 
     def __str__(self):
         return f'{self.date} - {self.staff} - {self.store}'

@@ -2,7 +2,10 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from rest_framework.viewsets import ModelViewSet
 from django.views.generic import UpdateView, DeleteView, TemplateView
 
@@ -236,9 +239,6 @@ def tech_mtd(request):
 
 @login_required
 def schedule_mtd(request):
-    staffs = Staff.objects.all()
-    schedule = Schedule.objects.all()
-    stores = Store.objects.all()
 
     #Форма ввода графика в модельном окне
     if request.method == 'POST':
@@ -249,19 +249,83 @@ def schedule_mtd(request):
     else:
         form = ScheduleForm()
 
-    # Получаем текущую дату и начало недели
-    current_date = datetime.now().date()
-    start_of_week = current_date - timedelta(days=current_date.weekday())
+    # Получаем дату начала недели из GET-параметра или используем текущую дату
+    start_date = request.GET.get('start_date')
+    if start_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    else:
+        # Если дата не указана, берем понедельник текущей недели
+        start_date = datetime.now().date() - timedelta(days=datetime.now().weekday())
 
-    # Создаем список дат для недели
-    dates = [start_of_week + timedelta(days=i) for i in range(7)]
+    # Вычисляем конец недели (воскресенье)
+    end_date = start_date + timedelta(days=6)
+
+    staffs = Staff.objects.all()
+    stores = Store.objects.all()
+    schedules = Schedule.objects.filter(date__range=[start_date, end_date])
+
+    # Если запрос AJAX, возвращаем данные в формате JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        schedule_data = []
+        for stf in staffs:
+            staff_schedules = schedules.filter(staff=stf)
+            week_data = []
+            for i in range(7):
+                date = start_date + timedelta(days=i)
+                schedule = staff_schedules.filter(date=date).first()
+                week_data.append({
+                    'date': date.strftime('%Y-%m-%d'),
+                    'store': schedule.store.short_name if schedule else ''
+                })
+            schedule_data.append({
+                'staff_id': stf.id,
+                'staff_f_name': stf.f_name,
+                'staff_name': stf.name,
+                'schedule': week_data
+            })
+        return JsonResponse({'schedule_data': schedule_data, 'start_date': start_date.strftime('%Y-%m-%d')})
 
     return render(request, 'tph_system/schedule.html', {
         'title': 'График сотрудников',
         'staffs': staffs,
-        'schedule': schedule,
+        'schedule': schedules,
         'form': form,
-        'start_of_week': start_of_week,
-        'dates': dates,
-        'stores': stores
+        'stores': stores,
+        'start_date': start_date
     })
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def update_schedule(request):
+    # Получаем данные из POST-запроса
+    staff_id = request.POST.get('staff_id')
+    date = request.POST.get('date')
+    sel_store = request.POST.get('store')
+
+    try:
+        # Получаем сотрудника по ID
+        employee = get_object_or_404(Staff, id=staff_id)
+
+        if sel_store == '' or sel_store is None:
+            # Если выбрано пустое значение, удаляем запись из расписания
+            Schedule.objects.filter(staff=employee, date=date).delete()
+            action = 'deleted'
+        else:
+            # Обновляем или создаем запись в расписании
+            f_store = get_object_or_404(Store, short_name=sel_store)
+
+            schedule, created = Schedule.objects.update_or_create(
+                staff=employee,
+                date=date,
+                defaults={'store': f_store}
+            )
+            action = 'created' if created else 'updated'
+
+        # Возвращаем успешный ответ с информацией о выполненном действии
+        return JsonResponse({'status': 'success', 'action': action})
+
+    except Exception as e:
+        # В случае ошибок возвращаем сообщение об ошибке
+        return JsonResponse({'status': 'error', 'message': str(e)})

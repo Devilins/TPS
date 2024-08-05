@@ -52,7 +52,7 @@
             <tbody>
                 {% for st in staffs %}
                 <tr>
-                    <td>{{ st.f_name }} {{ st.name }} {{st.o_name}}</td>
+                    <td>{{ st.name }} {{st.o_name}} {{ st.f_name }}</td>
                     <td>{{ st.date_empl }}</td>
                     {% if st.date_dism != null %}
                         <td>{{ st.date_dism }}</td>
