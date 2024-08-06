@@ -29,3 +29,11 @@ class TechFilter(django_filters.FilterSet):
     class Meta:
         model = Tech
         fields = ['store', 'name', 'serial_num']
+
+
+class SalesFilter(django_filters.FilterSet):
+    sale_type = CharFilter(field_name='sale_type', lookup_expr='icontains')
+
+    class Meta:
+        model = Sales
+        fields = ['store', 'date', 'staff', 'sale_type', 'sum']

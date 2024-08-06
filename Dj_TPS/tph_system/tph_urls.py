@@ -9,6 +9,7 @@ urlpatterns = [
     path('consumables/', cons_store, name='cons_store'),
     path('tech/', tech_mtd, name='tech'),
     path('schedule/', schedule_mtd, name='schedule'),
+    path('sales/', sales, name='sales'),
     path('update-schedule/', update_schedule, name='update_schedule'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
     path('store/<int:pk>/delete', StoreDeleteView.as_view(), name='store_delete'),
@@ -17,5 +18,7 @@ urlpatterns = [
     path('consumables/<int:pk>/update', ConStoreUpdateView.as_view(), name='con_store_update'),
     path('consumables/<int:pk>/delete', ConStoreDeleteView.as_view(), name='con_store_delete'),
     path('tech/<int:pk>/update', TechUpdateView.as_view(), name='tech_update'),
-    path('tech/<int:pk>/delete', TechDeleteView.as_view(), name='tech_delete')
+    path('tech/<int:pk>/delete', TechDeleteView.as_view(), name='tech_delete'),
+    path('sales/<int:pk>/update', SalesUpdateView.as_view(), name='sales_update'),
+    path('sales/<int:pk>/delete', SalesDeleteView.as_view(), name='sales_delete')
 ]

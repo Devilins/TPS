@@ -1,9 +1,10 @@
 import datetime
+import re
 
 from django.core.exceptions import ValidationError
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select
 
 from .models import *
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, ModelChoiceField, Select
 
 
 class FengyuanChenDatePickerInput(DateInput):
@@ -195,3 +196,87 @@ class ScheduleForm(ModelForm):
                 'placeholder': 'Дата смены'
             })
         }
+
+
+class SalesForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].empty_label = "Выберите точку"
+        self.fields['payment_type'].empty_label = "Тип оплаты"
+
+    class Meta:
+        model = Sales
+        fields = ['store', 'date', 'staff', 'sale_type', 'payment_type', 'sum', 'photo_count', 'cl_email', 'cl_phone']
+
+        labels = {
+            'store': 'Точка',
+            'date': 'Дата смены',
+            'staff': 'Сотрудник',
+            'sale_type': 'Что продали',
+            'payment_type': 'Тип оплаты',
+            'sum': 'Сумма',
+            'photo_count': 'Количество фотографий',
+            'cl_email': 'Email клиента',
+            'cl_phone': 'Телефон клиента'
+        }
+
+        widgets = {
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка',
+                'label': 'Точка'
+            }),
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата продажи'
+            }),
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Сотрудник',
+                'label': 'Сотрудник'
+            }),
+            "sale_type": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Что продали'
+            }),
+            "payment_type": Select(attrs={
+                'class': 'form-control',
+                'aria-label': 'Тип оплаты',
+                'label': 'Тип оплаты'
+            }),
+            "sum": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Сумма'
+            }),
+            "photo_count": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Количество фотографий'
+            }),
+            "cl_email": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email клиента'
+            }),
+            "cl_phone": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Телефон клиента'
+            })
+        }
+
+    def clean_date(self):
+        f_date = self.cleaned_data["date"]
+        if f_date > datetime.date.today():
+            raise ValidationError('Продажа не может быть в будущем')
+        return f_date
+
+    def clean_cl_email(self):
+        cl_email = self.cleaned_data["cl_email"]
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", cl_email):
+            raise ValidationError('Неверный формат Email')
+        return cl_email
+
+    def clean_cl_phone(self):
+        cl_phone = self.cleaned_data["cl_phone"]
+        if len(cl_phone) != 11:
+            raise ValidationError('Неверный формат телефона (кол-во цифр должно быть 11)')
+        return cl_phone

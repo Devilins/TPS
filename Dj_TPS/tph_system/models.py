@@ -62,11 +62,19 @@ class ConsumablesStore(models.Model):
 
 
 class Sales(models.Model):
+    # селектор для payment_type
+    SLCT_PAYMENT = (
+        ('Наличные', 'Наличные'),
+        ('Карта', 'Карта'),
+        ('Оплата по QR коду', 'Оплата по QR коду'),
+        ('Перевод по номеру телефона', 'Перевод по номеру телефона'),
+    )
+
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     date = models.DateField()
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
     sale_type = models.CharField(max_length=40, default='')
-    payment_type = models.CharField(max_length=40, default='')
+    payment_type = models.CharField(max_length=40, default='', choices=SLCT_PAYMENT)
     sum = models.IntegerField()
     photo_count = models.IntegerField()
     cl_email = models.CharField(max_length=40, blank=True)
@@ -76,7 +84,7 @@ class Sales(models.Model):
     class Meta:
         verbose_name = 'Продажи'
         verbose_name_plural = 'Продажи'
-        ordering = ['store', 'date']
+        ordering = ['-date_created', 'store']
 
     def __str__(self):
         return f'{self.date} - {self.store} - {self.staff}'

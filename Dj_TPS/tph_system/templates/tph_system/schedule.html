@@ -1,47 +1,16 @@
 {% extends 'tph_system/base.html' %}
 
 {% block func_buttons %}
-<!-- Кнопка модального окна для ввода графика -->
+<!-- Кнопка модального окна для ввода графика
 {% if perms.tph_system.add_schedule %}
 <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-schedule-form">
     Новая Запись
 </button>
-{% endif %}
+{% endif %} -->
 {% endblock func_buttons %}
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
-
-        <!-- Модальное окно - ввод новой техники -->
-        <div class="modal fade" id="modal-schedule-form" data-bs-backdrop="static" data-bs-keyboard="false"
-             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Добавление новой записи в график</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <!-- Форма ввода данных -->
-                    <form method="post">
-                        <div class="modal-body">
-                            {% csrf_token %}
-                            {{ form.staff }}<br>
-                            {{ form.store }}<br>
-                            {{ form.position }}<br>
-                            {{ form.date }}<br>
-                            <span>{{ error }}</span>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" type="submit">Сохранить</button>
-                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
     <!-- Таблица с графиком -->
     <div class="card shadow" style="width: 100%; min-width: 1000px">
@@ -96,15 +65,6 @@ $(document).ready(function() {
         return [year, month, day].join('-');
     }
 
-    // Функция для отрисовки расписания на текущую дату
-    function colorset(val){
-        switch(val){
-            case "BWVgs": id_store_select.style.color = "26ff31"; break;
-            case "LLGgr": id_store_select.style.color = "ff2676"; break;
-            case "LLKun": id_store_select.style.color = "2664ff";
-        }
-    }
-
     // Функция для обновления таблицы расписания
     function updateTable(newDate) {
         $.ajax({
@@ -136,7 +96,7 @@ $(document).ready(function() {
                     $.each(staff.schedule, function(index, day) {
                         var select = $('<select>')
                             .addClass('schedule-select form-select')
-                            //.attr('onchange', 'colorset(this.value)')
+                            //.attr('onchange', 'colorset(this)')
                             .attr('id', 'id_store_select')
                             .attr('data-employee', staff.staff_id)
                             .attr('data-date', day.date);
@@ -150,7 +110,8 @@ $(document).ready(function() {
                         // Устанавливаем текущее значение смены
                         select.val(day.store);
 
-                        row.append($('<td>').append(select));
+                        //row.append($('<td>').append(select).addClass('table-success'));
+                        row.append($('<td>').append(select).attr('id', 'td_colored'));
                     });
 
                     tbody.append(row);
@@ -158,6 +119,15 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Функция для изменения цвета ячейки точки
+    //function colorset(val){
+    //    switch(val){
+    //        case "BWVgs": $('#td_colored').addClass('table-success'); break;
+    //        case "LLGgr": $('#td_colored').addClass('table-primary'); break;
+    //        case "LLKun": $('#td_colored').addClass('table-danger');
+    //    }
+    //}
 
     // Обработчики кликов по кнопкам смены недели
     $('#prev-week').click(function() {

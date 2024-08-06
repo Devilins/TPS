@@ -1,0 +1,115 @@
+{% extends 'tph_system/base.html' %}
+{% load static %}
+
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода продажи -->
+{% if perms.tph_system.add_sales %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
+        Новая Продажа
+    </button>
+{% endif %}
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <h4 class="card-title">
+                Продажи <br>
+
+                <!-- Фильтр -->
+                <div class="card card-body" id="cs_filter">
+                    <form method="get">
+                        <div class="row">
+                            <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
+                            <div class="col col-md-auto">Что продали:<br>{{ sale_filter.form.sale_type }}</div>
+                            <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
+                        </div>
+                        <div class="row" style="margin-top: 10px">
+                            <div class="col col-md-auto col-md-4">Сотрудник:<br>{{ sale_filter.form.staff }}</div>
+                            <div class="col col-md-auto">Сумма:<br>{{ sale_filter.form.sum }}</div>
+                            <div class="col col-md-auto">
+                                <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </h4>
+        </div>
+
+        <!-- Таблица продаж -->
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col">Точка</th>
+                    <th scope="col">Дата продажи</th>
+                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Что продали</th>
+                    <th scope="col">Тип оплаты</th>
+                    <th scope="col">Сумма</th>
+                    <th scope="col">Кол-во фото</th>
+                    <th scope="col">Email клиента</th>
+                    <th scope="col">Телефон</th>
+                    <th scope="col">Создано</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales_all %}
+                <tr>
+                    <td>{{ sale.store }}</td>
+                    <td>{{ sale.date }}</td>
+                    <td>{{ sale.staff }}</td>
+                    <td>{{ sale.sale_type }}</td>
+                    <td>{{ sale.payment_type }}</td>
+                    <td><u>{{ sale.sum }}</u></td>
+                    <td>{{ sale.photo_count }}</td>
+                    <td>{{ sale.cl_email }}</td>
+                    <td>{{ sale.cl_phone }}</td>
+                    <td>{{ sale.date_created }}</td>
+                    <td>
+                        <button type="button" class="btn btn-link">
+                            <a href="{% url 'sales_update' sale.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Модальное окно - ввод новых продаж -->
+        <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
+             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Новая продажа</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Форма ввода данных -->
+                    <form method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            {{ form.store }}<br>
+                            {{ form.date }}<br>
+                            {{ form.staff }}<br>
+                            {{ form.sale_type }}<br>
+                            {{ form.payment_type }}<br>
+                            {{ form.sum }}<br>
+                            {{ form.photo_count }}<br>
+                            {{ form.cl_email }}<br>
+                            {{ form.cl_phone }}
+                            <span>{{ error }}</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Сохранить</button>
+                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -11,7 +11,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm
 from .filters import *
 
 
@@ -115,6 +115,34 @@ class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     }
     permission_required = 'tph_system.delete_tech'
     permission_denied_message = 'У вас нет прав на удаление техники'
+
+
+class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Sales
+    form_class = SalesForm
+    template_name = 'tph_system/sales_update.html'
+    success_url = '/sales/'
+    extra_context = {
+        'title': 'Продажи - редактирование',
+        'card_title': 'Изменение продажи',
+        'url_cancel': 'sales',
+        'url_delete': 'sales_delete'
+    }
+    permission_required = 'tph_system.change_sales'
+    permission_denied_message = 'У вас нет прав на редактирование таблицы с продажами'
+
+
+class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Sales
+    success_url = '/sales/'
+    template_name = 'tph_system/sales_delete.html'
+    extra_context = {
+        'title': 'Продажи - удаление',
+        'card_title': 'Удаление продажи',
+        'url_cancel': 'sales'
+    }
+    permission_required = 'tph_system.delete_sales'
+    permission_denied_message = 'У вас нет прав на удаление продаж'
 
 
 class MainPage(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
@@ -241,13 +269,13 @@ def tech_mtd(request):
 def schedule_mtd(request):
 
     #Форма ввода графика в модельном окне
-    if request.method == 'POST':
-        form = ScheduleForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('schedule')
-    else:
-        form = ScheduleForm()
+    # if request.method == 'POST':
+    #     form = ScheduleForm(request.POST)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('schedule')
+    # else:
+    #     form = ScheduleForm()
 
     # Получаем дату начала недели из GET-параметра или используем текущую дату
     start_date = request.GET.get('start_date')
@@ -289,7 +317,7 @@ def schedule_mtd(request):
         'title': 'График сотрудников',
         'staffs': staffs,
         'schedule': schedules,
-        'form': form,
+        #'form': form,
         'stores': stores,
         'start_date': start_date
     })
@@ -329,3 +357,31 @@ def update_schedule(request):
     except Exception as e:
         # В случае ошибок возвращаем сообщение об ошибке
         return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
+@permission_required(perm='tph_system.view_sales', raise_exception=True)
+def sales(request):
+    sales_all = Sales.objects.all()
+
+    sale_filter = SalesFilter(request.GET, queryset=sales_all)
+    sales_all = sale_filter.qs
+
+    error = ''
+    if request.method == 'POST':
+        form_p = SalesForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('sales')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = SalesForm()
+
+    return render(request, 'tph_system/sales.html', {
+        'title': 'Продажи',
+        'sales_all': sales_all,
+        'form': form,
+        'error': error,
+        'sale_filter': sale_filter
+    })

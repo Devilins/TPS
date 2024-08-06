@@ -28,7 +28,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" style="color: #ffffff;">
                 <img src="{% static 'tph_system/images/logo_TPS_round.png'%}" width="30" height="30" class="d-inline-block align-top" alt="">
-                Take Photo System
+                Take Photo ERP System
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
                     aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
                     <li><a href="{% url 'schedule' %}"><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_sales %}
-                    <li><a href=""><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
+                    <li><a href="{% url 'sales' %}"><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_consumablesstore %}
                     <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>

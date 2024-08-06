@@ -1,0 +1,23 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card shadow" id="upd_del_forms">
+        <div class="card-header">
+            <h4 class="card-title"> {{card_title}} </h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма удаления -->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                Подтверждаете удаление продажи <b>{{ sales.sale_type }}</b> от <b>{{ sales.date }}</b> на сумму <i>{{ sales.sum }}</i> ?<br>
+                <br>
+                <button class="btn btn-danger" type="submit">Удалить</button>
+                <button class="btn btn-warning" type="button"><a href="{% url url_cancel %}">Отмена</a></button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
