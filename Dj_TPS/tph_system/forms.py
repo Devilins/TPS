@@ -268,7 +268,7 @@ class SalesForm(ModelForm):
             }),
             "cl_phone": NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Телефон клиента'
+                'placeholder': 'Телефон клиента (только цифрами 89...)'
             })
         }
 

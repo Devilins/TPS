@@ -216,18 +216,19 @@ def staff(request):
 @permission_required(perm='tph_system.view_consumablesstore', raise_exception=True)
 def cons_store(request):
     stores = Store.objects.all()
+    auth_user = User.objects.get(id=request.user.id)
+
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
-    auth_user = User.objects.get(id=request.user.id)
     if auth_user.has_perm('tph_system.consumables_view_all_stores'):
         con_store = ConsumablesStore.objects.all()
     else:
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
-        except ObjectDoesNotExist:
-            store_staff_working_obj = None
         con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj)
 
     #Фильтр
@@ -243,7 +244,7 @@ def cons_store(request):
         else:
             error = 'Ошибка в заполнении формы'
 
-    form = ConsStoreForm()
+    form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
     return render(request, 'tph_system/сonsumablesStore.html', {
         'title': 'Расходники',
@@ -258,18 +259,19 @@ def cons_store(request):
 @login_required
 @permission_required(perm='tph_system.view_tech', raise_exception=True)
 def tech_mtd(request):
+    auth_user = User.objects.get(id=request.user.id)
+
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
-    auth_user = User.objects.get(id=request.user.id)
     if auth_user.has_perm('tph_system.tech_view_all_stores'):
         tech = Tech.objects.all()
     else:
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
-        except ObjectDoesNotExist:
-            store_staff_working_obj = None
         tech = Tech.objects.filter(store=store_staff_working_obj)
 
     # Фильтр
@@ -282,7 +284,7 @@ def tech_mtd(request):
             form.save()
             return redirect('tech')
     else:
-        form = TechForm()
+        form = TechForm(initial={'store': store_staff_working_obj})
 
     return render(request, 'tph_system/tech.html', {
         'title': 'Техника',
@@ -396,16 +398,17 @@ def sales(request):
     # else:
     #     sales_all = Sales.objects.filter(staff=Staff.objects.get(st_username=auth_user))
 
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
+
     #Сотрудник видит только сегодняшние продажи точки, на которой работает по графику, если нет права на просмотр всех продаж
     if auth_user.has_perm('tph_system.user_sales_view_all'):
         sales_all = Sales.objects.all()
     else:
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
-        except ObjectDoesNotExist:
-            store_staff_working_obj = None
         sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now())
 
     #Фильтр
@@ -421,7 +424,11 @@ def sales(request):
         else:
             error = 'Ошибка в заполнении формы'
 
-    form = SalesForm()
+    form = SalesForm(initial={
+        'store': store_staff_working_obj,
+        'date': datetime.now(),
+        'staff': Staff.objects.get(st_username=auth_user)
+    })
 
     return render(request, 'tph_system/sales.html', {
         'title': 'Продажи',
