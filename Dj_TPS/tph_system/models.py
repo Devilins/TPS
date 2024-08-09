@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.core import validators
 
 
@@ -8,6 +9,7 @@ class Staff(models.Model):
     o_name = models.CharField(max_length=30, blank=True)
     date_empl = models.DateField()
     date_dism = models.DateField(null=True, blank=True)
+    st_username = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Сотрудники'
@@ -85,6 +87,8 @@ class Sales(models.Model):
         verbose_name = 'Продажи'
         verbose_name_plural = 'Продажи'
         ordering = ['-date_created', 'store']
+    #    permissions = (("view_all_users_sales", "Видимость продаж всех пользователей"),)
+    #    permissions = (("view_all_store_sales", "Видимость продаж на все точки"),)
 
     def __str__(self):
         return f'{self.date} - {self.store} - {self.staff}'

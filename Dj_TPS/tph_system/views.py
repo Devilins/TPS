@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -214,9 +215,22 @@ def staff(request):
 @login_required
 @permission_required(perm='tph_system.view_consumablesstore', raise_exception=True)
 def cons_store(request):
-    con_store = ConsumablesStore.objects.all()
     stores = Store.objects.all()
 
+    # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
+    auth_user = User.objects.get(id=request.user.id)
+    if auth_user.has_perm('tph_system.consumables_view_all_stores'):
+        con_store = ConsumablesStore.objects.all()
+    else:
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+        con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj)
+
+    #Фильтр
     cs_filter = ConsumablesStoreFilter(request.GET, queryset=con_store)
     con_store = cs_filter.qs
 
@@ -244,8 +258,21 @@ def cons_store(request):
 @login_required
 @permission_required(perm='tph_system.view_tech', raise_exception=True)
 def tech_mtd(request):
-    tech = Tech.objects.all()
 
+    # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
+    auth_user = User.objects.get(id=request.user.id)
+    if auth_user.has_perm('tph_system.tech_view_all_stores'):
+        tech = Tech.objects.all()
+    else:
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+        tech = Tech.objects.filter(store=store_staff_working_obj)
+
+    # Фильтр
     t_filter = TechFilter(request.GET, queryset=tech)
     tech = t_filter.qs
 
@@ -267,7 +294,6 @@ def tech_mtd(request):
 
 @login_required
 def schedule_mtd(request):
-
     #Форма ввода графика в модельном окне
     # if request.method == 'POST':
     #     form = ScheduleForm(request.POST)
@@ -362,8 +388,27 @@ def update_schedule(request):
 @login_required
 @permission_required(perm='tph_system.view_sales', raise_exception=True)
 def sales(request):
-    sales_all = Sales.objects.all()
+    auth_user = User.objects.get(id=request.user.id)
 
+    # Фильтруем продажи только для текущего пользователя при отсутствии права на просмотр всех продаж
+    # if auth_user.has_perm('auth.user_sales_view_all'):
+    #     sales_all = Sales.objects.all()
+    # else:
+    #     sales_all = Sales.objects.filter(staff=Staff.objects.get(st_username=auth_user))
+
+    #Сотрудник видит только сегодняшние продажи точки, на которой работает по графику, если нет права на просмотр всех продаж
+    if auth_user.has_perm('tph_system.user_sales_view_all'):
+        sales_all = Sales.objects.all()
+    else:
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+        sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now())
+
+    #Фильтр
     sale_filter = SalesFilter(request.GET, queryset=sales_all)
     sales_all = sale_filter.qs
 

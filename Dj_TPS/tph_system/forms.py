@@ -34,16 +34,21 @@ class StoreForm(ModelForm):
 
 
 class StaffForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['st_username'].empty_label = "Выберите Логин"
+
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'st_username']
 
         labels = {
             'f_name': 'Фамилия',
             'name': 'Имя',
             'o_name': 'Отчество',
             'date_empl': 'Дата найма',
-            'date_dism': 'Дата увольнения'
+            'date_dism': 'Дата увольнения',
+            'st_username': 'Логин'
         }
 
         widgets = {
@@ -66,6 +71,10 @@ class StaffForm(ModelForm):
             "date_dism": FengyuanChenDatePickerInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Дата увольнения'
+            }),
+            "st_username": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Логин'
             })
         }
 
@@ -241,7 +250,7 @@ class SalesForm(ModelForm):
                 'placeholder': 'Что продали'
             }),
             "payment_type": Select(attrs={
-                'class': 'form-control',
+                'class': 'form-select',
                 'aria-label': 'Тип оплаты',
                 'label': 'Тип оплаты'
             }),
