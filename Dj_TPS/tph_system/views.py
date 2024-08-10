@@ -146,15 +146,6 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     permission_denied_message = 'У вас нет прав на удаление продаж'
 
 
-class MainPage(PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'tph_system/main_page.html'
-    extra_context = {
-        'title': 'Главная страница',
-    }
-    permission_required = 'tph_system.view_main_page'
-    permission_denied_message = 'У вас нет прав на просмотр главной страницы'
-
-
 @login_required
 def index(request):
     return redirect('main_page', permanent=True)
@@ -295,6 +286,7 @@ def tech_mtd(request):
 
 
 @login_required
+@permission_required(perm='tph_system.view_schedule', raise_exception=True)
 def schedule_mtd(request):
     #Форма ввода графика в модельном окне
     # if request.method == 'POST':
@@ -436,4 +428,19 @@ def sales(request):
         'form': form,
         'error': error,
         'sale_filter': sale_filter
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.view_main_page', raise_exception=True)
+def main_page(request):
+    sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store')
+    now_date = datetime.now().strftime('%d.%m.%Y')
+    sales_today = Sales.objects.filter(date=datetime.now())
+
+    return render(request, 'tph_system/main_page.html', {
+        'title': 'Главная страница',
+        'sch': sch,
+        'now_date': now_date,
+        'sales_today': sales_today
     })

@@ -102,7 +102,7 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     font-size: 17px;
 }
 
-#upd_del_forms, #store_card {
+#upd_del_forms, #store_card, #main_view_card {
     width: 500px;
 }
 

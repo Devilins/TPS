@@ -1,4 +1,54 @@
 {% extends 'tph_system/base.html' %}
+{% load static %}
 
 {% block content %}
+<div class="container cont_store">
+    <div class="card shadow" id="store_card">
+        <div class="card-header">
+            <h4 class="card-title">Кто {{ now_date }} работает на точках: </h4>
+        </div>
+
+        <!-- Карточка с содержимым -->
+        <div class="card-body">
+            <ul class="list-group">
+                {% for s in sch %}
+                <li class="list-group-item">
+                    <div class="row justify-content-md-center">
+                        <div class="col">
+                            <i>{{ s.store }}</i>
+                        </div>
+                        <div class="col-md-auto">
+                            {{ s.staff }}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow" id="main_view_card">
+        <div class="card-header">
+            <h4 class="card-title">Кассы за {{ now_date }}: </h4>
+        </div>
+
+        <!-- Карточка с содержимым -->
+        <div class="card-body">
+            <ul class="list-group">
+                {% for s in sales_today %}
+                <li class="list-group-item">
+                    <div class="row justify-content-md-center">
+                        <div class="col">
+                            <i>{{ s.store }}</i>
+                        </div>
+                        <div class="col-md-auto">
+                            {{ s.sum }}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}
