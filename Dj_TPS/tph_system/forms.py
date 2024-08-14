@@ -216,18 +216,21 @@ class SalesForm(ModelForm):
 
     class Meta:
         model = Sales
-        fields = ['store', 'date', 'staff', 'sale_type', 'payment_type', 'sum', 'photo_count', 'cl_email', 'cl_phone']
+        fields = ['store', 'date', 'staff', 'photographer', 'sale_type', 'photo_count',
+                  'payment_type', 'sum', 'cl_email', 'cl_phone', 'comment']
 
         labels = {
             'store': 'Точка',
             'date': 'Дата смены',
-            'staff': 'Сотрудник',
+            'staff': 'Администратор',
+            'photographer': 'Фотограф',
             'sale_type': 'Что продали',
             'payment_type': 'Тип оплаты',
             'sum': 'Сумма',
             'photo_count': 'Количество фотографий',
             'cl_email': 'Email клиента',
-            'cl_phone': 'Телефон клиента'
+            'cl_phone': 'Телефон клиента',
+            'comment': 'Комментарий'
         }
 
         widgets = {
@@ -242,11 +245,16 @@ class SalesForm(ModelForm):
             }),
             "staff": Select(attrs={
                 'class': 'form-select',
-                'aria-label': 'Сотрудник',
-                'label': 'Сотрудник'
+                'aria-label': 'Администратор',
+                'label': 'Администратор'
             }),
-            "sale_type": TextInput(attrs={
-                'class': 'form-control',
+            "photographer": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Фотограф',
+                'label': 'Фотограф'
+            }),
+            "sale_type": Select(attrs={
+                'class': 'form-select',
                 'placeholder': 'Что продали'
             }),
             "payment_type": Select(attrs={
@@ -264,11 +272,16 @@ class SalesForm(ModelForm):
             }),
             "cl_email": TextInput(attrs={
                 'class': 'form-control',
+                'type': 'email',
                 'placeholder': 'Email клиента'
             }),
             "cl_phone": NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Телефон клиента (только цифрами 89...)'
+            }),
+            "comment": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Комментарий'
             })
         }
 
@@ -289,3 +302,72 @@ class SalesForm(ModelForm):
         if len(cl_phone) != 11:
             raise ValidationError('Неверный формат телефона (кол-во цифр должно быть 11)')
         return cl_phone
+
+    def clean(self):
+        cleaned_data = super().clean()
+        staff = cleaned_data.get("staff")
+        photographer = cleaned_data.get("photographer")
+        date = cleaned_data.get("date")
+        store = cleaned_data.get("store")
+
+        if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
+            raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
+
+        if not Schedule.objects.filter(staff=photographer, date=date, store=store).exists():
+            raise ValidationError('Фотограф не работает на выбранной точке в указанную дату')
+
+
+class RefsAndTipsForm(ModelForm):
+    class Meta:
+        model = RefsAndTips
+        fields = ['tip', 'refs']
+
+        labels = {
+            'tip': 'Информация',
+            'refs': 'Ссылка'
+        }
+
+        widgets = {
+            "tip": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Информация'
+            }),
+            "refs": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ссылка'
+            })
+        }
+
+
+class CashWithdrawnForm(ModelForm):
+    class Meta:
+        model = CashWithdrawn
+        fields = ['store', 'staff', 'date', 'withdrawn']
+
+        labels = {
+            'store': 'Точка',
+            'staff': 'Сотрудник',
+            'date': 'Дата',
+            'withdrawn': 'Забрали наличными'
+        }
+
+        widgets = {
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка',
+                'label': 'Точка'
+            }),
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Сотрудник',
+                'label': 'Сотрудник'
+            }),
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата'
+            }),
+            "withdrawn": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Сколько забрали наличными'
+            })
+        }

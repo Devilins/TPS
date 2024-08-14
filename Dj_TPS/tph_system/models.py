@@ -71,16 +71,29 @@ class Sales(models.Model):
         ('Оплата по QR коду', 'Оплата по QR коду'),
         ('Перевод по номеру телефона', 'Перевод по номеру телефона'),
     )
+    # селектор для sale_type
+    SLCT_ST = (
+        ('Email (фото)', 'Email (фото)'),
+        ('Email (все)', 'Email (все)'),
+        ('Вин. магн.', 'Вин. магн.'),
+        ('Ср. магн.', 'Ср. магн.'),
+        ('Бол. магн.', 'Бол. магн.'),
+        ('Печать 10x15', 'Печать 10x15'),
+        ('Печать 15x20', 'Печать 15x20'),
+        ('Печать A4', 'Печать A4'),
+    )
 
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     date = models.DateField()
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
-    sale_type = models.CharField(max_length=40, default='')
+    photographer = models.ForeignKey(Staff, on_delete=models.PROTECT, related_name='sale_photographer', default='')
+    sale_type = models.CharField(max_length=40, default='', choices=SLCT_ST)
+    photo_count = models.IntegerField()
     payment_type = models.CharField(max_length=40, default='', choices=SLCT_PAYMENT)
     sum = models.IntegerField()
-    photo_count = models.IntegerField()
     cl_email = models.CharField(max_length=40, blank=True)
     cl_phone = models.CharField(max_length=12, blank=True)
+    comment = models.TextField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True, editable=False, blank=True)
 
     class Meta:
@@ -154,3 +167,16 @@ class Tech(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.serial_num}'
+
+
+class RefsAndTips(models.Model):
+    tip = models.TextField()
+    refs = models.CharField(max_length=200)
+
+    class Meta:
+        verbose_name = 'Инфо и ссылки'
+        verbose_name_plural = 'Инфо и ссылки'
+        ordering = ['-id']
+
+    def __str__(self):
+        return f'{self.tip}'

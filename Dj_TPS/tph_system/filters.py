@@ -36,4 +36,10 @@ class SalesFilter(django_filters.FilterSet):
 
     class Meta:
         model = Sales
-        fields = ['store', 'date', 'staff', 'sale_type', 'sum']
+        fields = ['store', 'date', 'staff', 'photographer', 'sale_type', 'sum']
+
+
+class CashWithdrawnFilter(django_filters.FilterSet):
+    class Meta:
+        model = CashWithdrawn
+        fields = ['store', 'staff', 'date', 'withdrawn']

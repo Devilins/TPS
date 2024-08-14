@@ -5,7 +5,7 @@
 <!-- Кнопка модального окна для ввода продажи -->
 {% if perms.tph_system.add_sales %}
     <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
-        Новая Продажа
+        Добавить Продажу
     </button>
 {% endif %}
 {% endblock func_buttons %}
@@ -26,7 +26,8 @@
                             <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
                         </div>
                         <div class="row" style="margin-top: 10px">
-                            <div class="col col-md-auto col-md-4">Сотрудник:<br>{{ sale_filter.form.staff }}</div>
+                            <div class="col col-md-auto ">Администратор:<br>{{ sale_filter.form.staff }}</div>
+                            <div class="col col-md-auto col-md-4">Фотограф:<br>{{ sale_filter.form.photographer }}</div>
                             <div class="col col-md-auto">Сумма:<br>{{ sale_filter.form.sum }}</div>
                             <div class="col col-md-auto">
                                 <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
@@ -43,13 +44,15 @@
                 <tr>
                     <th scope="col">Точка</th>
                     <th scope="col">Дата продажи</th>
-                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Администратор</th>
+                    <th scope="col">Фотограф</th>
                     <th scope="col">Что продали</th>
                     <th scope="col">Тип оплаты</th>
                     <th scope="col">Сумма</th>
                     <th scope="col">Кол-во фото</th>
                     <th scope="col">Email клиента</th>
                     <th scope="col">Телефон</th>
+                    <th scope="col">Комментарий</th>
                     <th scope="col">Создано</th>
                     <th scope="col"></th>
                 </tr>
@@ -60,12 +63,14 @@
                     <td>{{ sale.store }}</td>
                     <td>{{ sale.date }}</td>
                     <td>{{ sale.staff }}</td>
+                    <td>{{ sale.photographer }}</td>
                     <td>{{ sale.sale_type }}</td>
                     <td>{{ sale.payment_type }}</td>
                     <td><u>{{ sale.sum }}</u></td>
                     <td>{{ sale.photo_count }}</td>
                     <td>{{ sale.cl_email }}</td>
                     <td>{{ sale.cl_phone }}</td>
+                    <td>{{ sale.comment }}</td>
                     <td>{{ sale.date_created }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
@@ -93,12 +98,15 @@
                             {{ form.store }}<br>
                             {{ form.date }}<br>
                             {{ form.staff }}<br>
+                            {{ form.photographer }}<br>
                             {{ form.sale_type }}<br>
                             {{ form.payment_type }}<br>
                             {{ form.sum }}<br>
                             {{ form.photo_count }}<br>
                             {{ form.cl_email }}<br>
-                            {{ form.cl_phone }}
+                            {{ form.cl_phone }}<br>
+                            {{ form.comment }}
+                            {{ form.non_field_errors }}
                             <span>{{ error }}</span>
                         </div>
                         <div class="modal-footer">

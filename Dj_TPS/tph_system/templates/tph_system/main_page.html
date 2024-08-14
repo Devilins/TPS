@@ -3,22 +3,80 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" id="store_card">
+    {% if perms.tph_system.main_page_view_cards %}
+    <div class="row align-items-start">
+        <div class="col">
+            <div class="card shadow" id="store_card">
+                <div class="card-header">
+                    <h4 class="card-title">Кто {{ now_date }} работает на точках: </h4>
+                </div>
+
+                <!-- Карточка с содержимым -->
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for s in sch %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <i>{{ s.store }}</i>
+                                </div>
+                                <div class="col-md-auto">
+                                    {{ s.staff }}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow" id="main_view_card">
+                <div class="card-header">
+                    <h4 class="card-title">Кассы за {{ now_date }}: </h4>
+                </div>
+
+                <!-- Карточка с содержимым -->
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for store, summ in dic.items %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <i>{{ store }}</i>
+                                </div>
+                                <div class="col-md-auto">
+                                    {{ summ }}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+
+    <div class="card shadow" id="main_view_card2" style="margin-top: 20px">
         <div class="card-header">
-            <h4 class="card-title">Кто {{ now_date }} работает на точках: </h4>
+            <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>
 
         <!-- Карточка с содержимым -->
         <div class="card-body">
             <ul class="list-group">
-                {% for s in sch %}
+                {% for c in con_store %}
                 <li class="list-group-item">
                     <div class="row justify-content-md-center">
                         <div class="col">
-                            <i>{{ s.store }}</i>
+                            <i>{{ c.store }}</i>
                         </div>
                         <div class="col-md-auto">
-                            {{ s.staff }}
+                            <u><a href="{% url 'con_store_update' c.id %}">{{ c.consumable }}</a></u> - {{ c.count }}
                         </div>
                     </div>
                 </li>
@@ -26,23 +84,24 @@
             </ul>
         </div>
     </div>
+    {% endif %}
 
-    <div class="card shadow" id="main_view_card">
+    <div class="card shadow" id="main_tip_for_staff" style="margin-top: 20px">
         <div class="card-header">
-            <h4 class="card-title">Кассы за {{ now_date }}: </h4>
+            <h4 class="card-title">Примеры ФОТО Лазерлэнд: </h4>
         </div>
 
         <!-- Карточка с содержимым -->
         <div class="card-body">
             <ul class="list-group">
-                {% for s in sales_today %}
+                {% for t in tips %}
                 <li class="list-group-item">
                     <div class="row justify-content-md-center">
                         <div class="col">
-                            <i>{{ s.store }}</i>
+                            {{ t.tip }}
                         </div>
                         <div class="col-md-auto">
-                            {{ s.sum }}
+                            <a href="{{ t.refs }}" style="color: #2373fc;">{{ t.refs }}</a>
                         </div>
                     </div>
                 </li>

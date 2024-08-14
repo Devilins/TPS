@@ -3,16 +3,17 @@ from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Sum, Count
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework.viewsets import ModelViewSet
-from django.views.generic import UpdateView, DeleteView, TemplateView
+from django.views.generic import UpdateView, DeleteView, TemplateView, CreateView
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm
 from .filters import *
 
 
@@ -144,6 +145,34 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     }
     permission_required = 'tph_system.delete_sales'
     permission_denied_message = 'У вас нет прав на удаление продаж'
+
+
+class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = CashWithdrawn
+    form_class = CashWithdrawnForm
+    template_name = 'tph_system/c_w_update.html'
+    success_url = '/cash_withdrawn/'
+    extra_context = {
+        'title': 'Зарплата наличными - редактирование',
+        'card_title': 'Корректировка данных',
+        'url_cancel': 'cash_withdrawn',
+        'url_delete': 'c_w_delete'
+    }
+    permission_required = 'tph_system.change_cashwithdrawn'
+    permission_denied_message = 'У вас нет прав на редактирование истории выдачи наличных'
+
+
+class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = CashWithdrawn
+    success_url = '/cash_withdrawn/'
+    template_name = 'tph_system/c_w_delete.html'
+    extra_context = {
+        'title': 'Зарплата наличными - удаление',
+        'card_title': 'Удаление данных',
+        'url_cancel': 'cash_withdrawn'
+    }
+    permission_required = 'tph_system.delete_cashwithdrawn'
+    permission_denied_message = 'У вас нет прав на удаление истории выдачи наличных'
 
 
 @login_required
@@ -437,10 +466,51 @@ def main_page(request):
     sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store')
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
+    con_store = ConsumablesStore.objects.filter(count__lt=30)
+
+    dic = {}
+
+    for st in Store.objects.all():
+        sales_sum = sales_today.filter(store=st).aggregate(Sum('sum'))['sum__sum']
+        if sales_sum is not None:
+            dic[st.name] = sales_sum
+
+    tips = RefsAndTips.objects.all()
 
     return render(request, 'tph_system/main_page.html', {
         'title': 'Главная страница',
         'sch': sch,
         'now_date': now_date,
-        'sales_today': sales_today
+        'dic': dic,
+        'con_store': con_store,
+        'tips': tips
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.view_view_cashwithdrawn', raise_exception=True)
+def cash_withdrawn(request):
+    cash = CashWithdrawn.objects.all()
+
+    # Фильтр
+    c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
+    cash = c_filter.qs
+
+    error = ''
+    if request.method == 'POST':
+        form_p = CashWithdrawnForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('cash_withdrawn')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = CashWithdrawnForm()
+
+    return render(request, 'tph_system/cash_withdrawn.html', {
+        'title': 'Зарплата наличными',
+        'cash': cash,
+        'form': form,
+        'error': error,
+        'c_filter': c_filter
     })

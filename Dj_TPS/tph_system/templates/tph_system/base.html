@@ -52,7 +52,7 @@
                     <!-- Выпадающий список пользователя справва -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">
-                            {{ user.last_name }} {{ user.first_name }}
+                            {{ user.first_name }} {{ user.last_name }}
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <!--    <a class="dropdown-item" href="#">Настройки пользователя</a>  -->
@@ -90,6 +90,9 @@
                     {% endif %}
                     {% if perms.tph_system.view_store %}
                     <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_cashwithdrawn %}
+                    <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_salary %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
