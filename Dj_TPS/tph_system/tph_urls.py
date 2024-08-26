@@ -22,6 +22,7 @@ urlpatterns = [
     path('tech/<int:pk>/delete', TechDeleteView.as_view(), name='tech_delete'),
     path('sales/<int:pk>/update', SalesUpdateView.as_view(), name='sales_update'),
     path('sales/<int:pk>/delete', SalesDeleteView.as_view(), name='sales_delete'),
+    path('sales/add', SalesCreateView.as_view(), name='sales_create'),
     path('cash_withdrawn/<int:pk>/update', CashWithdrawnUpdateView.as_view(), name='c_w_update'),
     path('cash_withdrawn/<int:pk>/delete', CashWithdrawnDeleteView.as_view(), name='c_w_delete')
 ]

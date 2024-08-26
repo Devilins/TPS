@@ -4,9 +4,7 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода продажи -->
 {% if perms.tph_system.add_sales %}
-    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-cons_store-form">
-        Добавить Продажу
-    </button>
+    <a class="btn btn-outline-info" href="{% url 'sales_create' %}" role="button">Добавить Продажу</a>
 {% endif %}
 {% endblock func_buttons %}
 
@@ -26,8 +24,8 @@
                             <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
                         </div>
                         <div class="row" style="margin-top: 10px">
-                            <div class="col col-md-auto ">Администратор:<br>{{ sale_filter.form.staff }}</div>
-                            <div class="col col-md-auto col-md-4">Фотограф:<br>{{ sale_filter.form.photographer }}</div>
+                            <div class="col col-md-auto">Администратор:<br>{{ sale_filter.form.staff }}</div>
+                            <div class="col col-md-auto">Фотограф:<br>{{ sale_filter.form.photographer }}</div>
                             <div class="col col-md-auto">Сумма:<br>{{ sale_filter.form.sum }}</div>
                             <div class="col col-md-auto">
                                 <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
@@ -81,42 +79,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
-        <!-- Модальное окно - ввод новых продаж -->
-        <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"
-             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Новая продажа</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <!-- Форма ввода данных -->
-                    <form method="post">
-                        <div class="modal-body">
-                            {% csrf_token %}
-                            {{ form.store }}<br>
-                            {{ form.date }}<br>
-                            {{ form.staff }}<br>
-                            {{ form.photographer }}<br>
-                            {{ form.sale_type }}<br>
-                            {{ form.payment_type }}<br>
-                            {{ form.sum }}<br>
-                            {{ form.photo_count }}<br>
-                            {{ form.cl_email }}<br>
-                            {{ form.cl_phone }}<br>
-                            {{ form.comment }}
-                            {{ form.non_field_errors }}
-                            <span>{{ error }}</span>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" type="submit">Сохранить</button>
-                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 

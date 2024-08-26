@@ -147,6 +147,38 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     permission_denied_message = 'У вас нет прав на удаление продаж'
 
 
+class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Sales
+    form_class = SalesForm
+    template_name = 'tph_system/sale_add.html'
+    success_url = '/sales/'
+    extra_context = {
+        'title': 'Новая продажа',
+        'card_title': 'Добавление новой продажи',
+        'url_cancel': 'sales'
+    }
+    permission_required = 'tph_system.add_sales'
+    permission_denied_message = 'У вас нет прав на добавление новой продажи'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        auth_user = self.request.user
+
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+
+        initial.update({
+            'store': store_staff_working_obj,
+            'date': datetime.now(),
+            'staff': Staff.objects.get(st_username=auth_user)
+        })
+        return initial
+
+
 class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = CashWithdrawn
     form_class = CashWithdrawnForm

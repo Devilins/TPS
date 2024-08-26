@@ -81,6 +81,7 @@ class Sales(models.Model):
         ('Печать 10x15', 'Печать 10x15'),
         ('Печать 15x20', 'Печать 15x20'),
         ('Печать A4', 'Печать A4'),
+        ('Заказной фотосет', 'Заказной фотосет'),
     )
 
     store = models.ForeignKey(Store, on_delete=models.PROTECT)

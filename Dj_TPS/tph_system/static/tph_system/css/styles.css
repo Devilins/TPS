@@ -106,6 +106,11 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     width: 500px;
 }
 
+#sale_add_form {
+    text-align: left;
+    float: left;
+}
+
 #main_tip_for_staff {
     width: 1025px;
 }

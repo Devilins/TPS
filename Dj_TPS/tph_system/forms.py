@@ -264,24 +264,21 @@ class SalesForm(ModelForm):
             }),
             "sum": NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Сумма'
             }),
             "photo_count": NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Количество фотографий'
             }),
             "cl_email": TextInput(attrs={
                 'class': 'form-control',
                 'type': 'email',
-                'placeholder': 'Email клиента'
+                'placeholder': 'mail@ya.ru'
             }),
             "cl_phone": NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Телефон клиента (только цифрами 89...)'
+                'placeholder': 'Цифрами 89...'
             }),
             "comment": TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Комментарий'
             })
         }
 
