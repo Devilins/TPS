@@ -174,7 +174,8 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         initial.update({
             'store': store_staff_working_obj,
             'date': datetime.now(),
-            'staff': Staff.objects.get(st_username=auth_user)
+            'staff': Staff.objects.get(st_username=auth_user),
+            'photographer': Staff.objects.get(st_username=auth_user)
         })
         return initial
 
@@ -523,6 +524,14 @@ def main_page(request):
 @permission_required(perm='tph_system.view_view_cashwithdrawn', raise_exception=True)
 def cash_withdrawn(request):
     cash = CashWithdrawn.objects.all()
+    auth_user = User.objects.get(id=request.user.id)
+
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
 
     # Фильтр
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
@@ -537,7 +546,11 @@ def cash_withdrawn(request):
         else:
             error = 'Ошибка в заполнении формы'
 
-    form = CashWithdrawnForm()
+    form = CashWithdrawnForm(initial={
+        'store': store_staff_working_obj,
+        'date': datetime.now(),
+        'staff': Staff.objects.get(st_username=auth_user)
+    })
 
     return render(request, 'tph_system/cash_withdrawn.html', {
         'title': 'Зарплата наличными',

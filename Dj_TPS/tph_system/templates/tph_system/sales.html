@@ -9,7 +9,7 @@
 {% endblock func_buttons %}
 
 {% block content %}
-<div class="container cont_store">
+<div class="container container-fluid cont_store" id="sales_table">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
@@ -17,21 +17,23 @@
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
-                    <form method="get">
-                        <div class="row">
-                            <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
-                            <div class="col col-md-auto">Что продали:<br>{{ sale_filter.form.sale_type }}</div>
-                            <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
-                        </div>
-                        <div class="row" style="margin-top: 10px">
-                            <div class="col col-md-auto">Администратор:<br>{{ sale_filter.form.staff }}</div>
-                            <div class="col col-md-auto">Фотограф:<br>{{ sale_filter.form.photographer }}</div>
-                            <div class="col col-md-auto">Сумма:<br>{{ sale_filter.form.sum }}</div>
-                            <div class="col col-md-auto">
-                                <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row">
+                                <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
+                                <div class="col col-md-auto">Что продали:<br>{{ sale_filter.form.sale_type }}</div>
+                                <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
                             </div>
-                        </div>
-                    </form>
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col col-md-auto">Администратор:<br>{{ sale_filter.form.staff }}</div>
+                                <div class="col col-md-auto">Фотограф:<br>{{ sale_filter.form.photographer }}</div>
+                                <div class="col col-md-auto">Сумма:<br>{{ sale_filter.form.sum }}</div>
+                                <div class="col col-md-auto">
+                                    <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </h4>
         </div>
@@ -47,7 +49,7 @@
                     <th scope="col">Что продали</th>
                     <th scope="col">Тип оплаты</th>
                     <th scope="col">Сумма</th>
-                    <th scope="col">Кол-во фото</th>
+                    <th scope="col">Кол-во фото / часов</th>
                     <th scope="col">Email клиента</th>
                     <th scope="col">Телефон</th>
                     <th scope="col">Комментарий</th>
@@ -79,6 +81,41 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Модальное окно - ввод новых сотрудников -->
+        <div class="modal fade" id="modal-staff-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Добавление нового сотрудника</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Форма ввода данных -->
+                    <div class="container-fluid text-center">
+                        <form method="post" class="form-control">
+                            {% csrf_token %}
+                            <div class="error_style" style="margin-bottom: 0px;">
+                                {% for error in form.non_field_errors %}
+                                    <i>{{error}}</i>
+                                {% endfor %}
+                            </div>
+                            <div class="row row-cols-4">
+                                {% for f in form %}
+                                <div class="col-md-3">
+                                    <p style="text-align: left;"><label class="form-label" for="{{ f.id_for_label }}"><b>{{ f.label }}:</b></label><br>{{ f }}</p>
+                                    <div class="form-error">{{ f.errors }}</div>
+                                </div>
+                                <!-- Если мы хотим последний элемент - комментарий сделать длиннее в два раза (col-md-6), то надо убирать for и писать все руками -->
+                                {% endfor %}
+                            </div>
+                            <button class="btn btn-success" type="submit">Сохранить</button>
+                            <a class="btn btn-warning" href="" role="button">Отмена</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 

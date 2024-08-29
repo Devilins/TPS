@@ -106,7 +106,19 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     width: 500px;
 }
 
-#sale_add_form {
+main .sale_add_cont {
+    padding: 1%;
+    float: left;
+    margin-top: 0px;
+    font-size: 17px;
+    max-width: 83%;
+}
+
+main #sales_table {
+    font-size: 15px;
+}
+
+#sale_add_form {        /* Стили для карточки добавления продажи */
     text-align: left;
     float: left;
 }

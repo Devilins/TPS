@@ -227,7 +227,7 @@ class SalesForm(ModelForm):
             'sale_type': 'Что продали',
             'payment_type': 'Тип оплаты',
             'sum': 'Сумма',
-            'photo_count': 'Количество фотографий',
+            'photo_count': 'Кол-во фото / часов съемки',
             'cl_email': 'Email клиента',
             'cl_phone': 'Телефон клиента',
             'comment': 'Комментарий'
@@ -241,7 +241,7 @@ class SalesForm(ModelForm):
             }),
             "date": FengyuanChenDatePickerInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Дата продажи'
+                'placeholder': 'Укажите дату'
             }),
             "staff": Select(attrs={
                 'class': 'form-select',
