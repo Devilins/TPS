@@ -2,7 +2,7 @@ import datetime
 import re
 
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea
 
 from .models import *
 
@@ -277,8 +277,9 @@ class SalesForm(ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Цифрами 89...'
             }),
-            "comment": TextInput(attrs={
+            "comment": Textarea(attrs={
                 'class': 'form-control',
+                'rows': '1'
             })
         }
 
@@ -325,8 +326,9 @@ class RefsAndTipsForm(ModelForm):
         }
 
         widgets = {
-            "tip": TextInput(attrs={
+            "tip": Textarea(attrs={
                 'class': 'form-control',
+                'rows': '3',
                 'placeholder': 'Информация'
             }),
             "refs": TextInput(attrs={

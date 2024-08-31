@@ -13,7 +13,8 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
+    RefsAndTipsForm
 from .filters import *
 
 
@@ -25,7 +26,7 @@ class StaffViewSet(LoginRequiredMixin, ModelViewSet):
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Staff
     form_class = StaffForm
-    template_name = 'tph_system/staff_update.html'
+    template_name = 'tph_system/staff/staff_update.html'
     success_url = '/staff/'
     extra_context = {
         'title': 'Сотрудники - редактирование'
@@ -37,7 +38,7 @@ class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 class StaffDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Staff
     success_url = '/staff/'
-    template_name = 'tph_system/staff_delete.html'
+    template_name = 'tph_system/staff/staff_delete.html'
     extra_context = {
         'title': 'Сотрудники - удаление'
     }
@@ -48,7 +49,7 @@ class StaffDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
 class StoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Store
     form_class = StoreForm
-    template_name = 'tph_system/store_update.html'
+    template_name = 'tph_system/stores/store_update.html'
     success_url = '/store/'
     extra_context = {
         'title': 'Точки - редактирование'
@@ -60,7 +61,7 @@ class StoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 class StoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Store
     success_url = '/store/'
-    template_name = 'tph_system/store_delete.html'
+    template_name = 'tph_system/stores/store_delete.html'
     extra_context = {
         'title': 'Точки - удаление'
     }
@@ -71,7 +72,7 @@ class StoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
 class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = ConsumablesStore
     form_class = ConsStoreForm
-    template_name = 'tph_system/conStore_update.html'
+    template_name = 'tph_system/consumables_store/conStore_update.html'
     success_url = '/consumables/'
     extra_context = {
         'title': 'Расходники - редактирование'
@@ -83,7 +84,7 @@ class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
 class ConStoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = ConsumablesStore
     success_url = '/consumables/'
-    template_name = 'tph_system/conStore_delete.html'
+    template_name = 'tph_system/consumables_store/conStore_delete.html'
     extra_context = {
         'title': 'Расходники - удаление'
     }
@@ -94,7 +95,7 @@ class ConStoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView
 class TechUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Tech
     form_class = TechForm
-    template_name = 'tph_system/tech_update.html'
+    template_name = 'tph_system/tech/tech_update.html'
     success_url = '/tech/'
     extra_context = {
         'title': 'Техника - редактирование',
@@ -109,7 +110,7 @@ class TechUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tech
     success_url = '/tech/'
-    template_name = 'tph_system/tech_delete.html'
+    template_name = 'tph_system/tech/tech_delete.html'
     extra_context = {
         'title': 'Техника - удаление',
         'card_title': 'Удаление техники',
@@ -122,7 +123,7 @@ class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
 class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Sales
     form_class = SalesForm
-    template_name = 'tph_system/sales_update.html'
+    template_name = 'tph_system/sales/sales_update.html'
     success_url = '/sales/'
     extra_context = {
         'title': 'Продажи - редактирование',
@@ -137,7 +138,7 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Sales
     success_url = '/sales/'
-    template_name = 'tph_system/sales_delete.html'
+    template_name = 'tph_system/sales/sales_delete.html'
     extra_context = {
         'title': 'Продажи - удаление',
         'card_title': 'Удаление продажи',
@@ -150,7 +151,7 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
 class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Sales
     form_class = SalesForm
-    template_name = 'tph_system/sale_add.html'
+    template_name = 'tph_system/sales/sale_add.html'
     success_url = '/sales/'
     extra_context = {
         'title': 'Новая продажа',
@@ -183,11 +184,11 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
 class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = CashWithdrawn
     form_class = CashWithdrawnForm
-    template_name = 'tph_system/c_w_update.html'
+    template_name = 'tph_system/cash_withdrawn/c_w_update.html'
     success_url = '/cash_withdrawn/'
     extra_context = {
         'title': 'Зарплата наличными - редактирование',
-        'card_title': 'Корректировка данных',
+        'card_title': 'Редактирование данных',
         'url_cancel': 'cash_withdrawn',
         'url_delete': 'c_w_delete'
     }
@@ -198,7 +199,7 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
 class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = CashWithdrawn
     success_url = '/cash_withdrawn/'
-    template_name = 'tph_system/c_w_delete.html'
+    template_name = 'tph_system/cash_withdrawn/c_w_delete.html'
     extra_context = {
         'title': 'Зарплата наличными - удаление',
         'card_title': 'Удаление данных',
@@ -206,6 +207,31 @@ class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delet
     }
     permission_required = 'tph_system.delete_cashwithdrawn'
     permission_denied_message = 'У вас нет прав на удаление истории выдачи наличных'
+
+
+class RefsAndTipsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = RefsAndTips
+    form_class = RefsAndTipsForm
+    template_name = 'tph_system/main_page/tips_update.html'
+    success_url = '/main_page/'
+    extra_context = {
+        'title': 'Примеры - редактирование',
+        'card_title': 'Редактирование примеров'
+    }
+    permission_required = 'tph_system.change_refsandtips'
+    permission_denied_message = 'У вас нет прав на редактирование примеров'
+
+
+class RefsAndTipsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = RefsAndTips
+    success_url = '/main_page/'
+    template_name = 'tph_system/main_page/tips_delete.html'
+    extra_context = {
+        'title': 'Примеры - удаление',
+        'card_title': 'Удаление примеров'
+    }
+    permission_required = 'tph_system.delete_refsandtips'
+    permission_denied_message = 'У вас нет прав на удаление примеров'
 
 
 @login_required
@@ -229,7 +255,7 @@ def store(request):
 
     form = StoreForm()
 
-    return render(request, 'tph_system/store.html', {
+    return render(request, 'tph_system/stores/store.html', {
         'title': 'Точки',
         'stores': stores,
         'form': form,
@@ -256,7 +282,7 @@ def staff(request):
 
     form = StaffForm()
 
-    return render(request, 'tph_system/staff.html', {
+    return render(request, 'tph_system/staff/staff.html', {
         'title': 'Сотрудники',
         'staffs': staffs,
         'form': form,
@@ -299,7 +325,7 @@ def cons_store(request):
 
     form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
-    return render(request, 'tph_system/сonsumablesStore.html', {
+    return render(request, 'tph_system/consumables_store/сonsumablesStore.html', {
         'title': 'Расходники',
         'con_store': con_store,
         'form': form,
@@ -339,7 +365,7 @@ def tech_mtd(request):
     else:
         form = TechForm(initial={'store': store_staff_working_obj})
 
-    return render(request, 'tph_system/tech.html', {
+    return render(request, 'tph_system/tech/tech.html', {
         'title': 'Техника',
         'tech': tech,
         'form': form,
@@ -395,7 +421,7 @@ def schedule_mtd(request):
             })
         return JsonResponse({'schedule_data': schedule_data, 'start_date': start_date.strftime('%Y-%m-%d')})
 
-    return render(request, 'tph_system/schedule.html', {
+    return render(request, 'tph_system/schedule/schedule.html', {
         'title': 'График сотрудников',
         'staffs': staffs,
         'schedule': schedules,
@@ -484,7 +510,7 @@ def sales(request):
         'staff': Staff.objects.get(st_username=auth_user)
     })
 
-    return render(request, 'tph_system/sales.html', {
+    return render(request, 'tph_system/sales/sales.html', {
         'title': 'Продажи',
         'sales_all': sales_all,
         'form': form,
@@ -510,18 +536,31 @@ def main_page(request):
 
     tips = RefsAndTips.objects.all()
 
-    return render(request, 'tph_system/main_page.html', {
+    error = ''
+    if request.method == 'POST':
+        form_p = RefsAndTipsForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('main_page')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = RefsAndTipsForm()
+
+    return render(request, 'tph_system/main_page/main_page.html', {
         'title': 'Главная страница',
         'sch': sch,
         'now_date': now_date,
         'dic': dic,
         'con_store': con_store,
-        'tips': tips
+        'tips': tips,
+        'error': error,
+        'form': form
     })
 
 
 @login_required
-@permission_required(perm='tph_system.view_view_cashwithdrawn', raise_exception=True)
+@permission_required(perm='tph_system.view_cashwithdrawn', raise_exception=True)
 def cash_withdrawn(request):
     cash = CashWithdrawn.objects.all()
     auth_user = User.objects.get(id=request.user.id)
@@ -552,7 +591,7 @@ def cash_withdrawn(request):
         'staff': Staff.objects.get(st_username=auth_user)
     })
 
-    return render(request, 'tph_system/cash_withdrawn.html', {
+    return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
         'cash': cash,
         'form': form,

@@ -1,7 +1,42 @@
 {% extends 'tph_system/base.html' %}
 {% load static %}
 
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода новых примеров -->
+{% if perms.tph_system.add_refsandtips %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tip-form">
+        Добавить Пример
+    </button>
+{% endif %}
+{% endblock func_buttons %}
+
 {% block content %}
+
+<!-- Модальное окно - добавление примера -->
+<div class="modal fade" id="modal-tip-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Добавление примера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Форма ввода данных -->
+            <form method="post">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {{ form.tip }}<br>
+                    {{ form.refs }}
+                    <span>{{ error }}</span>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Сохранить</button>
+                    <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="container cont_store">
     {% if perms.tph_system.main_page_view_cards %}
     <div class="row align-items-start">
@@ -61,7 +96,7 @@
         </div>
     </div>
 
-    <div class="card shadow" id="main_view_card2" style="margin-top: 20px">
+    <div class="card shadow" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px">
         <div class="card-header">
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>
@@ -86,7 +121,8 @@
     </div>
     {% endif %}
 
-    <div class="card shadow" id="main_tip_for_staff" style="margin-top: 20px">
+    {% if perms.tph_system.view_refsandtips %}
+    <div class="card shadow" id="main_tip_for_staff">
         <div class="card-header">
             <h4 class="card-title">Примеры ФОТО Лазерлэнд: </h4>
         </div>
@@ -103,11 +139,19 @@
                         <div class="col-md-auto">
                             <a href="{{ t.refs }}" style="color: #2373fc;">{{ t.refs }}</a>
                         </div>
+                        {% if perms.tph_system.main_page_edit_tips %}
+                        <div class="col-md-auto">
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'tips_update' t.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                 </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
