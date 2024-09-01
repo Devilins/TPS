@@ -36,16 +36,14 @@ inner join tph_system_store s on s.id = sch.store_id
 inner join auth_user u on u.id = st.st_username_id
 where date = '10.08.2024';
 
-select * from tph_system_sales]]></console>
+select * from tph_system_cashwithdrawn]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />

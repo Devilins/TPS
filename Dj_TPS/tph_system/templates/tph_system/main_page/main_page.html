@@ -49,14 +49,17 @@
                 <!-- Карточка с содержимым -->
                 <div class="card-body">
                     <ul class="list-group">
-                        {% for s in sch %}
+                        {% regroup sch by store as sch_list %}
+                        {% for s in sch_list %}
                         <li class="list-group-item">
                             <div class="row justify-content-md-center">
                                 <div class="col">
-                                    <i>{{ s.store }}</i>
+                                    <i>{{ s.grouper }}</i>
                                 </div>
-                                <div class="col-md-auto">
-                                    {{ s.staff }}
+                                <div class="col-5">
+                                    {% for stf in s.list %}
+                                        {{ stf.staff }} <br>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </li>

@@ -339,6 +339,11 @@ class RefsAndTipsForm(ModelForm):
 
 
 class CashWithdrawnForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].empty_label = "Выберите точку"
+
     class Meta:
         model = CashWithdrawn
         fields = ['store', 'staff', 'date', 'withdrawn']

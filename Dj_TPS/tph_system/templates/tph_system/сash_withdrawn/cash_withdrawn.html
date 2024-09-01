@@ -42,15 +42,15 @@
                 </tr>
             </thead>
             <tbody>
-                {% for сas in cash %}
+                {% for с in cash %}
                 <tr>
-                    <td>{{ cas.store }}</td>
-                    <td>{{ сas.staff }} </td>
-                    <td>{{ cas.date }}</td>
-                    <td>{{ cas.withdrawn }}</td>
+                    <td>{{ c.store }}</td>
+                    <td>{{ с.staff }} </td>
+                    <td>{{ c.date }}</td>
+                    <td>{{ c.withdrawn }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'c_w_update' cas.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'c_w_update' c.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>

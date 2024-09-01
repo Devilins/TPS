@@ -12,7 +12,7 @@
             <!-- Форма удаления -->
             <form method="post" class="form-control">
                 {% csrf_token %}
-                Подтверждаете удаление записи о снятии наличных <b>{{ CashWithdrawn.date }}</b> сотрудника <i>{{ CashWithdrawn.staff }}</i> ?<br>
+                Подтверждаете удаление записи о снятии наличных <b>{{cashwithdrawn.withdrawn}}</b> сотрудника <i>{{cashwithdrawn.staff}}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
                 <button class="btn btn-warning" type="button"><a href="{% url url_cancel %}">Отмена</a></button>

@@ -184,7 +184,7 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
 class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = CashWithdrawn
     form_class = CashWithdrawnForm
-    template_name = 'tph_system/cash_withdrawn/c_w_update.html'
+    template_name = 'tph_system/сash_withdrawn/c_w_update.html'
     success_url = '/cash_withdrawn/'
     extra_context = {
         'title': 'Зарплата наличными - редактирование',
@@ -199,7 +199,7 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
 class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = CashWithdrawn
     success_url = '/cash_withdrawn/'
-    template_name = 'tph_system/cash_withdrawn/c_w_delete.html'
+    template_name = 'tph_system/сash_withdrawn/c_w_delete.html'
     extra_context = {
         'title': 'Зарплата наличными - удаление',
         'card_title': 'Удаление данных',
@@ -522,7 +522,7 @@ def sales(request):
 @login_required
 @permission_required(perm='tph_system.view_main_page', raise_exception=True)
 def main_page(request):
-    sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store')
+    sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store').order_by('store')
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
     con_store = ConsumablesStore.objects.filter(count__lt=30)
@@ -591,7 +591,7 @@ def cash_withdrawn(request):
         'staff': Staff.objects.get(st_username=auth_user)
     })
 
-    return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
+    return render(request, 'tph_system/сash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
         'cash': cash,
         'form': form,

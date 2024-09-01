@@ -21,7 +21,7 @@
                     <div class="row row-cols-4">
                         {% for f in form %}
                         <div class="col-md-3">
-                            <p style="text-align: left;"><label class="form-label" for="{{ f.id_for_label }}"><b>{{ f.label }}:</b></label><br>{{ f }}</p>
+                            <p style="text-align: left;"><label class="form-label" for="{{ f.id_for_label }}"><b>{{ f.label }}:</b></label>{{ f }}</p>
                             <div class="form-error">{{ f.errors }}</div>
                         </div>
                         <!-- Если мы хотим последний элемент - комментарий сделать длиннее в два раза (col-md-6), то надо убирать for и писать все руками -->
