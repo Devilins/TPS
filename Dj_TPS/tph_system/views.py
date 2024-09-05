@@ -1,9 +1,11 @@
+import math
 from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Count
+from django.db.transaction import atomic
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -179,6 +181,29 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
             'photographer': Staff.objects.get(st_username=auth_user)
         })
         return initial
+
+    @atomic
+    def form_valid(self, form):
+        # Сохраняем экземпляр продажи
+        self.object = form.save()
+
+        # Данные из формы
+        store = form.cleaned_data['store']
+        sale_type = form.cleaned_data['sale_type']
+        photo_count = form.cleaned_data['photo_count']
+
+        try:
+            if sale_type == 'Печать 15x20':
+                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                consumable.count -= math.ceil(photo_count/2)
+            else:
+                consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                consumable.count -= photo_count
+            consumable.save()
+        except ConsumablesStore.DoesNotExist:
+            pass
+
+        return super().form_valid(form)
 
 
 class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):

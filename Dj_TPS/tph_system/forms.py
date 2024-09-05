@@ -1,4 +1,5 @@
 import datetime
+import math
 import re
 
 from django.core.exceptions import ValidationError
@@ -86,19 +87,24 @@ class ConsStoreForm(ModelForm):
 
     class Meta:
         model = ConsumablesStore
-        fields = ['consumable', 'store', 'count', 'change_data']
+        fields = ['store', 'consumable', 'cons_short', 'count', 'change_data']
 
         labels = {
             'consumable': 'Расходник',
+            'cons_short': 'Короткое имя',
             'store': 'Точка',
             'count': 'Количество',
-            'change_data': 'Дата изменения данных'
+            'change_data': 'Дата изменения данных',
         }
 
         widgets = {
             "consumable": TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Расходник'
+            }),
+            "cons_short": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Короткое имя'
             }),
             "store": Select(attrs={
                 'class': 'form-select',
@@ -307,12 +313,28 @@ class SalesForm(ModelForm):
         photographer = cleaned_data.get("photographer")
         date = cleaned_data.get("date")
         store = cleaned_data.get("store")
+        photo_count = cleaned_data.get("photo_count")
+        sale_type = cleaned_data.get("sale_type")
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
 
         if not Schedule.objects.filter(staff=photographer, date=date, store=store).exists():
             raise ValidationError('Фотограф не работает на выбранной точке в указанную дату')
+
+        try:
+            if sale_type == 'Печать 15x20':
+                cons_type = 'Печать A4'
+                p_count = math.ceil(photo_count/2)
+            else:
+                cons_type = sale_type
+                p_count = photo_count
+
+            cons = ConsumablesStore.objects.get(cons_short=cons_type, store=store)
+            if p_count > cons.count:
+                raise ValidationError(f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {sale_type}")
+        except ConsumablesStore.DoesNotExist:
+            pass
 
 
 class RefsAndTipsForm(ModelForm):

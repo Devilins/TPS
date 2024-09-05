@@ -34,6 +34,7 @@
                 <tr>
                     <th scope="col">Точка</th>
                     <th scope="col">Расходник</th>
+                    <th scope="col">Короткое имя</th>
                     <th scope="col">Количество</th>
                     <th scope="col">Дата изменения</th>
                     <th scope="col"></th>
@@ -44,6 +45,7 @@
                 <tr>
                     <td>{{ cn.store }}</td>
                     <td>{{ cn.consumable }}</td>
+                    <td>{{ cn.cons_short }}</td>
                     <td>{{ cn.count }}</td>
                     <td>{{ cn.change_data }}</td>
                     <td>
@@ -71,6 +73,7 @@
                             {% csrf_token %}
                             {{ form.store }}<br>
                             {{ form.consumable }}<br>
+                            {{ form.cons_short }}<br>
                             {{ form.count }}<br>
                             {{ form.change_data }}
                             <span>{{ error }}</span>
