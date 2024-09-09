@@ -1,3 +1,4 @@
+import decimal
 import math
 from datetime import datetime, timedelta
 
@@ -6,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Count
 from django.db.transaction import atomic
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -116,7 +117,7 @@ class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     extra_context = {
         'title': 'Техника - удаление',
         'card_title': 'Удаление техники',
-        'url_cancel': 'tech'
+        'url_cancel': 'tech_update'
     }
     permission_required = 'tph_system.delete_tech'
     permission_denied_message = 'У вас нет прав на удаление техники'
@@ -136,6 +137,36 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     permission_required = 'tph_system.change_sales'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с продажами'
 
+    @atomic
+    def form_valid(self, form):
+        # Фиксируем текущее количество фото
+        photo_c_old = self.get_object().photo_count
+
+        # Сохраняем экземпляр продажи
+        self.object = form.save()
+
+        # Данные из формы
+        store = form.cleaned_data['store']
+        sale_type = form.cleaned_data['sale_type']
+        photo_count = form.cleaned_data['photo_count']
+
+        try:
+            # Корректировка кол-ва расходников consumable.count в зависимости от разницы photo_count - photo_c_old
+            if sale_type == 'Печать 15x20':
+                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                consumable.count += int(decimal.Decimal((photo_c_old - photo_count)/2).quantize(  # округление
+                                        decimal.Decimal('1'),
+                                        rounding=decimal.ROUND_HALF_UP
+                                        ))
+            else:
+                consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                consumable.count += photo_c_old - photo_count
+            consumable.save()
+        except ConsumablesStore.DoesNotExist:
+            pass
+
+        return super().form_valid(form)
+
 
 class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Sales
@@ -148,6 +179,28 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     }
     permission_required = 'tph_system.delete_sales'
     permission_denied_message = 'У вас нет прав на удаление продаж'
+
+    def form_valid(self, form):
+        # Данные из объекта БД
+        store = self.get_object().store
+        sale_type = self.get_object().sale_type
+        photo_count = self.get_object().photo_count
+
+        try:
+            # Корректировка кол-ва расходников при удалении продажи
+            if sale_type == 'Печать 15x20':
+                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                consumable.count += math.ceil(photo_count/2)
+            else:
+                consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                consumable.count += photo_count
+            consumable.save()
+        except ConsumablesStore.DoesNotExist:
+            pass
+
+        success_url = self.get_success_url()
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
 
 
 class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
@@ -228,7 +281,7 @@ class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delet
     extra_context = {
         'title': 'Зарплата наличными - удаление',
         'card_title': 'Удаление данных',
-        'url_cancel': 'cash_withdrawn'
+        'url_cancel': 'c_w_update'
     }
     permission_required = 'tph_system.delete_cashwithdrawn'
     permission_denied_message = 'У вас нет прав на удаление истории выдачи наличных'

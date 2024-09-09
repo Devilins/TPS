@@ -15,7 +15,7 @@
                 Подтверждаете удаление точки <b>{{ store.name }}</b> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url 'store' %}">Отмена</a></button>
+                <a class="btn btn-warning" href="{% url 'store_update' store.id %}" role="button">Отмена</a>
             </form>
         </div>
     </div>

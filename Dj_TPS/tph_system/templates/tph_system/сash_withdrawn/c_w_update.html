@@ -22,8 +22,8 @@
                 <div class="form-error">{{ f.errors }}</div>
                 {% endfor %}
                 <button class="btn btn-success" type="submit">Сохранить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url url_cancel %}">Отмена</a></button>
-                <button class="btn btn-danger" type="button" style="margin-left : 20px;"><a href="{% url url_delete cashwithdrawn.id %}">Удалить</a></button>
+                <a class="btn btn-warning" href="{% url url_cancel %}" role="button">Отмена</a>
+                <a class="btn btn-danger" style="margin-left : 20px;" href="{% url url_delete cashwithdrawn.id %}" role="button">Удалить</a>
             </form>
         </div>
     </div>

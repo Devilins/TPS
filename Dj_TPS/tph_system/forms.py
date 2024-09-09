@@ -307,6 +307,18 @@ class SalesForm(ModelForm):
             raise ValidationError('Неверный формат телефона (кол-во цифр должно быть 11)')
         return cl_phone
 
+    def clean_sum(self):
+        sum = self.cleaned_data["sum"]
+        if sum <= 0:
+            raise ValidationError('Сумма должна быть положительной')
+        return sum
+
+    def clean_photo_count(self):
+        count = self.cleaned_data["photo_count"]
+        if count <= 0:
+            raise ValidationError('Кол-во фото должно быть положительным')
+        return count
+
     def clean(self):
         cleaned_data = super().clean()
         staff = cleaned_data.get("staff")

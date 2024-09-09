@@ -50,7 +50,7 @@ class Schedule(models.Model):
 
 class ConsumablesStore(models.Model):
     consumable = models.CharField(max_length=60)
-    cons_short = models.CharField(max_length=40, default='')
+    cons_short = models.CharField(max_length=40, default='', blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, default="Точка")
     count = models.IntegerField()
     change_data = models.DateField()

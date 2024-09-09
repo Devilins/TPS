@@ -15,7 +15,7 @@
                 Подтверждаете удаление записи о снятии наличных <b>{{cashwithdrawn.withdrawn}}</b> сотрудника <i>{{cashwithdrawn.staff}}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url url_cancel %}">Отмена</a></button>
+                <a class="btn btn-warning" href="{% url url_cancel cashwithdrawn.id %}" role="button">Отмена</a>
             </form>
         </div>
     </div>

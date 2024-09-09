@@ -15,7 +15,7 @@
                 Подтверждаете удаление расходника <b>{{ consumablesstore.consumable }}</b> c точки <i>{{ consumablesstore.store }}</i>?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <button class="btn btn-warning" type="button"><a href="{% url 'cons_store' %}">Отмена</a></button>
+                <a class="btn btn-warning" href="{% url 'con_store_update' consumablesstore.id %}" role="button">Отмена</a>
             </form>
         </div>
     </div>
