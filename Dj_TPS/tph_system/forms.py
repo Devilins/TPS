@@ -87,14 +87,13 @@ class ConsStoreForm(ModelForm):
 
     class Meta:
         model = ConsumablesStore
-        fields = ['store', 'consumable', 'cons_short', 'count', 'change_data']
+        fields = ['store', 'consumable', 'cons_short', 'count']
 
         labels = {
             'consumable': 'Расходник',
             'cons_short': 'Короткое имя',
             'store': 'Точка',
-            'count': 'Количество',
-            'change_data': 'Дата изменения данных',
+            'count': 'Количество'
         }
 
         widgets = {
@@ -113,10 +112,6 @@ class ConsStoreForm(ModelForm):
             "count": NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Количество'
-            }),
-            "change_data": FengyuanChenDatePickerInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Дата изменения данных'
             })
         }
 
@@ -407,5 +402,49 @@ class CashWithdrawnForm(ModelForm):
             "withdrawn": NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Сколько забрали наличными'
+            })
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        staff = cleaned_data.get("staff")
+        store = cleaned_data.get("store")
+        date = cleaned_data.get("date")
+
+        if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
+            raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
+
+    def clean_withdrawn(self):
+        withdrawn = self.cleaned_data["withdrawn"]
+        if withdrawn <= 0:
+            raise ValidationError('Сумма должна быть положительной')
+        return withdrawn
+
+
+class SettingsForm(ModelForm):
+
+    class Meta:
+        model = Settings
+        fields = ['param', 'value', 'param_f_name']
+
+        labels = {
+            'param': 'Параметр',
+            'value': 'Значение',
+            'param_f_name': 'Описание'
+        }
+
+        widgets = {
+            "param": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Параметр'
+            }),
+            "value": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Значение'
+            }),
+            "param_f_name": Textarea(attrs={
+                'class': 'form-control',
+                'rows': '3',
+                'placeholder': 'Описание'
             })
         }

@@ -54,6 +54,7 @@
                     <th scope="col">Телефон</th>
                     <th scope="col">Комментарий</th>
                     <th scope="col">Создано</th>
+                    <th scope="col">Изменено</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -72,6 +73,7 @@
                     <td>{{ sale.cl_phone }}</td>
                     <td>{{ sale.comment }}</td>
                     <td>{{ sale.date_created }}</td>
+                    <td>{{ sale.date_upd }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
                             <a href="{% url 'sales_update' sale.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>

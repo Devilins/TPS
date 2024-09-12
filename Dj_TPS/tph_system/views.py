@@ -17,7 +17,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm
+    RefsAndTipsForm, SettingsForm
 from .filters import *
 
 
@@ -262,7 +262,7 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
 class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = CashWithdrawn
     form_class = CashWithdrawnForm
-    template_name = 'tph_system/сash_withdrawn/c_w_update.html'
+    template_name = 'tph_system/cash_withdrawn/c_w_update.html'
     success_url = '/cash_withdrawn/'
     extra_context = {
         'title': 'Зарплата наличными - редактирование',
@@ -277,7 +277,7 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
 class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = CashWithdrawn
     success_url = '/cash_withdrawn/'
-    template_name = 'tph_system/сash_withdrawn/c_w_delete.html'
+    template_name = 'tph_system/cash_withdrawn/c_w_delete.html'
     extra_context = {
         'title': 'Зарплата наличными - удаление',
         'card_title': 'Удаление данных',
@@ -310,6 +310,31 @@ class RefsAndTipsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteV
     }
     permission_required = 'tph_system.delete_refsandtips'
     permission_denied_message = 'У вас нет прав на удаление примеров'
+
+
+class SettingsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Settings
+    form_class = SettingsForm
+    template_name = 'tph_system/settings/set_update.html'
+    success_url = '/settings/'
+    extra_context = {
+        'title': 'Настройки - редактирование',
+        'card_title': 'Редактирование параметра'
+    }
+    permission_required = 'tph_system.change_settings'
+    permission_denied_message = 'У вас нет прав на редактирование параметров'
+
+
+class SettingsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Settings
+    success_url = '/settings/'
+    template_name = 'tph_system/settings/set_delete.html'
+    extra_context = {
+        'title': 'Настройки - удаление',
+        'card_title': 'Удаление параметра'
+    }
+    permission_required = 'tph_system.delete_settings'
+    permission_denied_message = 'У вас нет прав на удаление параметра'
 
 
 @login_required
@@ -640,15 +665,27 @@ def main_page(request):
 @login_required
 @permission_required(perm='tph_system.view_cashwithdrawn', raise_exception=True)
 def cash_withdrawn(request):
-    cash = CashWithdrawn.objects.all()
     auth_user = User.objects.get(id=request.user.id)
 
     try:
         store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+            name=Schedule.objects.get(
+                date=datetime.now(),
+                staff_id=Staff.objects.get(st_username=auth_user)
+            ).store
+        )
     except ObjectDoesNotExist:
         store_staff_working_obj = None
+
+    # Сотрудник видит только свои списания на точке, на которой работает по графику,
+    # если нет права на просмотр всех списаний зарплаты
+    if auth_user.has_perm('tph_system.view_all_cashwithdrawn'):
+        cash = CashWithdrawn.objects.all()
+    else:
+        cash = CashWithdrawn.objects.filter(
+            store=store_staff_working_obj,
+            staff_id=Staff.objects.get(st_username=auth_user)
+        )
 
     # Фильтр
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
@@ -669,10 +706,45 @@ def cash_withdrawn(request):
         'staff': Staff.objects.get(st_username=auth_user)
     })
 
-    return render(request, 'tph_system/сash_withdrawn/cash_withdrawn.html', {
+    return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
         'cash': cash,
         'form': form,
         'error': error,
         'c_filter': c_filter
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.view_settings', raise_exception=True)
+def settings(request):
+    stng = Settings.objects.all()
+
+    # Фильтр
+    s_filter = SettingsFilter(request.GET, queryset=stng)
+    stng = s_filter.qs
+
+    error = ''
+    if request.method == 'POST':
+        form_p = SettingsForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('settings')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = SettingsForm()
+    return render(request, 'tph_system/settings/settings.html', {
+        'title': 'Настройки',
+        'set': stng,
+        'form': form,
+        'error': error,
+        's_filter': s_filter
+    })
+
+
+def salary(request):
+
+    return render(request, 'tph_system/salary/salary.html', {
+        'title': 'Зарплата'
     })

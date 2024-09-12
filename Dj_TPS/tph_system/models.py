@@ -53,7 +53,7 @@ class ConsumablesStore(models.Model):
     cons_short = models.CharField(max_length=40, default='', blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, default="Точка")
     count = models.IntegerField()
-    change_data = models.DateField()
+    change_data = models.DateTimeField(auto_now=True, editable=False, blank=True)
 
     class Meta:
         verbose_name = 'Расходники на точке'
@@ -98,6 +98,7 @@ class Sales(models.Model):
     cl_phone = models.CharField(max_length=12, blank=True)
     comment = models.TextField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True, editable=False, blank=True)
+    date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True)
 
     class Meta:
         verbose_name = 'Продажи'
@@ -183,3 +184,18 @@ class RefsAndTips(models.Model):
 
     def __str__(self):
         return f'{self.tip}'
+
+
+class Settings(models.Model):
+    param_f_name = models.TextField()
+    param = models.CharField(max_length=50)
+    value = models.CharField(max_length=30)
+    date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True)
+
+    class Meta:
+        verbose_name = 'Настройки'
+        verbose_name_plural = 'Настройки'
+        ordering = ['param']
+
+    def __str__(self):
+        return f'{self.param}'

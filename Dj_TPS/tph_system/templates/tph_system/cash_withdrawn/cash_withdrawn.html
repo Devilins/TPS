@@ -2,10 +2,10 @@
 {% load static %}
 
 {% block func_buttons %}
-<!-- Кнопка модального окна для ввода новых расходников -->
-{% if perms.tph_system.add_tech %}
+<!-- Кнопка модального окна для добавления записи о снятии наличных -->
+{% if perms.tph_system.add_cashwithdrawn %}
 <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
-    Добавить Технику
+    Забрать наличные
 </button>
 {% endif %}
 {% endblock func_buttons %}
@@ -15,51 +15,42 @@
     <div class="card shadow" style="width: 100%; min-width: 1000px">
         <div class="card-header">
             <h4 class="card-title">
-                Учет техники <br>
+                История выдачи наличных <br>
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ t_filter.form.store }}
-                        Название техники: {{ t_filter.form.name }}
-                        Серийный номер: {{ t_filter.form.serial_num }}
+                        Точка: {{ c_filter.form.store }}
+                        Сотрудник: {{ c_filter.form.staff }}
+                        Дата: {{ c_filter.form.date }}
+                        Сумма: {{ c_filter.form.withdrawn }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
                     </form>
                 </div>
             </h4>
         </div>
 
-        <!-- Таблица техники -->
+        <!-- Таблица с данными -->
         <table class="table table-hover table-bordered align-middle" id="tableCons">
             <thead>
                 <tr>
                     <th scope="col">Точка</th>
-                    <th scope="col">Название техники</th>
-                    <th scope="col">Серийный номер</th>
-                    <th scope="col">Количество</th>
-                    <th scope="col">Дата покупки</th>
-                    <th scope="col">Дата окончания гарантии</th>
-                    <th scope="col">Дата изменения</th>
+                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Забрали наличными</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
-                {% for t in tech %}
+                {% for c in cash %}
                 <tr>
-                    <td>{{ t.store }}</td>
-                    <td>{{ t.name }}</td>
-                    <td>{{ t.serial_num }}</td>
-                    <td>{{ t.count }}</td>
-                    <td>{{ t.date_buy }}</td>
-                    {% if t.warranty_date != null %}
-                        <td>{{ t.warranty_date }}</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                    <td>{{ t.date_change }}</td>
+                    <td>{{ c.store }}</td>
+                    <td>{{ c.staff }} </td>
+                    <td>{{ c.date }}</td>
+                    <td>{{ c.withdrawn }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'tech_update' t.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'c_w_update' c.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -67,13 +58,13 @@
             </tbody>
         </table>
 
-        <!-- Модальное окно - ввод новой техники -->
+        <!-- Модальное окно - ввод новых списаний -->
         <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"
              tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Добавление новой техники</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">Забрать наличные</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <!-- Форма ввода данных -->
@@ -81,12 +72,10 @@
                         <div class="modal-body">
                             {% csrf_token %}
                             {{ form.store }}<br>
-                            {{ form.name }}<br>
-                            {{ form.serial_num }}<br>
-                            {{ form.count }}<br>
-                            {{ form.date_buy }}<br>
-                            <div class="form-error">{{ form.date_buy.errors }}</div>
-                            {{ form.warranty_date }}
+                            {{ form.staff }}<br>
+                            {{ form.date }}<br>
+                            {{ form.withdrawn }}<br>
+                            {{ form.non_field_errors }}
                             <span>{{ error }}</span>
                         </div>
                         <div class="modal-footer">

@@ -10,6 +10,8 @@ urlpatterns = [
     path('tech/', tech_mtd, name='tech'),
     path('schedule/', schedule_mtd, name='schedule'),
     path('sales/', sales, name='sales'),
+    path('settings/', settings, name='settings'),
+    path('salary/', salary, name='salary'),
     path('cash_withdrawn/', cash_withdrawn, name='cash_withdrawn'),
     path('update-schedule/', update_schedule, name='update_schedule'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
@@ -26,5 +28,7 @@ urlpatterns = [
     path('cash_withdrawn/<int:pk>/update', CashWithdrawnUpdateView.as_view(), name='c_w_update'),
     path('cash_withdrawn/<int:pk>/delete', CashWithdrawnDeleteView.as_view(), name='c_w_delete'),
     path('main_page/tips/<int:pk>/update', RefsAndTipsUpdateView.as_view(), name='tips_update'),
-    path('main_page/tips/<int:pk>/delete', RefsAndTipsDeleteView.as_view(), name='tips_delete')
+    path('main_page/tips/<int:pk>/delete', RefsAndTipsDeleteView.as_view(), name='tips_delete'),
+    path('settings/<int:pk>/update', SettingsUpdateView.as_view(), name='set_update'),
+    path('settings/<int:pk>/delete', SettingsDeleteView.as_view(), name='set_delete')
 ]

@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block func_buttons %}
-<!-- Кнопка модального окна для добавления записи о снятии наличных -->
-{% if perms.tph_system.add_cashwithdrawn %}
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
-    Забрать наличные
-</button>
+<!-- Кнопка модального окна для ввода настроек -->
+{% if perms.tph_system.add_settings %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+        Добавить Настройку
+    </button>
 {% endif %}
 {% endblock func_buttons %}
 
@@ -15,42 +15,40 @@
     <div class="card shadow" style="width: 100%; min-width: 1000px">
         <div class="card-header">
             <h4 class="card-title">
-                История выдачи наличных <br>
+                Настройки <br>
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ c_filter.form.store }}
-                        Сотрудник: {{ c_filter.form.staff }}
-                        Дата: {{ с_filter.form.date }}
-                        Сумма: {{ с_filter.form.withdrawn }}
+                        Параметр: {{ s_filter.form.param }}
+                        Описание: {{ s_filter.form.param_f_name}}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
                     </form>
                 </div>
             </h4>
         </div>
 
-        <!-- Таблица с данными -->
+        <!-- Таблица с настройками -->
         <table class="table table-hover table-bordered align-middle" id="tableCons">
             <thead>
                 <tr>
-                    <th scope="col">Точка</th>
-                    <th scope="col">Сотрудник</th>
-                    <th scope="col">Дата</th>
-                    <th scope="col">Забрали наличными</th>
+                    <th scope="col">Параметр</th>
+                    <th scope="col">Значение</th>
+                    <th scope="col">Описание</th>
+                    <th scope="col">Дата изменения</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
-                {% for с in cash %}
+                {% for s in set %}
                 <tr>
-                    <td>{{ c.store }}</td>
-                    <td>{{ с.staff }} </td>
-                    <td>{{ c.date }}</td>
-                    <td>{{ c.withdrawn }}</td>
+                    <td>{{ s.param }}</td>
+                    <td>{{ s.value }}</td>
+                    <td>{{ s.param_f_name }}</td>
+                    <td>{{ s.date_upd }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'c_w_update' c.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'set_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -58,25 +56,23 @@
             </tbody>
         </table>
 
-        <!-- Модальное окно - ввод новых списаний -->
-        <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"
-             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+
+        <!-- Модальное окно - ввод новых точек -->
+        <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Забрать наличные</h5>
+                        <h5 class="modal-title" id="staticBackdropLabel">Новый параметр</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <!-- Форма ввода данных -->
                     <form method="post">
                         <div class="modal-body">
                             {% csrf_token %}
-                            {{ form.store }}<br>
-                            {{ form.staff }}<br>
-                            {{ form.date }}<br>
-                            {{ form.withdrawn }}<br>
-                            {{ form.non_field_errors }}
-                            <span>{{ error }}</span>
+                                {{ form.param }}<br>
+                                {{ form.value }}<br>
+                                {{ form.param_f_name }}
+                                <span>{{ error }}</span>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>
@@ -86,6 +82,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

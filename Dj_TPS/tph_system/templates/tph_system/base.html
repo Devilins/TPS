@@ -95,13 +95,16 @@
                     <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_salary %}
-                    <li><a href=""><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
+                    <li><a href="{% url 'salary' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_finance %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_tech %}
                     <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
+                    {% endif %}
+                    {% if perms.tph_system.view_settings %}
+                    <li><a href="{% url 'settings' %}"><img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>
                     {% endif %}
                 </ul>
             </nav>

@@ -28,7 +28,7 @@ select  * from auth_user;
 
 select * from auth_permission p 
 inner join django_content_type c on c.id = p.content_type_id
-where codename like '%refs%';
+where codename like '%cash%';
 
 select sch.id, sch.date, sch.staff_id, st.name, st.f_name, u.username, sch.store_id, s.name  from tph_system_schedule sch
 inner join tph_system_staff st on st.id = sch.staff_id
@@ -43,7 +43,9 @@ select * from tph_system_cashwithdrawn]]></console>
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />

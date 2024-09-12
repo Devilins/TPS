@@ -41,3 +41,12 @@ class CashWithdrawnFilter(django_filters.FilterSet):
     class Meta:
         model = CashWithdrawn
         fields = ['store', 'staff', 'date', 'withdrawn']
+
+
+class SettingsFilter(django_filters.FilterSet):
+    param = CharFilter(field_name='param', lookup_expr='icontains')
+    param_f_name = CharFilter(field_name='param_f_name', lookup_expr='icontains')
+
+    class Meta:
+        model = Settings
+        fields = ['param', 'param_f_name']
