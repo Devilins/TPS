@@ -30,5 +30,7 @@ urlpatterns = [
     path('main_page/tips/<int:pk>/update', RefsAndTipsUpdateView.as_view(), name='tips_update'),
     path('main_page/tips/<int:pk>/delete', RefsAndTipsDeleteView.as_view(), name='tips_delete'),
     path('settings/<int:pk>/update', SettingsUpdateView.as_view(), name='set_update'),
-    path('settings/<int:pk>/delete', SettingsDeleteView.as_view(), name='set_delete')
+    path('settings/<int:pk>/delete', SettingsDeleteView.as_view(), name='set_delete'),
+    path('salary/<int:pk>/update', SalaryUpdateView.as_view(), name='salary_update'),
+    path('salary/<int:pk>/delete', SalaryDeleteView.as_view(), name='salary_delete')
 ]

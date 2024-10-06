@@ -448,3 +448,42 @@ class SettingsForm(ModelForm):
                 'placeholder': 'Описание'
             })
         }
+
+
+class SalaryForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].empty_label = "Выберите точку"
+
+    class Meta:
+        model = Salary
+        fields = ['store', 'staff', 'date', 'salary_sum']
+
+        labels = {
+            'store': 'Точка',
+            'staff': 'Сотрудник',
+            'date': 'Дата',
+            'salary_sum': 'Зарплата'
+        }
+
+        widgets = {
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка',
+                'label': 'Точка'
+            }),
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Сотрудник',
+                'label': 'Сотрудник'
+            }),
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата'
+            }),
+            "salary_sum": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Зарплата'
+            })
+        }

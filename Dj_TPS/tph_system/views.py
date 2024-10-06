@@ -17,8 +17,9 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm
+    RefsAndTipsForm, SettingsForm, SalaryForm
 from .filters import *
+from .funcs import *
 
 
 class StaffViewSet(LoginRequiredMixin, ModelViewSet):
@@ -335,6 +336,31 @@ class SettingsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView
     }
     permission_required = 'tph_system.delete_settings'
     permission_denied_message = 'У вас нет прав на удаление параметра'
+
+
+class SalaryUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Salary
+    form_class = SalaryForm
+    template_name = 'tph_system/salary/salary_update.html'
+    success_url = '/salary/'
+    extra_context = {
+        'title': 'Зарплаты - редактирование',
+        'card_title': 'Редактирование записи с зарплатой'
+    }
+    permission_required = 'tph_system.change_salary'
+    permission_denied_message = 'У вас нет прав на редактирование зарплат'
+
+
+class SalaryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Salary
+    success_url = '/salary/'
+    template_name = 'tph_system/salary/salary_delete.html'
+    extra_context = {
+        'title': 'Зарплаты - удаление',
+        'card_title': 'Удаление записи с зарплатой'
+    }
+    permission_required = 'tph_system.delete_salary'
+    permission_denied_message = 'У вас нет прав на удаление зарплат'
 
 
 @login_required
@@ -743,8 +769,29 @@ def settings(request):
     })
 
 
+@login_required
+@permission_required(perm='tph_system.view_salary', raise_exception=True)
 def salary(request):
+    slr = Salary.objects.all()
 
+    # Фильтр
+    s_filter = SalaryFilter(request.GET, queryset=slr)
+    slr = s_filter.qs
+
+    error = ''
+    if request.method == 'POST':
+        form_p = SalaryForm(request.POST)
+        if form_p.is_valid():
+            form_p.save()
+            return redirect('salary')
+        else:
+            error = 'Ошибка в заполнении формы'
+
+    form = SalaryForm()
     return render(request, 'tph_system/salary/salary.html', {
-        'title': 'Зарплата'
+        'title': 'Зарплата',
+        'slr': slr,
+        'form': form,
+        'error': error,
+        's_filter': s_filter
     })

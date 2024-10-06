@@ -50,3 +50,11 @@ class SettingsFilter(django_filters.FilterSet):
     class Meta:
         model = Settings
         fields = ['param', 'param_f_name']
+
+
+class SalaryFilter(django_filters.FilterSet):
+    salary_sum = CharFilter(field_name='salary_sum', lookup_expr='icontains')
+
+    class Meta:
+        model = Salary
+        fields = ['store', 'staff', 'date', 'salary_sum']

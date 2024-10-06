@@ -28,7 +28,7 @@ select  * from auth_user;
 
 select * from auth_permission p 
 inner join django_content_type c on c.id = p.content_type_id
-where codename like '%cash%';
+where codename like '%salary%';
 
 select sch.id, sch.date, sch.staff_id, st.name, st.f_name, u.username, sch.store_id, s.name  from tph_system_schedule sch
 inner join tph_system_staff st on st.id = sch.staff_id

@@ -1,2 +1,95 @@
 {% extends 'tph_system/base.html' %}
 {% load static %}
+
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода зарплат -->
+{% if perms.tph_system.add_salary %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+        Добавить Запись
+    </button>
+{% endif %}
+    <button type="button" class="btn btn-outline-light" style="margin-left: 20px;">
+        Рассчитать зарплату за период
+    </button>
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <div class="card-header">
+            <h4 class="card-title">
+                Зарплаты <br>
+
+                <!-- Фильтр -->
+                <div class="card card-body" id="cs_filter">
+                    <form method="get">
+                        Точка: {{ s_filter.form.store }}
+                        Сотрудник: {{ s_filter.form.staff}}
+                        Дата: {{ s_filter.form.date}}
+                        Зарплата: {{ s_filter.form.salary_sum}}
+                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                    </form>
+                </div>
+            </h4>
+        </div>
+
+        <!-- Таблица с зарплатами -->
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col">Точка</th>
+                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Зарплата</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in slr %}
+                <tr>
+                    <td>{{ s.store }}</td>
+                    <td>{{ s.staff }}</td>
+                    <td>{{ s.date }}</td>
+                    <td>{{ s.salary_sum }}</td>
+                    <td>
+                        <button type="button" class="btn btn-link">
+                            <a href="{% url 'salary_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+        <!-- Модальное окно - ввод новых точек -->
+        <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Новая запись с зарплатой</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Форма ввода данных -->
+                    <form method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                                {{ form.store }}<br>
+                                {{ form.staff }}<br>
+                                {{ form.date }}<br>
+                                {{ form.salary_sum }}
+                                <span>{{ error }}</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Сохранить</button>
+                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
