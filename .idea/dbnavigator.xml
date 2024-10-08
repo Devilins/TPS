@@ -34,9 +34,10 @@ select sch.id, sch.date, sch.staff_id, st.name, st.f_name, u.username, sch.store
 inner join tph_system_staff st on st.id = sch.staff_id
 inner join tph_system_store s on s.id = sch.store_id
 inner join auth_user u on u.id = st.st_username_id
-where date = '10.08.2024';
+where date = '08.10.2024';
 
-select * from tph_system_cashwithdrawn]]></console>
+select * from tph_system_settings;
+select * from tph_system_sales;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

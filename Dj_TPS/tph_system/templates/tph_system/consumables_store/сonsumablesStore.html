@@ -74,9 +74,8 @@
                             {{ form.store }}<br>
                             {{ form.consumable }}<br>
                             {{ form.cons_short }}<br>
-                            {{ form.count }}<br>
-                            {{ form.change_data }}
-                            <span>{{ error }}</span>
+                            {{ form.count }}
+                            <div class="form-error">{{ form.count.errors }}</div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>

@@ -72,11 +72,11 @@
                         <div class="modal-body">
                             {% csrf_token %}
                             {{ form.store }}<br>
+                            <div class="form-error">{{ form.store.errors }}</div>
                             {{ form.staff }}<br>
                             {{ form.date }}<br>
-                            {{ form.withdrawn }}<br>
-                            {{ form.non_field_errors }}
-                            <span>{{ error }}</span>
+                            {{ form.withdrawn }}
+                            <div class="form-error">{{ form.withdrawn.errors }}</div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>

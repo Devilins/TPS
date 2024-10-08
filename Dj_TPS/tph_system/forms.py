@@ -115,6 +115,12 @@ class ConsStoreForm(ModelForm):
             })
         }
 
+    def clean_count(self):
+        count = self.cleaned_data.get('count')
+        if count < 0:
+            raise ValidationError("Количество не может быть отрицательным.")
+        return count
+
 
 class TechForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -405,7 +411,7 @@ class CashWithdrawnForm(ModelForm):
             })
         }
 
-    def clean(self):
+    def clean_store(self):
         cleaned_data = super().clean()
         staff = cleaned_data.get("staff")
         store = cleaned_data.get("store")
@@ -487,3 +493,18 @@ class SalaryForm(ModelForm):
                 'placeholder': 'Зарплата'
             })
         }
+
+    def clean_store(self):
+        cleaned_data = super().clean()
+        staff = cleaned_data.get("staff")
+        store = cleaned_data.get("store")
+        date = cleaned_data.get("date")
+
+        if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
+            raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
+
+    def clean_salary_sum(self):
+        salary = self.cleaned_data["salary_sum"]
+        if salary <= 0:
+            raise ValidationError('Сумма зарплаты должна быть положительной')
+        return salary

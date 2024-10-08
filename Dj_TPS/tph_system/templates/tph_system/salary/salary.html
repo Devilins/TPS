@@ -23,10 +23,10 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ s_filter.form.store }}
                         Сотрудник: {{ s_filter.form.staff}}
                         Дата: {{ s_filter.form.date}}
                         Зарплата: {{ s_filter.form.salary_sum}}
+                        Точка: {{ s_filter.form.store }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
                     </form>
                 </div>
@@ -37,20 +37,20 @@
         <table class="table table-hover table-bordered align-middle" id="tableCons">
             <thead>
                 <tr>
-                    <th scope="col">Точка</th>
                     <th scope="col">Сотрудник</th>
                     <th scope="col">Дата</th>
                     <th scope="col">Зарплата</th>
+                    <th scope="col">Точка</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for s in slr %}
                 <tr>
-                    <td>{{ s.store }}</td>
                     <td>{{ s.staff }}</td>
                     <td>{{ s.date }}</td>
                     <td>{{ s.salary_sum }}</td>
+                    <td>{{ s.store }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
                             <a href="{% url 'salary_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
@@ -74,11 +74,12 @@
                     <form method="post">
                         <div class="modal-body">
                             {% csrf_token %}
-                                {{ form.store }}<br>
                                 {{ form.staff }}<br>
                                 {{ form.date }}<br>
-                                {{ form.salary_sum }}
-                                <span>{{ error }}</span>
+                                {{ form.salary_sum }}<br>
+                                <div class="form-error">{{ form.salary_sum.errors }}</div>
+                                {{ form.store }}
+                                <div class="form-error">{{ form.store.errors }}</div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>

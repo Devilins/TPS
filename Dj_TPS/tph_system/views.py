@@ -443,22 +443,18 @@ def cons_store(request):
     cs_filter = ConsumablesStoreFilter(request.GET, queryset=con_store)
     con_store = cs_filter.qs
 
-    error = ''
     if request.method == 'POST':
-        form_p = ConsStoreForm(request.POST)
-        if form_p.is_valid():
-            form_p.save()
+        form = ConsStoreForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('cons_store')
-        else:
-            error = 'Ошибка в заполнении формы'
-
-    form = ConsStoreForm(initial={'store': store_staff_working_obj})
+    else:
+        form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
     return render(request, 'tph_system/consumables_store/сonsumablesStore.html', {
         'title': 'Расходники',
         'con_store': con_store,
         'form': form,
-        'error': error,
         'stores': stores,
         'cs_filter': cs_filter
     })
@@ -717,26 +713,22 @@ def cash_withdrawn(request):
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
     cash = c_filter.qs
 
-    error = ''
     if request.method == 'POST':
-        form_p = CashWithdrawnForm(request.POST)
-        if form_p.is_valid():
-            form_p.save()
+        form = CashWithdrawnForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('cash_withdrawn')
-        else:
-            error = 'Ошибка в заполнении формы'
-
-    form = CashWithdrawnForm(initial={
-        'store': store_staff_working_obj,
-        'date': datetime.now(),
-        'staff': Staff.objects.get(st_username=auth_user)
-    })
+    else:
+        form = CashWithdrawnForm(initial={
+            'store': store_staff_working_obj,
+            'date': datetime.now(),
+            'staff': Staff.objects.get(st_username=auth_user)
+        })
 
     return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
         'cash': cash,
         'form': form,
-        'error': error,
         'c_filter': c_filter
     })
 
@@ -778,20 +770,17 @@ def salary(request):
     s_filter = SalaryFilter(request.GET, queryset=slr)
     slr = s_filter.qs
 
-    error = ''
     if request.method == 'POST':
-        form_p = SalaryForm(request.POST)
-        if form_p.is_valid():
-            form_p.save()
+        form = SalaryForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('salary')
-        else:
-            error = 'Ошибка в заполнении формы'
+    else:
+        form = SalaryForm()
 
-    form = SalaryForm()
     return render(request, 'tph_system/salary/salary.html', {
         'title': 'Зарплата',
         'slr': slr,
         'form': form,
-        'error': error,
         's_filter': s_filter
     })
