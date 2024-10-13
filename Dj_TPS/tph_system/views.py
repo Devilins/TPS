@@ -501,15 +501,6 @@ def tech_mtd(request):
 @login_required
 @permission_required(perm='tph_system.view_schedule', raise_exception=True)
 def schedule_mtd(request):
-    #Форма ввода графика в модельном окне
-    # if request.method == 'POST':
-    #     form = ScheduleForm(request.POST)
-    #     if form.is_valid():
-    #         form.save()
-    #         return redirect('schedule')
-    # else:
-    #     form = ScheduleForm()
-
     # Получаем дату начала недели из GET-параметра или используем текущую дату
     start_date = request.GET.get('start_date')
     if start_date:
@@ -523,6 +514,7 @@ def schedule_mtd(request):
 
     staffs = Staff.objects.all()
     stores = Store.objects.all()
+    position = ['Фотограф', 'Администратор', 'Выездной']
     schedules = Schedule.objects.filter(date__range=[start_date, end_date])
 
     # Если запрос AJAX, возвращаем данные в формате JSON
@@ -550,7 +542,7 @@ def schedule_mtd(request):
         'title': 'График сотрудников',
         'staffs': staffs,
         'schedule': schedules,
-        #'form': form,
+        'position': position,
         'stores': stores,
         'start_date': start_date
     })
