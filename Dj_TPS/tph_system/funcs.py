@@ -41,6 +41,9 @@ def sal_calc(time_start, time_end):
                                              sale_type__in=['Заказной фотосет', 'Заказ выездной'])
 
             if sales_zak.exists():
+                # Касса заказов
+                cashbx_staff += int(sales_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+
                 for sl in sales_zak:
                     if sl.sale_type == 'Заказной фотосет':
                         # Проверка на выходные
@@ -58,6 +61,7 @@ def sal_calc(time_start, time_end):
             if sales_univ.exists():
                 # Касса универсала
                 cashbx_sum = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                cashbx_staff += cashbx_sum
 
                 if cashbx_sum <= int(params.get(param='univ_cashbx_min_bord').value):
                     sal_staff += int(params.get(param='univ_min_payment').value)

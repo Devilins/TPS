@@ -3,7 +3,7 @@ import math
 import re
 
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory
 
 from .models import *
 
@@ -508,3 +508,28 @@ class SalaryForm(ModelForm):
         if salary <= 0:
             raise ValidationError('Сумма зарплаты должна быть положительной')
         return salary
+
+
+class PositionSelectForm(ModelForm):
+    class Meta:
+        model = Schedule
+        fields = ['position']
+
+        labels = {
+            'position': 'Роль'
+        }
+
+        widgets = {
+            "position": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Роль',
+                'label': 'Роль'
+            })
+        }
+
+
+PositionSelectFormSet = modelformset_factory(
+    Schedule,
+    form=PositionSelectForm,
+    extra=0
+)

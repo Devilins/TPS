@@ -49,7 +49,7 @@ where id in (
 );
 
 select * from tph_system_schedule
-where date = '08.10.2024';]]></console>
+order by date desc;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

@@ -17,7 +17,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm, SalaryForm
+    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet
 from .filters import *
 from .funcs import *
 
@@ -584,16 +584,36 @@ def update_schedule(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
+def m_position_select(request):
+    auth_user = User.objects.get(id=request.user.id)
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
+
+    today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+
+    if request.method == 'POST':
+        formset = PositionSelectFormSet(request.POST, queryset=today_sch)
+        if formset.is_valid():
+            formset.save()
+            return redirect('sales')
+    else:
+        formset = PositionSelectFormSet(queryset=today_sch)
+
+    return render(request, 'tph_system/sales/position_select.html', {
+        'formset': formset,
+        'store': store_staff_working_obj,
+        'date': datetime.now().date()
+    })
+
+
 @login_required
 @permission_required(perm='tph_system.view_sales', raise_exception=True)
 def sales(request):
     auth_user = User.objects.get(id=request.user.id)
-
-    # Фильтруем продажи только для текущего пользователя при отсутствии права на просмотр всех продаж
-    # if auth_user.has_perm('auth.user_sales_view_all'):
-    #     sales_all = Sales.objects.all()
-    # else:
-    #     sales_all = Sales.objects.filter(staff=Staff.objects.get(st_username=auth_user))
 
     try:
         store_staff_working_obj = Store.objects.get(
@@ -607,6 +627,12 @@ def sales(request):
         sales_all = Sales.objects.all()
     else:
         sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now())
+
+    flag = 0
+    today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=Staff.objects.get(st_username=auth_user))
+    positions = [i.position for i in today_staff]
+    if 'Должность в смене' in positions:
+        flag = 1
 
     #Фильтр
     sale_filter = SalesFilter(request.GET, queryset=sales_all)
@@ -632,7 +658,8 @@ def sales(request):
         'sales_all': sales_all,
         'form': form,
         'error': error,
-        'sale_filter': sale_filter
+        'sale_filter': sale_filter,
+        'flag': flag
     })
 
 

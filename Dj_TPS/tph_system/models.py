@@ -34,9 +34,13 @@ class Store(models.Model):
 
 
 class Schedule(models.Model):
+    SLCT_POSITION = (
+        ('Администратор', 'Администратор'),
+        ('Фотограф', 'Фотограф')
+    )
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
-    position = models.CharField(max_length=40, default='Должность в смене')
+    position = models.CharField(max_length=40, default='Должность в смене', choices=SLCT_POSITION)
     date = models.DateField()
 
     class Meta:

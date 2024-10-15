@@ -4,7 +4,14 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода продажи -->
 {% if perms.tph_system.add_sales %}
-    <a class="btn btn-outline-info" href="{% url 'sales_create' %}" role="button">Добавить Продажу</a>
+    {% if flag == 1 %}
+    <a class="btn btn-warning" href="{% url 'position_select' %}" role="button">Выбрать роли на сегодня</a>
+    {% else %}
+    <a class="btn btn-outline-warning" href="{% url 'position_select' %}" role="button">Выбрать роли на сегодня</a>
+    {% endif %}
+    <a class="btn btn-outline-info" href="{% url 'sales_create' %}" role="button" style="margin-left: 20px;">
+        Добавить Продажу
+    </a>
 {% endif %}
 {% endblock func_buttons %}
 
