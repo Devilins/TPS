@@ -228,11 +228,23 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         except ObjectDoesNotExist:
             store_staff_working_obj = None
 
+        admin = ''
+        photog = ''
+        today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+        for sch in today_sch:
+            if sch.position == 'Администратор':
+                admin = sch.staff
+            elif sch.position == 'Фотограф':
+                photog = sch.staff
+            elif sch.position == 'Универсальный фотограф':
+                admin = Staff.objects.get(st_username=auth_user)
+                photog = Staff.objects.get(st_username=auth_user)
+
         initial.update({
             'store': store_staff_working_obj,
             'date': datetime.now(),
-            'staff': Staff.objects.get(st_username=auth_user),
-            'photographer': Staff.objects.get(st_username=auth_user)
+            'staff': admin,
+            'photographer': photog
         })
         return initial
 
@@ -584,6 +596,8 @@ def update_schedule(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
+@login_required
+@permission_required(perm='tph_system.add_sales', raise_exception=True)
 def m_position_select(request):
     auth_user = User.objects.get(id=request.user.id)
     try:

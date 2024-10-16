@@ -36,7 +36,8 @@ class Store(models.Model):
 class Schedule(models.Model):
     SLCT_POSITION = (
         ('Администратор', 'Администратор'),
-        ('Фотограф', 'Фотограф')
+        ('Фотограф', 'Фотограф'),
+        ('Универсальный фотограф', 'Универсальный фотограф')
     )
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
     store = models.ForeignKey(Store, on_delete=models.PROTECT)

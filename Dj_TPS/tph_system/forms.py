@@ -218,6 +218,7 @@ class SalesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['photographer'].empty_label = "Выберите сотрудника"
         self.fields['store'].empty_label = "Выберите точку"
         self.fields['payment_type'].empty_label = "Тип оплаты"
 
