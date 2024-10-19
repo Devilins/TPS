@@ -12,6 +12,7 @@ urlpatterns = [
     path('sales/', sales, name='sales'),
     path('settings/', settings, name='settings'),
     path('salary/', salary, name='salary'),
+    path('salary_calculation/', salary_calculation, name='salary_calculation'),
     path('cash_withdrawn/', cash_withdrawn, name='cash_withdrawn'),
     path('update-schedule/', update_schedule, name='update_schedule'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),

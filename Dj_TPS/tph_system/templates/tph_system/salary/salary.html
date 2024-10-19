@@ -8,9 +8,9 @@
         Добавить Запись
     </button>
 {% endif %}
-    <button type="button" class="btn btn-outline-light" style="margin-left: 20px;">
+    <a role="button" class="btn btn-outline-light" href="{% url 'salary_calculation' %}" style="margin-left: 20px;">
         Рассчитать зарплату за период
-    </button>
+    </a>
 {% endblock func_buttons %}
 
 {% block content %}

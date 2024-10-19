@@ -817,3 +817,10 @@ def salary(request):
         'form': form,
         's_filter': s_filter
     })
+
+
+def salary_calculation(request):
+
+    return render(request, 'tph_system/salary/salary_calc.html', {
+        'title': 'Расчет зарплаты'
+    })

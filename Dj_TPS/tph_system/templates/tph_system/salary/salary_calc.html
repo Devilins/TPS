@@ -3,10 +3,9 @@
 {% block content %}
 
 <div class="container cont_store">
-    <div class="card shadow" id="upd_del_forms">
+    <div class="card shadow" style="width: 50%; min-width: 500px">
         <div class="card-header">
-            <h4 class="card-title"> {{card_title}} </h4> <br>
-            <h5 class="card-title">Функция рассчитывает зарплату сотрудников за указанный ниже период по дням</h5>
+            <h4 class="card-title">Функция рассчитывает зарплату сотрудников за указанный ниже период по дням</h4>
         </div>
 
         <div class="card-body">
@@ -16,7 +15,7 @@
 <!--                Подтверждаете удаление записи с зарплатой сотрудника <b>{{ salary.staff }}</b> за дату <i>{{ salary.date }}</i> ?<br>-->
 <!--                <br>-->
 <!--                <button class="btn btn-danger" type="submit">Удалить</button>-->
-<!--                <a class="btn btn-warning" href="{% url 'salary_update' salary.id %}" role="button">Отмена</a>-->
+<!--                <a class="btn btn-warning" href="{% url 'salary' %}" role="button">Отмена</a>-->
 <!--            </form>-->
         </div>
     </div>
