@@ -105,6 +105,10 @@ def sal_calc(time_start, time_end):
                     else:
                         sal_staff += cashbx_sum * int(params.get(param='admin_incr_perc_pay_budn').value) / 100  # 0.2
 
+            if not sales_zak.exists() and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists():
+                # !!! Дописать начисление минимальной зарплаты сотрудникам, если за день все кассы 0
+                pass
+
             # Отладочная информация
             print(f"Дата - ", day_date.date(),
                   f"Касса сотрудника - ", cashbx_staff,
