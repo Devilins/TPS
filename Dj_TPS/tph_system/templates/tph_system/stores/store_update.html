@@ -12,14 +12,10 @@
             <!-- Форма изменения данных -->
             <form method="post" class="form-control">
                 {% csrf_token %}
-                <div class="error_style">
-                    {% for error in form.non_field_errors %}
-                        <i>{{error}}</i>
-                    {% endfor %}
-                </div>
+                <div class="form-error">{{ form.non_field_errors }}</div>
                 {% for f in form %}
-                <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
-                <div class="form-error">{{ f.errors }}</div>
+                    <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
                 {% endfor %}
                 <button class="btn btn-success" type="submit">Сохранить</button>
                 <a class="btn btn-warning" href="{% url 'store' %}" role="button">Отмена</a>

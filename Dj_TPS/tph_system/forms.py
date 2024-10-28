@@ -3,7 +3,9 @@ import math
 import re
 
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory, \
+    BaseForm
+from django import forms
 
 from .models import *
 
@@ -339,14 +341,15 @@ class SalesForm(ModelForm):
         try:
             if sale_type == 'Печать 15x20':
                 cons_type = 'Печать A4'
-                p_count = math.ceil(photo_count/2)
+                p_count = math.ceil(photo_count / 2)
             else:
                 cons_type = sale_type
                 p_count = photo_count
 
             cons = ConsumablesStore.objects.get(cons_short=cons_type, store=store)
             if p_count > cons.count:
-                raise ValidationError(f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {sale_type}")
+                raise ValidationError(
+                    f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {sale_type}")
         except ConsumablesStore.DoesNotExist:
             pass
 
@@ -429,7 +432,6 @@ class CashWithdrawnForm(ModelForm):
 
 
 class SettingsForm(ModelForm):
-
     class Meta:
         model = Settings
         fields = ['param', 'value', 'param_f_name']
@@ -534,3 +536,36 @@ PositionSelectFormSet = modelformset_factory(
     form=PositionSelectForm,
     extra=0
 )
+
+
+class TimeSelectForm(Form):
+    beg_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Дата начала'
+    }),
+        label='Дата начала')
+    end_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Дата окончания'
+    }),
+        label='Дата окончания')
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data["end_date"]
+        if end_date > datetime.date.today():
+            raise ValidationError('Дата окончания не может быть в будущем')
+        return end_date
+
+    def clean_beg_date(self):
+        beg_date = self.cleaned_data["beg_date"]
+        if beg_date < datetime.date(2024, 1, 1):
+            raise ValidationError('Дата начала не может быть раньше 2024 года')
+        return beg_date
+
+    def clean(self):
+        cleaned_data = super().clean()
+        beg_date = cleaned_data.get("beg_date")
+        end_date = cleaned_data.get("end_date")
+        if end_date is not None:
+            if beg_date > end_date:
+                raise ValidationError('Начало периода не может быть больше окончания')

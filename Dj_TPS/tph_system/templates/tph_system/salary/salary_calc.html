@@ -3,20 +3,22 @@
 {% block content %}
 
 <div class="container cont_store">
-    <div class="card shadow" style="width: 50%; min-width: 500px">
+    <div class="card shadow" style="width: 30%; min-width: 500px">
         <div class="card-header">
-            <h4 class="card-title">Функция рассчитывает зарплату сотрудников за указанный ниже период по дням</h4>
+            <h4 class="card-title">Рассчитать зарплату сотрудников за указанный ниже период</h4>
         </div>
 
         <div class="card-body">
-            <!-- Форма для ввода периода расчета -->
-<!--            <form method="post" class="form-control">-->
-<!--                {% csrf_token %}-->
-<!--                Подтверждаете удаление записи с зарплатой сотрудника <b>{{ salary.staff }}</b> за дату <i>{{ salary.date }}</i> ?<br>-->
-<!--                <br>-->
-<!--                <button class="btn btn-danger" type="submit">Удалить</button>-->
-<!--                <a class="btn btn-warning" href="{% url 'salary' %}" role="button">Отмена</a>-->
-<!--            </form>-->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+                {% for f in form %}
+                    <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
+                {% endfor %}
+                <button class="btn btn-success" type="submit">Начать расчет</button>
+                <a class="btn btn-warning" href="{% url 'salary' %}" role="button">Отмена</a>
+            </form>
         </div>
     </div>
 </div>

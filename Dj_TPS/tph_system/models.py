@@ -140,7 +140,7 @@ class Salary(models.Model):
     class Meta:
         verbose_name = 'Зарплаты сотрудников'
         verbose_name_plural = 'Зарплаты сотрудников'
-        ordering = ['date', 'store']
+        ordering = ['-date', 'store']
 
     def __str__(self):
         return f'{self.date} - {self.staff}'

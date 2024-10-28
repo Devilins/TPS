@@ -17,7 +17,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet
+    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm
 from .filters import *
 from .funcs import *
 
@@ -526,7 +526,6 @@ def schedule_mtd(request):
 
     staffs = Staff.objects.all()
     stores = Store.objects.all()
-    position = ['Фотограф', 'Администратор', 'Выездной']
     schedules = Schedule.objects.filter(date__range=[start_date, end_date])
 
     # Если запрос AJAX, возвращаем данные в формате JSON
@@ -554,7 +553,6 @@ def schedule_mtd(request):
         'title': 'График сотрудников',
         'staffs': staffs,
         'schedule': schedules,
-        'position': position,
         'stores': stores,
         'start_date': start_date
     })
@@ -819,8 +817,20 @@ def salary(request):
     })
 
 
+@login_required
+@permission_required(perm='tph_system.calculate_salary', raise_exception=True)
 def salary_calculation(request):
+    if request.method == 'POST':
+        form = TimeSelectForm(request.POST)
+        if form.is_valid():
+            beg = form.cleaned_data['beg_date']
+            end = form.cleaned_data['end_date']
+            sal_calc(beg, end)
+            return redirect('salary')
+    else:
+        form = TimeSelectForm()
 
     return render(request, 'tph_system/salary/salary_calc.html', {
-        'title': 'Расчет зарплаты'
+        'title': 'Расчет зарплаты',
+        'form': form
     })
