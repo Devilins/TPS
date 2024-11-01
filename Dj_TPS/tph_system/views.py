@@ -17,7 +17,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm
+    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm
 from .filters import *
 from .funcs import *
 
@@ -373,6 +373,31 @@ class SalaryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     }
     permission_required = 'tph_system.delete_salary'
     permission_denied_message = 'У вас нет прав на удаление зарплат'
+
+
+class SalaryWeeklyUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = SalaryWeekly
+    form_class = SalaryWeeklyForm
+    template_name = 'tph_system/salary_weekly/salary_w_upd.html'
+    success_url = '/salary_weekly/'
+    extra_context = {
+        'title': 'Зарплаты по неделям - редактирование',
+        'card_title': 'Редактирование записи с зарплатой по неделям'
+    }
+    permission_required = 'tph_system.change_salaryweekly'
+    permission_denied_message = 'У вас нет прав на редактирование зарплат по неделям'
+
+
+class SalaryWeeklyDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = SalaryWeekly
+    success_url = '/salary_weekly/'
+    template_name = 'tph_system/salary_weekly/salary_w_del.html'
+    extra_context = {
+        'title': 'Зарплаты по неделям - удаление',
+        'card_title': 'Удаление записи с зарплатой по неделям'
+    }
+    permission_required = 'tph_system.delete_salaryweekly'
+    permission_denied_message = 'У вас нет прав на удаление зарплат по неделям'
 
 
 @login_required
@@ -793,8 +818,44 @@ def settings(request):
 
 
 @login_required
+@permission_required(perm='tph_system.view_salaryweekly', raise_exception=True)
+def salary_weekly(request):
+    slr = SalaryWeekly.objects.all()
+
+    # Фильтр
+    s_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
+    slr = s_filter.qs
+
+    return render(request, 'tph_system/salary_weekly/salary_weekly.html', {
+        'title': 'Зарплата по неделям',
+        'slr': slr,
+        's_filter': s_filter
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.calculate_salary', raise_exception=True)
+def salary_calculation(request):
+    if request.method == 'POST':
+        form = TimeSelectForm(request.POST)
+        if form.is_valid():
+            beg = form.cleaned_data['beg_date']
+            end = form.cleaned_data['end_date']
+            sal_calc(beg, end)
+            sal_weekly_update(beg, end)
+            return redirect('salary_weekly')
+    else:
+        form = TimeSelectForm()
+
+    return render(request, 'tph_system/salary/salary_calc.html', {
+        'title': 'Расчет зарплаты',
+        'form': form
+    })
+
+
+@login_required
 @permission_required(perm='tph_system.view_salary', raise_exception=True)
-def salary(request):
+def salary_details(request):
     slr = Salary.objects.all()
 
     # Фильтр
@@ -810,27 +871,8 @@ def salary(request):
         form = SalaryForm()
 
     return render(request, 'tph_system/salary/salary.html', {
-        'title': 'Зарплата',
+        'title': 'Зарплата по дням',
         'slr': slr,
         'form': form,
         's_filter': s_filter
-    })
-
-
-@login_required
-@permission_required(perm='tph_system.calculate_salary', raise_exception=True)
-def salary_calculation(request):
-    if request.method == 'POST':
-        form = TimeSelectForm(request.POST)
-        if form.is_valid():
-            beg = form.cleaned_data['beg_date']
-            end = form.cleaned_data['end_date']
-            sal_calc(beg, end)
-            return redirect('salary')
-    else:
-        form = TimeSelectForm()
-
-    return render(request, 'tph_system/salary/salary_calc.html', {
-        'title': 'Расчет зарплаты',
-        'form': form
     })

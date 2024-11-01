@@ -1,0 +1,68 @@
+{% extends 'tph_system/base.html' %}
+{% load static %}
+
+{% block func_buttons %}
+    <a role="button" class="btn btn-outline-warning" href="{% url 'salary' %}">
+        Зарплаты по дням
+    </a>
+    <a role="button" class="btn btn-outline-light" href="{% url 'salary_calculation' %}" style="margin-left: 20px;">
+        Рассчитать зарплату за период
+    </a>
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <div class="card-header">
+            <h4 class="card-title">
+                Зарплаты сотрудников по неделям <br>
+
+                <!-- Фильтр -->
+                <div class="card card-body" id="cs_filter">
+                    <form method="get">
+                        Сотрудник: {{ s_filter.form.staff}}
+                        Дата начала недели: {{ s_filter.form.week_begin}}
+                        Выплачено: {{ s_filter.form.paid_out}}
+                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                    </form>
+                </div>
+            </h4>
+        </div>
+
+        <!-- Таблица с зарплатами -->
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Неделя</th>
+                    <th scope="col">Зарплата</th>
+                    <th scope="col">Забрали наличными</th>
+                    <th scope="col">Осталось выплатить</th>
+                    <th scope="col">Выплачено</th>
+                    <th scope="col">Дата изменения</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in slr %}
+                <tr>
+                    <td>{{ s.staff }}</td>
+                    <td>{{ s.week_begin|date:"d M" }} - {{ s.week_end|date:"d M" }}</td>
+                    <td>{{ s.salary_sum }}</td>
+                    <td>{{ s.cash_withdrawn }}</td>
+                    <td>{{ s.to_pay }}</td>
+                    <td>{{ s.paid_out }}</td>
+                    <td>{{ s.date_updated }}</td>
+                    <td>
+                        <button type="button" class="btn btn-link">
+                            <a href="{% url 'salary_w_upd' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

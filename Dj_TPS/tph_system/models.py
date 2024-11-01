@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core import validators
@@ -136,14 +138,39 @@ class Salary(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
     date = models.DateField()
     salary_sum = models.DecimalField(max_digits=8, decimal_places=2)
+    cash_box = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'Зарплаты сотрудников'
         verbose_name_plural = 'Зарплаты сотрудников'
-        ordering = ['-date', 'store']
+        ordering = ['-date', 'staff']
 
     def __str__(self):
         return f'{self.date} - {self.staff}'
+
+
+class SalaryWeekly(models.Model):
+    # селектор для paid_out
+    SLCT_PAID = (
+        ('Да', 'Да'),
+        ('Нет', 'Нет')
+    )
+    staff = models.ForeignKey(Staff, on_delete=models.PROTECT)
+    week_begin = models.DateField()
+    week_end = models.DateField()
+    salary_sum = models.DecimalField(max_digits=8, decimal_places=2)
+    cash_withdrawn = models.IntegerField()
+    to_pay = models.DecimalField(max_digits=8, decimal_places=2)
+    paid_out = models.CharField(max_length=10, default='Нет', choices=SLCT_PAID)
+    date_updated = models.DateTimeField(auto_now=True, editable=False, blank=True)
+
+    class Meta:
+        verbose_name = 'Зарплаты за неделю'
+        verbose_name_plural = 'Зарплаты за неделю'
+        ordering = ['-week_begin', 'staff']
+
+    def __str__(self):
+        return f'{self.week_begin} - {self.week_end}: {self.staff}'
 
 
 class CashWithdrawn(models.Model):
@@ -155,7 +182,7 @@ class CashWithdrawn(models.Model):
     class Meta:
         verbose_name = 'Выдача зарплаты наличкой'
         verbose_name_plural = 'Выдача зарплаты наличкой'
-        ordering = ['date', 'store']
+        ordering = ['-date', 'store']
 
     def __str__(self):
         return f'{self.date} - {self.staff}'
@@ -205,3 +232,17 @@ class Settings(models.Model):
 
     def __str__(self):
         return f'{self.param}'
+
+
+class ImplErrors(models.Model):
+    error_type = models.CharField(max_length=50)
+    error_message = models.TextField()
+    date_created = models.DateTimeField(auto_now_add=True, editable=False, blank=True)
+
+    class Meta:
+        verbose_name = 'Ошибки выполнения'
+        verbose_name_plural = 'Ошибки выполнения'
+        ordering = ['id', 'error_type']
+
+    def __str__(self):
+        return f'{self.date_created} - {self.error_type}'

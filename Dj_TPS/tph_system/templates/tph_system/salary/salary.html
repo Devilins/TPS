@@ -2,15 +2,15 @@
 {% load static %}
 
 {% block func_buttons %}
-<!-- Кнопка модального окна для ввода зарплат -->
-{% if perms.tph_system.add_salary %}
-    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+    <a role="button" class="btn btn-outline-warning" href="{% url 'salary_weekly' %}">
+        К зарплатам по неделям
+    </a>
+    <!-- Кнопка модального окна для ввода зарплат -->
+    {% if perms.tph_system.add_salary %}
+    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form" style="margin-left: 20px;">
         Добавить Запись
     </button>
-{% endif %}
-    <a role="button" class="btn btn-outline-light" href="{% url 'salary_calculation' %}" style="margin-left: 20px;">
-        Рассчитать зарплату за период
-    </a>
+    {% endif %}
 {% endblock func_buttons %}
 
 {% block content %}
@@ -18,7 +18,7 @@
     <div class="card shadow" style="width: 100%; min-width: 1000px">
         <div class="card-header">
             <h4 class="card-title">
-                Зарплаты <br>
+                Зарплаты сотрудников по дням <br>
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
@@ -39,6 +39,7 @@
                 <tr>
                     <th scope="col">Сотрудник</th>
                     <th scope="col">Дата</th>
+                    <th scope="col">Касса сотрудника</th>
                     <th scope="col">Зарплата</th>
                     <th scope="col">Точка</th>
                     <th scope="col"></th>
@@ -49,6 +50,7 @@
                 <tr>
                     <td>{{ s.staff }}</td>
                     <td>{{ s.date }}</td>
+                    <td>{{ s.cash_box }}</td>
                     <td>{{ s.salary_sum }}</td>
                     <td>{{ s.store }}</td>
                     <td>
@@ -61,8 +63,7 @@
             </tbody>
         </table>
 
-
-        <!-- Модальное окно - ввод новых точек -->
+        <!-- Модальное окно - ввод зарплат вручную -->
         <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -78,8 +79,11 @@
                                 {{ form.date }}<br>
                                 {{ form.salary_sum }}<br>
                                 <div class="form-error">{{ form.salary_sum.errors }}</div>
-                                {{ form.store }}
-                                <div class="form-error">{{ form.store.errors }}</div>
+                                {{ form.store }}<br>
+                                <div class="form-error">{{ form.non_field_errors }}</div>
+                                <i>Касса сотрудника:</i>
+                                {{ form.cash_box }}
+                                <div class="form-error">{{ form.cash_box.errors }}</div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>

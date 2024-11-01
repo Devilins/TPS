@@ -13,3 +13,11 @@ admin.site.register(CashWithdrawn)
 admin.site.register(Tech)
 admin.site.register(RefsAndTips)
 admin.site.register(Settings)
+admin.site.register(ImplErrors)
+#admin.site.register(SalaryWeekly)
+
+
+@admin.register(SalaryWeekly)
+class SalaryWeekly_Admin(admin.ModelAdmin):
+    list_display = ['week_begin', 'week_end', 'staff']
+

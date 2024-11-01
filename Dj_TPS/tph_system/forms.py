@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import math
 import re
 
@@ -172,7 +172,7 @@ class TechForm(ModelForm):
 
     def clean_date_buy(self):
         date_buy = self.cleaned_data["date_buy"]
-        if date_buy > datetime.date.today():
+        if date_buy > datetime.today().date():
             raise ValidationError('Дата не может быть в будущем')
         return date_buy
 
@@ -295,7 +295,7 @@ class SalesForm(ModelForm):
 
     def clean_date(self):
         f_date = self.cleaned_data["date"]
-        if f_date > datetime.date.today():
+        if f_date > datetime.today().date():
             raise ValidationError('Продажа не может быть в будущем')
         return f_date
 
@@ -415,7 +415,13 @@ class CashWithdrawnForm(ModelForm):
             })
         }
 
-    def clean_store(self):
+    def clean_withdrawn(self):
+        withdrawn = self.cleaned_data["withdrawn"]
+        if withdrawn <= 0:
+            raise ValidationError('Сумма должна быть положительной')
+        return withdrawn
+
+    def clean(self):
         cleaned_data = super().clean()
         staff = cleaned_data.get("staff")
         store = cleaned_data.get("store")
@@ -423,12 +429,6 @@ class CashWithdrawnForm(ModelForm):
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
-
-    def clean_withdrawn(self):
-        withdrawn = self.cleaned_data["withdrawn"]
-        if withdrawn <= 0:
-            raise ValidationError('Сумма должна быть положительной')
-        return withdrawn
 
 
 class SettingsForm(ModelForm):
@@ -467,13 +467,14 @@ class SalaryForm(ModelForm):
 
     class Meta:
         model = Salary
-        fields = ['store', 'staff', 'date', 'salary_sum']
+        fields = ['store', 'staff', 'date', 'salary_sum', 'cash_box']
 
         labels = {
             'store': 'Точка',
             'staff': 'Сотрудник',
             'date': 'Дата',
-            'salary_sum': 'Зарплата'
+            'salary_sum': 'Зарплата',
+            'cash_box': 'Касса сотрудника'
         }
 
         widgets = {
@@ -494,23 +495,34 @@ class SalaryForm(ModelForm):
             "salary_sum": NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Зарплата'
+            }),
+            "cash_box": NumberInput(attrs={
+                'class': 'form-control',
+                'label': 'Касса сотрудника'
             })
         }
 
-    def clean_store(self):
+    def clean_salary_sum(self):
+        salary = self.cleaned_data["salary_sum"]
+        if salary < 0:
+            raise ValidationError('Сумма зарплаты должна быть положительной')
+        return salary
+
+    def clean_cash_box(self):
+        cash_box = self.cleaned_data["cash_box"]
+        if cash_box < 0:
+            raise ValidationError('Касса должна быть положительной')
+        return cash_box
+
+    def clean(self):
         cleaned_data = super().clean()
         staff = cleaned_data.get("staff")
         store = cleaned_data.get("store")
         date = cleaned_data.get("date")
+        print(staff, store, date)
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
-
-    def clean_salary_sum(self):
-        salary = self.cleaned_data["salary_sum"]
-        if salary <= 0:
-            raise ValidationError('Сумма зарплаты должна быть положительной')
-        return salary
 
 
 class PositionSelectForm(ModelForm):
@@ -552,13 +564,13 @@ class TimeSelectForm(Form):
 
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]
-        if end_date > datetime.date.today():
+        if end_date > datetime.today().date():
             raise ValidationError('Дата окончания не может быть в будущем')
         return end_date
 
     def clean_beg_date(self):
         beg_date = self.cleaned_data["beg_date"]
-        if beg_date < datetime.date(2024, 1, 1):
+        if beg_date < datetime(2024, 1, 1).date():
             raise ValidationError('Дата начала не может быть раньше 2024 года')
         return beg_date
 
@@ -569,3 +581,56 @@ class TimeSelectForm(Form):
         if end_date is not None:
             if beg_date > end_date:
                 raise ValidationError('Начало периода не может быть больше окончания')
+
+
+class SalaryWeeklyForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+
+    class Meta:
+        model = SalaryWeekly
+        fields = ['staff', 'week_begin', 'week_end', 'salary_sum', 'cash_withdrawn', 'to_pay', 'paid_out']
+
+        labels = {
+            'staff': 'Сотрудник',
+            'week_begin': 'Начало недели',
+            'week_end': 'Конец недели',
+            'salary_sum': 'Зарплата',
+            'cash_withdrawn': 'Забрали наличными',
+            'to_pay': 'Осталось выплатить',
+            'paid_out': 'Выплачено'
+        }
+
+        widgets = {
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Сотрудник',
+                'label': 'Сотрудник'
+            }),
+            "week_begin": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Начало недели'
+            }),
+            "week_end": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Конец недели'
+            }),
+            "salary_sum": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Зарплата'
+            }),
+            "cash_withdrawn": NumberInput(attrs={
+                'class': 'form-control',
+                'label': 'Забрали наличными'
+            }),
+            "to_pay": NumberInput(attrs={
+                'class': 'form-control',
+                'label': 'Осталось выплатить'
+            }),
+            "paid_out": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Выплачено',
+                'label': 'Выплачено'
+            })
+        }

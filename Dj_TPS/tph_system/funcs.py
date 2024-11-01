@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q, Count
+from django.http.response import Http404
 
 from .models import *
 
@@ -21,6 +22,12 @@ def date_generator(start, end):
         start += timedelta(days=1)
 
 
+def start_week_generator(start, end):
+    while start.isocalendar().week <= end.isocalendar().week:
+        yield start - timedelta(days=start.weekday())
+        start += timedelta(days=7)
+
+
 def param_gets(par):
     try:
         return int(Settings.objects.get(param=str(par)).value)
@@ -29,10 +36,7 @@ def param_gets(par):
 
 
 def sal_calc(time_start, time_end):
-    params = Settings.objects.all()
-
     for day_date in date_generator(time_start, time_end):
-                                   # datetime.strptime(time_end, '%d.%m.%Y')
         # Продажи за день без заказов
         sales_today = Sales.objects.filter(date=day_date).exclude(sale_type__in=['Заказной фотосет', 'Заказ выездной'])
         for sch in Schedule.objects.filter(date=day_date):
@@ -129,10 +133,10 @@ def sal_calc(time_start, time_end):
                 store=sch.store,
                 staff=sch.staff,
                 date=day_date,
-                defaults={'salary_sum': sal_staff}
+                defaults={'salary_sum': sal_staff, 'cash_box': cashbx_staff}
             )
-            action = 'Добавлено' if created else 'Обновлено'
-            print(f"Запись - {salary}, действие - {action}")
+            action = 'Добавил' if created else 'Обновил'
+            print(f"sal_calc => {salary}; {action}")
 
             # Отладочная информация
             # print(f"Дата - ", day_date.date(),
@@ -143,3 +147,42 @@ def sal_calc(time_start, time_end):
             #       f"sales_adm = ", sales_adm, "\n",
             #       f"sales_univ = ", sales_univ, "\n",
             #       f"sales_zak = ", sales_zak, "\n")
+
+
+def sal_weekly_update(time_start, time_end):
+    for start_week in start_week_generator(time_start, time_end):
+        # Вычисляем конец недели (воскресенье)
+        end_week = start_week + timedelta(days=6)
+        salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
+        if salary_week.exists():
+            # Группируем по сотрудникам и суммируем зп
+            sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum'))
+            for dic in sal_group:
+                staff = Staff.objects.get(id=dic.get('staff'))
+                salary = dic.get('sal_sum', 0)
+                withdrawn = CashWithdrawn.objects.filter(
+                    staff=staff,
+                    date__in=date_generator(start_week + timedelta(days=7), end_week + timedelta(days=7))
+                )
+                if withdrawn.exists():
+                    withdrawn = withdrawn.aggregate(sum_cash=Sum('withdrawn'))['sum_cash']
+                else:
+                    withdrawn = 0
+
+                # Update в БД
+                salary_w, created = SalaryWeekly.objects.update_or_create(
+                    staff=staff,
+                    week_begin=start_week,
+                    week_end=end_week,
+                    defaults={'salary_sum': salary, 'cash_withdrawn': withdrawn, 'to_pay': salary - withdrawn}
+                )
+                action = 'Добавил' if created else 'Обновил'
+                print(f"sal_weekly_update => {salary_w}; {action}")
+
+                # Отладочная информация
+                # print(f"Дата: {start_week} - {end_week}",
+                #       f"Сотрудник - ", staff.name, staff.f_name,
+                #       f"Зарплата - ", salary,
+                #       f"Забрали наличными - ", withdrawn,
+                #       f"Осталось выплатить - ", salary - withdrawn
+                # )

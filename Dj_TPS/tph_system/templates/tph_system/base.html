@@ -95,7 +95,7 @@
                     <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_salary %}
-                    <li><a href="{% url 'salary' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
+                    <li><a href="{% url 'salary_weekly' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
                     {% endif %}
                     {% if perms.tph_system.view_finance %}
                     <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>

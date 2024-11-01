@@ -58,3 +58,10 @@ class SalaryFilter(django_filters.FilterSet):
     class Meta:
         model = Salary
         fields = ['store', 'staff', 'date', 'salary_sum']
+
+
+class SalaryWeeklyFilter(django_filters.FilterSet):
+
+    class Meta:
+        model = SalaryWeekly
+        fields = ['staff', 'week_begin', 'paid_out']
