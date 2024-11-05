@@ -11,10 +11,6 @@ class SaleTypeError(Exception):
     pass
 
 
-class PositionError(Exception):
-    pass
-
-
 # Генератор списка дат от start до end
 def date_generator(start, end):
     while start <= end:
@@ -47,12 +43,15 @@ def sal_calc(time_start, time_end):
             sales_ph = sales_today.filter(photographer=sch.staff).exclude(staff=sch.staff)
             sales_adm = sales_today.filter(staff=sch.staff).exclude(photographer=sch.staff)
             sales_univ = sales_today.filter(staff=sch.staff, photographer=sch.staff)
-            sales_zak = Sales.objects.filter(date=day_date, photographer=sch.staff, sale_type__in=['Заказной фотосет', 'Заказ выездной'])
+            sales_zak = Sales.objects.filter(date=day_date, photographer=sch.staff,
+                                             sale_type__in=['Заказной фотосет', 'Заказ выездной'])
+            sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
+                                                           sale_type='Заказной фотосет'
+                                                           ).exclude(photographer=sch.staff)
 
             if sales_zak.exists():
                 # Касса заказов
                 cashbx_staff += int(sales_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
-
                 for sl in sales_zak:
                     if sl.sale_type == 'Заказной фотосет':
                         # Проверка на выходные
@@ -60,10 +59,18 @@ def sal_calc(time_start, time_end):
                             sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
                         else:
                             sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_budn')
+
                     elif sl.sale_type == 'Заказ выездной':
                         sal_staff += sl.photo_count * param_gets('order_ph_out')
                     else:
-                        raise SaleTypeError(f"В заказных продажах ошибка в sale_type, sale.id = ", sl.id)
+                        error = ImplEvents.objects.create(
+                            event_type='Salary_SaleTypeError',
+                            event_message=f"В заказных продажах ошибка - sale_type не соответствует заданным типам "
+                                          f"(Заказной фотосет или Заказ выездной), sale.id = {sl.id}; sale = {sl}",
+                            status='Бизнес ошибка',
+                            solved='Нет'
+                        )
+                        print(f"ImplEvents - новая запись {error}")
 
             if sales_univ.exists():
                 # Касса универсала
@@ -125,8 +132,18 @@ def sal_calc(time_start, time_end):
                 elif sch.position == 'Универсальный фотограф':
                     sal_staff = param_gets('univ_min_payment')
                 else:
-                    raise PositionError(f"В графике {sch} не указана роль. Текущее значение => {sch.position}")
-                    # Пробросить исключение в фронтенд! Чтобы было видно пользователю, что надо исправить.
+                    error = ImplEvents.objects.create(
+                        event_type='Salary_PositionError',
+                        event_message=f"В графике {sch} не указана роль. Текущее значение => {sch.position}",
+                        status='Бизнес ошибка',
+                        solved='Нет'
+                    )
+                    print(f"ImplEvents - новая запись {error}")
+
+            if sales_zak_admin_service.exists():
+                # Кол-во заказов. Для начисления админу за сопровождения заказа.
+                zak_count = sales_zak_admin_service.count()
+                sal_staff += zak_count * param_gets('admin_order_service')
 
             # Update в БД
             salary, created = Salary.objects.update_or_create(
@@ -135,18 +152,16 @@ def sal_calc(time_start, time_end):
                 date=day_date,
                 defaults={'salary_sum': sal_staff, 'cash_box': cashbx_staff}
             )
-            action = 'Добавил' if created else 'Обновил'
+            action = 'Добавлено' if created else 'Обновлено'
             print(f"sal_calc => {salary}; {action}")
 
-            # Отладочная информация
-            # print(f"Дата - ", day_date.date(),
-            #       f"Касса сотрудника - ", cashbx_staff,
-            #       f"Зарплата - ", sal_staff,
-            #       f"Сотрудник - ", sch.staff.name, sch.staff.f_name)
-            # print(f"sales_ph = ", sales_ph, "\n",
-            #       f"sales_adm = ", sales_adm, "\n",
-            #       f"sales_univ = ", sales_univ, "\n",
-            #       f"sales_zak = ", sales_zak, "\n")
+            # Новая запись в системных событиях
+            rec = ImplEvents.objects.create(
+                event_type='Salary_Calculation',
+                event_message=f"Произведен расчет зарплаты за {day_date} по сотруднику {sch.staff}. В БД {action}",
+                status='Успешно'
+            )
+            print(f"ImplEvents - новая запись {rec}")
 
 
 def sal_weekly_update(time_start, time_end):

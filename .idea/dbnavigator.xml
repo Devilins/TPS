@@ -59,9 +59,9 @@ order by date desc;
 
 update tph_system_schedule
 set position = 'Кракозябра'
-where date = '2024-10-08' and store_id = 1 and staff_id = 1;
+where date = '2024-11-03' and store_id = 1 and staff_id = 5;
 
-select * from tph_system_salary;]]></console>
+select * from tph_system_implevents;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

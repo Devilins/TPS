@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .event-legend {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .color-box {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Календарь событий компании</h1>
+
+    <div class="event-legend">
+        <h4>Типы событий:</h4>
+        {% for event_type, color in event_colors.items %}
+            <div class="mb-2">
+                <span class="color-box" style="background-color: {{ color }}"></span>
+                {{ event_type|get_event_type_display }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="calendar-controls mb-4">
+        {% if perms.calendar_app.add_calendarevent %}
+            <div class="btn-group">
+                <a href="{% url 'vacation_add' %}" class="btn btn-primary">Добавить отпуск</a>
+                <a href="{% url 'event_add' %}" class="btn btn-success">Добавить событие</a>
+            </div>
+        {% endif %}
+
+        <div class="btn-group ml-3">
+            <a href="?period=month" class="btn btn-secondary">Месяц</a>
+            <a href="?period=week" class="btn btn-secondary">Неделя</a>
+            <a href="?period=day" class="btn btn-secondary">День</a>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        {% include "schedule/_period_navigation.html" %}
+        {% include "schedule/_calendar.html" %}
+    </div>
+</div>
+{% endblock %}

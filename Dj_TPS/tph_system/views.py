@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Sum, Count
+from django import forms
+from django.urls import reverse_lazy
 from django.db.transaction import atomic
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
@@ -20,6 +20,10 @@ from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, Sche
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm
 from .filters import *
 from .funcs import *
+
+# Для календаря
+from schedule.views import CalendarByPeriodsView
+from schedule.periods import Month
 
 
 class StaffViewSet(LoginRequiredMixin, ModelViewSet):
@@ -155,10 +159,10 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             # Корректировка кол-ва расходников consumable.count в зависимости от разницы photo_count - photo_c_old
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                consumable.count += int(decimal.Decimal((photo_c_old - photo_count)/2).quantize(  # округление
-                                        decimal.Decimal('1'),
-                                        rounding=decimal.ROUND_HALF_UP
-                                        ))
+                consumable.count += int(decimal.Decimal((photo_c_old - photo_count) / 2).quantize(  # округление
+                    decimal.Decimal('1'),
+                    rounding=decimal.ROUND_HALF_UP
+                ))
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 consumable.count += photo_c_old - photo_count
@@ -191,7 +195,7 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
             # Корректировка кол-ва расходников при удалении продажи
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                consumable.count += math.ceil(photo_count/2)
+                consumable.count += math.ceil(photo_count / 2)
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 consumable.count += photo_count
@@ -261,7 +265,7 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         try:
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                consumable.count -= math.ceil(photo_count/2)
+                consumable.count -= math.ceil(photo_count / 2)
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 consumable.count -= photo_count
@@ -398,6 +402,59 @@ class SalaryWeeklyDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delete
     }
     permission_required = 'tph_system.delete_salaryweekly'
     permission_denied_message = 'У вас нет прав на удаление зарплат по неделям'
+
+
+# ---------------------------Классы календаря----------------------------------
+class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):
+    template_name = 'tph_system/calendar/calendar.html'
+    period = Month
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['events'] = CalendarEvent.objects.all()
+        context['event_types'] = CalendarEvent.EVENT_TYPES
+        context['event_colors'] = CalendarEvent.EVENT_COLORS
+        return context
+
+
+class EventCreateView(LoginRequiredMixin, CreateView):
+    model = CalendarEvent
+    template_name = 'tph_system/calendar/event_form.html'
+    success_url = reverse_lazy('calendar')
+
+    def get_form_class(self):
+        from django import forms
+
+        class EventForm(forms.ModelForm):
+            class Meta:
+                model = CalendarEvent
+                fields = ['event_type', 'title', 'start_date', 'end_date', 'description']
+
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})
+                self.fields['end_date'].widget = forms.DateInput(attrs={'type': 'date'})
+
+        return EventForm
+
+    def form_valid(self, form):
+        if form.instance.event_type == 'vacation':
+            form.instance.employee = self.request.user
+        return super().form_valid(form)
+
+
+class VacationCreateView(EventCreateView):
+    template_name = 'tph_system/calendar/vacation_form.html'
+
+    def get_form_class(self):
+        form_class = super().get_form_class()
+        form_class._meta.fields = ['start_date', 'end_date', 'description']
+        return form_class
+
+    def form_valid(self, form):
+        form.instance.event_type = 'vacation'
+        return super().form_valid(form)
+# --------------------------------Конец--------------------------------
 
 
 @login_required
@@ -875,4 +932,13 @@ def salary_details(request):
         'slr': slr,
         'form': form,
         's_filter': s_filter
+    })
+
+
+def sys_events(request):
+    events = ImplEvents.objects.all()
+
+    return render(request, 'tph_system/salary/sal_events.html', {
+        'title': 'Системные события по зарплатам',
+        'events': events
     })
