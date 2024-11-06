@@ -28,7 +28,14 @@ def param_gets(par):
     try:
         return int(Settings.objects.get(param=str(par)).value)
     except Settings.DoesNotExist:
-        raise SaleTypeError(f"Нет такого параметра в Settings => ", par)
+        error = ImplEvents.objects.create(
+            event_type='param_gets_Error',
+            event_message=f"Нет такого параметра в Настройках => {str(par)}",
+            status='Системная ошибка',
+            solved='Нет'
+        )
+        print(f"ImplEvents - новая запись {error}")
+        raise SaleTypeError(f"Нет такого параметра в Настройках => ", par)
 
 
 def sal_calc(time_start, time_end):
@@ -65,7 +72,8 @@ def sal_calc(time_start, time_end):
                     else:
                         error = ImplEvents.objects.create(
                             event_type='Salary_SaleTypeError',
-                            event_message=f"В заказных продажах ошибка - sale_type не соответствует заданным типам "
+                            event_message=f"В заказных продажах ошибка - sale_type ({sl.sale_type}) не соответствует "
+                                          f"заданным типам"
                                           f"(Заказной фотосет или Заказ выездной), sale.id = {sl.id}; sale = {sl}",
                             status='Бизнес ошибка',
                             solved='Нет'
@@ -194,10 +202,11 @@ def sal_weekly_update(time_start, time_end):
                 action = 'Добавил' if created else 'Обновил'
                 print(f"sal_weekly_update => {salary_w}; {action}")
 
-                # Отладочная информация
-                # print(f"Дата: {start_week} - {end_week}",
-                #       f"Сотрудник - ", staff.name, staff.f_name,
-                #       f"Зарплата - ", salary,
-                #       f"Забрали наличными - ", withdrawn,
-                #       f"Осталось выплатить - ", salary - withdrawn
-                # )
+                # Новая запись в системных событиях
+                rec = ImplEvents.objects.create(
+                    event_type='Salary_Weekly_Update',
+                    event_message=f"В зарплаты за неделю занесены данные за период {start_week} - {end_week} "
+                                  f"по сотруднику {staff}. В БД {action}",
+                    status='Успешно'
+                )
+                print(f"ImplEvents - новая запись {rec}")

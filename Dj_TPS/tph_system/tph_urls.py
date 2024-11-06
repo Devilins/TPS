@@ -14,7 +14,7 @@ urlpatterns = [
     path('salary_weekly/', salary_weekly, name='salary_weekly'),
     path('salary/', salary_details, name='salary'),
     path('salary_calculation/', salary_calculation, name='salary_calculation'),
-    path('salary/events/', sys_events, name='sal_events'),
+    path('salary/events/', sal_err_events, name='sal_events'),
     path('cash_withdrawn/', cash_withdrawn, name='cash_withdrawn'),
     path('update-schedule/', update_schedule, name='update_schedule'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
@@ -39,6 +39,7 @@ urlpatterns = [
     path('salary/<int:pk>/delete', SalaryDeleteView.as_view(), name='salary_delete'),
     path('salary_weekly/<int:pk>/update', SalaryWeeklyUpdateView.as_view(), name='salary_w_upd'),
     path('salary_weekly/<int:pk>/delete', SalaryWeeklyDeleteView.as_view(), name='salary_w_del'),
+    path('salary/events/<int:pk>/update', ImplEventsUpdateView.as_view(), name='sal_events_update'),
     # Календарь
     path('calendar/', CalendarView.as_view(), name='calendar'),
     path('calendar/event/add/', EventCreateView.as_view(), name='event_add'),

@@ -634,3 +634,39 @@ class SalaryWeeklyForm(ModelForm):
                 'label': 'Выплачено'
             })
         }
+
+
+class ImplEventsForm(ModelForm):
+
+    class Meta:
+        model = ImplEvents
+        fields = ['event_type', 'event_message', 'status', 'solved']
+
+        labels = {
+            'event_type': 'Тип события',
+            'event_message': 'Текст события',
+            'status': 'Статус',
+            'solved': 'Решено'
+        }
+
+        widgets = {
+            "event_type": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Тип события'
+            }),
+            "event_message": Textarea(attrs={
+                'class': 'form-control',
+                'rows': '3',
+                'placeholder': 'Текст события'
+            }),
+            "status": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Статус',
+                'label': 'Статус'
+            }),
+            "solved": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Решено',
+                'label': 'Решено'
+            })
+        }

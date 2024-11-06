@@ -17,7 +17,7 @@ from django.views.generic import UpdateView, DeleteView, TemplateView, CreateVie
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm
+    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm
 from .filters import *
 from .funcs import *
 
@@ -402,6 +402,32 @@ class SalaryWeeklyDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delete
     }
     permission_required = 'tph_system.delete_salaryweekly'
     permission_denied_message = 'У вас нет прав на удаление зарплат по неделям'
+
+
+class ImplEventsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = ImplEvents
+    form_class = ImplEventsForm
+    template_name = 'tph_system/salary/sal_events_edit.html'
+    success_url = '/salary/events/'
+    extra_context = {
+        'title': 'Ошибки в подсчете зарплат - редактирование',
+        'card_title': 'Редактирование событий'
+    }
+    permission_required = 'tph_system.change_implevents'
+    permission_denied_message = 'У вас нет прав на редактирование событий'
+
+    # При сохранении формы должно сохраняться поле user_edited = auth_user
+    # @atomic
+    # def form_valid(self, form):
+    #     # Сохраняем событие
+    #     self.object = form.save()
+    #
+    #     # Данные из формы
+    #     store = form.cleaned_data['store']
+    #     sale_type = form.cleaned_data['sale_type']
+    #     photo_count = form.cleaned_data['photo_count']
+    #
+    #     return super().form_valid(form)
 
 
 # ---------------------------Классы календаря----------------------------------
@@ -878,6 +904,7 @@ def settings(request):
 @permission_required(perm='tph_system.view_salaryweekly', raise_exception=True)
 def salary_weekly(request):
     slr = SalaryWeekly.objects.all()
+    err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
     # Фильтр
     s_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
@@ -886,7 +913,8 @@ def salary_weekly(request):
     return render(request, 'tph_system/salary_weekly/salary_weekly.html', {
         'title': 'Зарплата по неделям',
         'slr': slr,
-        's_filter': s_filter
+        's_filter': s_filter,
+        'err_events_count': err_events_count
     })
 
 
@@ -935,10 +963,17 @@ def salary_details(request):
     })
 
 
-def sys_events(request):
-    events = ImplEvents.objects.all()
+@login_required
+@permission_required(perm='tph_system.view_implevents', raise_exception=True)
+def sal_err_events(request):
+    err_events = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет')
+
+    # Фильтр
+    err_filter = SalaryFilter(request.GET, queryset=err_events)
+    err_events = err_filter.qs
 
     return render(request, 'tph_system/salary/sal_events.html', {
-        'title': 'Системные события по зарплатам',
-        'events': events
+        'title': 'Ошибки в подсчете зарплат',
+        'err_events': err_events,
+        'err_filter': err_filter
     })
