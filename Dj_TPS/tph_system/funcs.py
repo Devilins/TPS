@@ -199,7 +199,7 @@ def sal_weekly_update(time_start, time_end):
                     week_end=end_week,
                     defaults={'salary_sum': salary, 'cash_withdrawn': withdrawn, 'to_pay': salary - withdrawn}
                 )
-                action = 'Добавил' if created else 'Обновил'
+                action = 'Добавлено' if created else 'Обновлено'
                 print(f"sal_weekly_update => {salary_w}; {action}")
 
                 # Новая запись в системных событиях

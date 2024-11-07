@@ -78,7 +78,7 @@ class SettingsAdmin(admin.ModelAdmin):
 @admin.register(ImplEvents)
 class ImplEventsAdmin(admin.ModelAdmin):
     readonly_fields = ('date_created', 'date_updated', 'user_edited')
-    list_display = ('event_type', 'event_message', 'status', 'solved', 'date_created')
+    list_display = ('event_type', 'event_message', 'status', 'solved', 'date_updated', 'user_edited')
     list_filter = ('status', 'event_type', 'solved')
     search_fields = ['event_message']
     search_help_text = 'Поиск по тексту события'

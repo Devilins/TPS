@@ -67,8 +67,8 @@ class SalaryWeeklyFilter(django_filters.FilterSet):
 
 
 class ImplEventsFilter(django_filters.FilterSet):
-    event_type = CharFilter(field_name='event_type', lookup_expr='icontains')
+    event_message = CharFilter(field_name='event_message', lookup_expr='icontains')
 
     class Meta:
         model = ImplEvents
-        fields = ['event_type']
+        fields = ['event_message']

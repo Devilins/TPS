@@ -159,16 +159,33 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             # Корректировка кол-ва расходников consumable.count в зависимости от разницы photo_count - photo_c_old
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                prev_count = consumable.count
                 consumable.count += int(decimal.Decimal((photo_c_old - photo_count) / 2).quantize(  # округление
                     decimal.Decimal('1'),
                     rounding=decimal.ROUND_HALF_UP
                 ))
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                prev_count = consumable.count
                 consumable.count += photo_c_old - photo_count
             consumable.save()
+            # Логируем изменение расходников
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Upd_{sale_type}",
+                event_message=f"Изменение количества расходников на {store.name} из-за корректировки продажи. "
+                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                status='Успешно'
+            )
         except ConsumablesStore.DoesNotExist:
-            pass
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Upd_Failed",
+                event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
+                              f"функциональным именем {sale_type} не найден. После корректировки имени надо изменить "
+                              f"количество этого расходника на точке. Хотели изменить {sale_type} с {photo_c_old} "
+                              f"(Кол-во фото в продаже было) на {photo_count} (Кол-во фото в продаже стало).",
+                status='Системная ошибка',
+                solved='Нет'
+            )
 
         return super().form_valid(form)
 
@@ -195,13 +212,30 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
             # Корректировка кол-ва расходников при удалении продажи
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                prev_count = consumable.count
                 consumable.count += math.ceil(photo_count / 2)
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                prev_count = consumable.count
                 consumable.count += photo_count
             consumable.save()
+            # Логируем изменение расходников
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Del_{sale_type}",
+                event_message=f"Изменение количества расходников на {store.name} из-за удаления продажи. "
+                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                status='Успешно'
+            )
         except ConsumablesStore.DoesNotExist:
-            pass
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Del_Failed",
+                event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
+                              f"функциональным именем {sale_type} не найден. После корректировки имени надо изменить "
+                              f"количество этого расходника на точке. Была удалена продажа с расходником {sale_type} "
+                              f"в количестве {photo_count}",
+                status='Системная ошибка',
+                solved='Нет'
+            )
 
         success_url = self.get_success_url()
         self.object.delete()
@@ -265,13 +299,30 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         try:
             if sale_type == 'Печать 15x20':
                 consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                prev_count = consumable.count
                 consumable.count -= math.ceil(photo_count / 2)
             else:
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                prev_count = consumable.count
                 consumable.count -= photo_count
             consumable.save()
+            # Логируем изменение расходников
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Crt_{sale_type}",
+                event_message=f"Изменение количества расходников на {store.name} из-за создания новой продажи. "
+                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                status='Успешно'
+            )
         except ConsumablesStore.DoesNotExist:
-            pass
+            ImplEvents.objects.create(
+                event_type=f"ConsStore_Crt_Failed",
+                event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
+                              f"функциональным именем {sale_type} не найден. После корректировки имени надо изменить "
+                              f"количество этого расходника на точке. Было продано {sale_type} в количестве "
+                              f"{photo_count}",
+                status='Системная ошибка',
+                solved='Нет'
+            )
 
         return super().form_valid(form)
 
@@ -738,7 +789,7 @@ def sales(request):
     flag = 0
     today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=Staff.objects.get(st_username=auth_user))
     positions = [i.position for i in today_staff]
-    if 'Должность в смене' in positions:
+    if 'Роль не указана' in positions:
         flag = 1
 
     #Фильтр
@@ -894,13 +945,13 @@ def salary_weekly(request):
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
     # Фильтр
-    s_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
-    slr = s_filter.qs
+    sw_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
+    slr = sw_filter.qs
 
     return render(request, 'tph_system/salary_weekly/salary_weekly.html', {
         'title': 'Зарплата по неделям',
         'slr': slr,
-        's_filter': s_filter,
+        'sw_filter': sw_filter,
         'err_events_count': err_events_count
     })
 
@@ -956,7 +1007,7 @@ def sal_err_events(request):
     err_events = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет')
 
     # Фильтр
-    err_filter = SalaryFilter(request.GET, queryset=err_events)
+    err_filter = ImplEventsFilter(request.GET, queryset=err_events)
     err_events = err_filter.qs
 
     return render(request, 'tph_system/salary/sal_events.html', {
