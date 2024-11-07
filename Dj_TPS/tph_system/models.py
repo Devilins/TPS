@@ -15,6 +15,8 @@ class Staff(models.Model):
     st_username = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True,
                                     verbose_name=u"Учетная запись")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено", related_name='staff_user_edited')
 
     class Meta:
         verbose_name = 'Сотрудники'
@@ -271,7 +273,8 @@ class ImplEvents(models.Model):
     SLCT_STATUS = (
         ('Системная ошибка', 'Системная ошибка'),
         ('Бизнес ошибка', 'Бизнес ошибка'),
-        ('Успешно', 'Успешно')
+        ('Успешно', 'Успешно'),
+        ('Удаление записи', 'Удаление записи')
     )
     SLCT_SOLVED = (
         ('Да', 'Да'),
@@ -292,7 +295,7 @@ class ImplEvents(models.Model):
         ordering = ['-id', 'event_type']
 
     def __str__(self):
-        return f'{self.date_created} - {self.event_type}: {self.status} - {self.solved}'
+        return f'{self.date_created} - {self.event_type} : {self.status} => {self.solved}'
 
 
 # --------------------------------------Календарь отпусков не используемый--------------------------------

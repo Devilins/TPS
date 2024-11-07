@@ -416,19 +416,6 @@ class ImplEventsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateVi
     permission_required = 'tph_system.change_implevents'
     permission_denied_message = 'У вас нет прав на редактирование событий'
 
-    # При сохранении формы должно сохраняться поле user_edited = auth_user
-    # @atomic
-    # def form_valid(self, form):
-    #     # Сохраняем событие
-    #     self.object = form.save()
-    #
-    #     # Данные из формы
-    #     store = form.cleaned_data['store']
-    #     sale_type = form.cleaned_data['sale_type']
-    #     photo_count = form.cleaned_data['photo_count']
-    #
-    #     return super().form_valid(form)
-
 
 # ---------------------------Классы календаря----------------------------------
 class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):

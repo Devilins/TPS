@@ -19,7 +19,7 @@ from tph_system.models import *
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
-    readonly_fields = ['date_upd']
+    readonly_fields = ['date_upd', 'user_edited']
 
 
 @admin.register(Store)
