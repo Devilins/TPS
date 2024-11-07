@@ -49,6 +49,9 @@
                         <a class="nav-link" href="{% url 'store' %}" style="color: #ffffff;">Точки</a>
                     </li>  -->
 
+                    {% block event_msg %}
+                    {% endblock event_msg %}
+
                     <!-- Выпадающий список пользователя справва -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">

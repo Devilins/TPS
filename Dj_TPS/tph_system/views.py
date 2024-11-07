@@ -720,7 +720,7 @@ def update_schedule(request):
         if sel_store == '' or sel_store is None:
             # Если выбрано пустое значение, удаляем запись из расписания
             Schedule.objects.filter(staff=employee, date=date).delete()
-            action = 'deleted'
+            action = 'Удалено'
         else:
             # Обновляем или создаем запись в расписании
             f_store = get_object_or_404(Store, short_name=sel_store)
@@ -730,13 +730,20 @@ def update_schedule(request):
                 date=date,
                 defaults={'store': f_store}
             )
-            action = 'created' if created else 'updated'
+            action = 'Добавлено' if created else 'Обновлено'
 
         # Возвращаем успешный ответ с информацией о выполненном действии
         return JsonResponse({'status': 'success', 'action': action})
 
     except Exception as e:
-        # В случае ошибок возвращаем сообщение об ошибке
+        # Логируем ошибку
+        ImplEvents.objects.create(
+            event_type=f"Schedule_Upd_Failed",
+            event_message=f"Ошибка при обновлении графика с сотрудниками. Сообщение: {str(e)}",
+            status='Системная ошибка',
+            solved='Нет'
+        )
+        # Возвращаем сообщение об ошибке
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
@@ -828,6 +835,8 @@ def main_page(request):
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
     con_store = ConsumablesStore.objects.filter(count__lt=30)
+    sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
+    err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
     dic = {}
 
@@ -857,7 +866,9 @@ def main_page(request):
         'con_store': con_store,
         'tips': tips,
         'error': error,
-        'form': form
+        'form': form,
+        'sys_errors_count': sys_errors_count,
+        'err_events_count': err_events_count
     })
 
 
@@ -921,14 +932,14 @@ def settings(request):
 
     error = ''
     if request.method == 'POST':
-        form_p = SettingsForm(request.POST)
-        if form_p.is_valid():
-            form_p.save()
+        form = SettingsForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('settings')
         else:
             error = 'Ошибка в заполнении формы'
-
-    form = SettingsForm()
+    else:
+        form = SettingsForm()
     return render(request, 'tph_system/settings/settings.html', {
         'title': 'Настройки',
         'set': stng,

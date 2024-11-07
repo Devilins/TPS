@@ -68,7 +68,9 @@ select * from tph_system_implevents;]]></console>
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />

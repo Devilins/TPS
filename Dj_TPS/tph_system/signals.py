@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.sessions.models import Session
 from django.db.models.signals import pre_save, pre_delete
 from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
@@ -22,15 +23,12 @@ def log_deletion(sender, instance, **kwargs):
     Сигнал, который создает запись в ImplEvents перед удалением объекта
     """
     # Пропускаем логирование удаления самих логов
-    if sender == ImplEvents:
+    if sender == ImplEvents or sender == Session:
         return
 
     try:
         # Получаем текущего пользователя
         user = get_current_user()
-
-        # Получаем ContentType для модели
-        content_type = ContentType.objects.get_for_model(sender)
 
         # Формируем сообщение о событии
         event_message = {

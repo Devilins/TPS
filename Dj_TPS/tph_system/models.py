@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.defaultfilters import truncatechars
 from schedule.models import Event, Calendar
 from django.utils.translation import gettext_lazy as _
 
@@ -296,6 +297,10 @@ class ImplEvents(models.Model):
 
     def __str__(self):
         return f'{self.date_created} - {self.event_type} : {self.status} => {self.solved}'
+
+    @property
+    def short_event_message(self):
+        return truncatechars(self.event_message, 180)
 
 
 # --------------------------------------Календарь отпусков не используемый--------------------------------

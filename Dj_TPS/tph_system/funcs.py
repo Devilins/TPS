@@ -29,13 +29,15 @@ def param_gets(par):
         return int(Settings.objects.get(param=str(par)).value)
     except Settings.DoesNotExist:
         error = ImplEvents.objects.create(
-            event_type='param_gets_Error',
-            event_message=f"Нет такого параметра в Настройках => {str(par)}",
+            event_type='Param_Gets_Error',
+            event_message=f"Нет такого параметра в Настройках => {str(par)}. Для дальнейшей работы операции "
+                          f"добавьте в Настройки новый параметр {str(par)} с нужным вам значением.",
             status='Системная ошибка',
             solved='Нет'
         )
         print(f"ImplEvents - новая запись {error}")
-        raise SaleTypeError(f"Нет такого параметра в Настройках => ", par)
+        raise SaleTypeError(f"Нет такого параметра в Настройках => {str(par)}. Для дальнейшей работы операции "
+                            f"добавьте в Настройки новый параметр {str(par)} с нужным вам значением.")
 
 
 def sal_calc(time_start, time_end):

@@ -10,6 +10,31 @@
 {% endif %}
 {% endblock func_buttons %}
 
+{% block event_msg %}
+{% if perms.tph_system.view_implevents %}
+    <!-- Сообщения об ошибках выполнения бизнес функций -->
+    {% if err_events_count == 0 %}
+            <a role="button" class="btn btn-outline-success" style="margin-right: 20px;">
+                Ошибки выполнения ({{ err_events_count }})
+            </a>
+        {% else %}
+            <a role="button" class="btn btn-warning" style="margin-right: 20px;">
+                Ошибки выполнения ({{ err_events_count }})
+            </a>
+        {% endif %}
+    <!-- Сообщения о системных ошибках -->
+    {% if sys_errors_count == 0 %}
+        <a role="button" class="btn btn-outline-success" style="margin-right: 20px;">
+            Системные ошибки ({{ sys_errors_count }})
+        </a>
+    {% else %}
+        <a role="button" class="btn btn-danger" style="margin-right: 20px;">
+            Системные ошибки ({{ sys_errors_count }})
+        </a>
+    {% endif %}
+{% endif %}
+{% endblock event_msg %}
+
 {% block content %}
 
 <!-- Модальное окно - добавление примера -->
