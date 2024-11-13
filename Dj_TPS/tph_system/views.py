@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework.viewsets import ModelViewSet
 from django.views.generic import UpdateView, DeleteView, TemplateView, CreateView
+from django.core.paginator import Paginator
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
@@ -569,12 +570,18 @@ def staff(request):
 
     form = StaffForm()
 
+    # Пагинатор
+    paginator = Paginator(staffs, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/staff/staff.html', {
         'title': 'Сотрудники',
-        'staffs': staffs,
         'form': form,
         'error': error,
-        's_filter': s_filter
+        's_filter': s_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -609,12 +616,18 @@ def cons_store(request):
     else:
         form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
+    # Пагинатор
+    paginator = Paginator(con_store, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/consumables_store/сonsumablesStore.html', {
         'title': 'Расходники',
-        'con_store': con_store,
         'form': form,
         'stores': stores,
-        'cs_filter': cs_filter
+        'cs_filter': cs_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -648,11 +661,17 @@ def tech_mtd(request):
     else:
         form = TechForm(initial={'store': store_staff_working_obj})
 
+    # Пагинатор
+    paginator = Paginator(tech, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/tech/tech.html', {
         'title': 'Техника',
-        'tech': tech,
         'form': form,
-        't_filter': t_filter
+        't_filter': t_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -818,13 +837,19 @@ def sales(request):
         'staff': Staff.objects.get(st_username=auth_user)
     })
 
+    # Пагинатор
+    paginator = Paginator(sales_all, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/sales/sales.html', {
         'title': 'Продажи',
-        'sales_all': sales_all,
         'form': form,
         'error': error,
         'sale_filter': sale_filter,
-        'flag': flag
+        'flag': flag,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -913,11 +938,17 @@ def cash_withdrawn(request):
             'staff': Staff.objects.get(st_username=auth_user)
         })
 
+    # Пагинатор
+    paginator = Paginator(cash, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
-        'cash': cash,
         'form': form,
-        'c_filter': c_filter
+        'c_filter': c_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -940,12 +971,19 @@ def settings(request):
             error = 'Ошибка в заполнении формы'
     else:
         form = SettingsForm()
+
+    # Пагинатор
+    paginator = Paginator(stng, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/settings/settings.html', {
         'title': 'Настройки',
-        'set': stng,
         'form': form,
         'error': error,
-        's_filter': s_filter
+        's_filter': s_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -959,11 +997,17 @@ def salary_weekly(request):
     sw_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
     slr = sw_filter.qs
 
+    # Пагинатор
+    paginator = Paginator(slr, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/salary_weekly/salary_weekly.html', {
         'title': 'Зарплата по неделям',
-        'slr': slr,
         'sw_filter': sw_filter,
-        'err_events_count': err_events_count
+        'err_events_count': err_events_count,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 
@@ -1004,11 +1048,17 @@ def salary_details(request):
     else:
         form = SalaryForm()
 
+    # Пагинатор
+    paginator = Paginator(slr, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'tph_system/salary/salary.html', {
         'title': 'Зарплата по дням',
-        'slr': slr,
         'form': form,
-        's_filter': s_filter
+        's_filter': s_filter,
+        'page_obj': page_obj,
+        'paginator': paginator
     })
 
 

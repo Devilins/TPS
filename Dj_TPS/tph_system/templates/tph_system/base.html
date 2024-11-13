@@ -24,20 +24,20 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css">
 
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: #8e8d8a;">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #8e8d8a;">
         <div class="container-fluid">
             <a class="navbar-brand" style="color: #ffffff;">
                 <img src="{% static 'tph_system/images/logo_TPS_round.png'%}" width="30" height="30" class="d-inline-block align-top" alt="">
                 Take Photo ERP System
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-                    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Переключатель навигации">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
 
                 <nav class="navbar ms-5">
-                    <div class="container-fluid">
+                    <div class="container-fluid justify-content-start">
                         {% block func_buttons %}
                         {% endblock func_buttons %}
                     </div>
@@ -70,46 +70,64 @@
 
     {% block head %}
     {% endblock head %}
+
+    <script>
+        $(document).ready(function() {
+          $('.nav-link-collapse').on('click', function() {
+            $('.nav-link-collapse').not(this).removeClass('nav-link-show');
+            $(this).toggleClass('nav-link-show');
+          });
+        });
+    </script>
+
 </head>
 <body>
     <aside>
-        <div class="container-md" id="leftpanel"> <!-- style="min-width: 320px"-->
-            <nav class="navbar navbar-expand-lg">
-                <ul class="nomarker">
-                    {% if perms.tph_system.view_main_page %}
-                    <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_schedule %}
-                    <li><a href="{% url 'schedule' %}"><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_sales %}
-                    <li><a href="{% url 'sales' %}"><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_consumablesstore %}
-                    <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_staff %}
-                    <li><a href="{% url 'staff' %}"><img src="{% static 'tph_system/images/i_staff.png' %}"> Сотрудники </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_store %}
-                    <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_cashwithdrawn %}
-                    <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_salary %}
-                    <li><a href="{% url 'salary_weekly' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_finance %}
-                    <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_tech %}
-                    <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
-                    {% endif %}
-                    {% if perms.tph_system.view_settings %}
-                    <li><a href="{% url 'settings' %}"><img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>
-                    {% endif %}
-                </ul>
+        <div class="container-md" id="leftpanel"style="margin-top: 30px;">
+            <nav class="navbar navbar-expand-lg" style="margin-top: 30px;">
+                <div class="container-fluid" style="padding: 0px;">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#AsideDropdown"
+                            aria-controls="AsideDropdown" aria-expanded="false" aria-label="Toggle menu">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="AsideDropdown">
+                        <ul class="nomarker">
+                            {% if perms.tph_system.view_main_page %}
+                            <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_schedule %}
+                            <li><a href="{% url 'schedule' %}"><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_sales %}
+                            <li><a href="{% url 'sales' %}"><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_consumablesstore %}
+                            <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_staff %}
+                            <li><a href="{% url 'staff' %}"><img src="{% static 'tph_system/images/i_staff.png' %}"> Сотрудники </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_store %}
+                            <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_cashwithdrawn %}
+                            <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_salary %}
+                            <li><a href="{% url 'salary_weekly' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_finance %}
+                            <li><a href=""><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_tech %}
+                            <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
+                            {% endif %}
+                            {% if perms.tph_system.view_settings %}
+                            <li><a href="{% url 'settings' %}"><img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
             </nav>
         </div>
     </aside>
