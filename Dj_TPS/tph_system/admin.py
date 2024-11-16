@@ -113,9 +113,30 @@ class ImplEventsAdmin(admin.ModelAdmin):
 
 @admin.register(SalaryWeekly)
 class SalaryWeeklyAdmin(admin.ModelAdmin):
-    list_display = ['week_begin', 'week_end', 'staff', 'salary_sum', 'paid_out']
+    list_display = ['week_begin', 'week_end', 'staff', 'cash_box_week', 'salary_sum', 'paid_out']
     readonly_fields = ('date_updated', 'user_edited')
     list_filter = ['staff']
+    list_per_page = 30
+
+    # def week_begin_display(self, obj):
+    #     return obj.week_begin.strftime('%d %b')
+    #
+    # week_begin_display.short_description = 'Начало недели'
+
+
+@admin.register(FinStatsMonth)
+class FinStatsMonthAdmin(admin.ModelAdmin):
+    list_display = ['date', 'revenue', 'salaries', 'expenses', 'profit']
+    readonly_fields = ('date_updated', 'user_edited')
+    list_filter = ['date']
+    list_per_page = 30
+
+
+@admin.register(FinStatsStaff)
+class FinStatsStaffAdmin(admin.ModelAdmin):
+    list_display = ['staff', 'date', 'cash_box', 'salary']
+    readonly_fields = ('date_updated', 'user_edited')
+    list_filter = ['staff', 'date']
     list_per_page = 30
 
 

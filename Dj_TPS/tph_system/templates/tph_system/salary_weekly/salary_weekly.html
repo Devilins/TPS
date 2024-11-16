@@ -44,6 +44,7 @@
                 <tr>
                     <th scope="col">Сотрудник</th>
                     <th scope="col">Неделя</th>
+                    <th scope="col">Касса</th>
                     <th scope="col">Зарплата</th>
                     <th scope="col">Забрали наличными</th>
                     <th scope="col">Осталось выплатить</th>
@@ -57,6 +58,7 @@
                 <tr>
                     <td>{{ s.staff }}</td>
                     <td>{{ s.week_begin|date:"d M" }} - {{ s.week_end|date:"d M" }}</td>
+                    <td>{{ s.cash_box_week }}</td>
                     <td>{{ s.salary_sum }}</td>
                     <td>{{ s.cash_withdrawn }}</td>
                     <td>{{ s.to_pay }}</td>

@@ -1,0 +1,168 @@
+{% extends 'tph_system/base.html' %}
+{% load static %}
+
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода настроек -->
+<!--{% if perms.tph_system.add_settings %}-->
+<!--    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">-->
+<!--        Добавить Настройку-->
+<!--    </button>-->
+<!--{% endif %}-->
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <div class="card-header">
+            <h4 class="card-title">
+                Финансы - кампания <br>
+
+                <!-- Фильтр -->
+<!--                <div class="card card-body" id="cs_filter">-->
+<!--                    <form method="get">-->
+<!--                        Параметр: {{ s_filter.form.param }}-->
+<!--                        Описание: {{ s_filter.form.param_f_name}}-->
+<!--                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>-->
+<!--                    </form>-->
+<!--                </div>-->
+            </h4>
+        </div>
+
+        <!-- Таблица с Финансами - кампания -->
+        <table class="table table-hover table-bordered align-middle" id="tableCons">
+            <thead>
+                <tr>
+                    <th scope="col">Отчетный месяц</th>
+                    <th scope="col">Выручка (Кассы)</th>
+                    <th scope="col">Зарплаты</th>
+                    <th scope="col">Расходы</th>
+                    <th scope="col">Прибыль</th>
+                    <th scope="col">Дата изменения</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in page_obj %}
+                <tr>
+                    <td>{{ s.date }}</td>
+                    <td>{{ s.revenue }}</td>
+                    <td>{{ s.salaries }}</td>
+                    <td>{{ s.expenses }}</td>
+                    <td>{{ s.profit }}</td>
+                    <td>{{ s.date_updated }}</td>
+                    <td>
+                        <button type="button" class="btn btn-link">
+                            <a href=""><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <nav class="list-pages">
+        <ul class="pagination justify-content-center" style="margin-top: 25px;">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+            {% endif %}
+            {% for p in paginator.page_range %}
+                {% if page_obj.number == p %}
+                    <li class="page-item active">
+                        <a class="page-link" href="">{{ p }}</a>
+                    </li>
+                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<div class="container cont_store" style="margin-top: 0px;">
+    <div class="card shadow" style="width: 100%; min-width: 1000px">
+        <div class="card-header">
+            <h4 class="card-title">
+                Финансы - сотрудники <br>
+
+                <!-- Фильтр -->
+<!--                <div class="card card-body" id="cs_filter">-->
+<!--                    <form method="get">-->
+<!--                        Параметр: {{ s_filter.form.param }}-->
+<!--                        Описание: {{ s_filter.form.param_f_name}}-->
+<!--                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>-->
+<!--                    </form>-->
+<!--                </div>-->
+            </h4>
+        </div>
+
+        <!-- Таблица с Финансами - сотрудники -->
+        <table class="table table-hover table-bordered align-middle" id="tableFin">
+            <thead>
+                <tr>
+                    <th scope="col">Отчетный месяц</th>
+                    <th scope="col">Сотрудник</th>
+                    <th scope="col">Касса</th>
+                    <th scope="col">Зарплата</th>
+                    <th scope="col">Дата изменения</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in page_obj_st %}
+                <tr>
+                    <td>{{ s.date }}</td>
+                    <td>{{ s.staff }}</td>
+                    <td>{{ s.cash_box }}</td>
+                    <td>{{ s.salary }}</td>
+                    <td>{{ s.date_updated }}</td>
+                    <td>
+                        <button type="button" class="btn btn-link">
+                            <a href=""><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <nav class="list-pages">
+        <ul class="pagination justify-content-center" style="margin-top: 25px;">
+            {% if page_obj_st.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+            {% endif %}
+            {% for p in paginator_st.page_range %}
+                {% if page_obj_st.number == p %}
+                    <li class="page-item active">
+                        <a class="page-link" href="">{{ p }}</a>
+                    </li>
+                {% elif p >= page_obj_st.number|add:-2 and p <= page_obj_st.number|add:2  %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj_st.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}

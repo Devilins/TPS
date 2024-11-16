@@ -24,6 +24,12 @@ def start_week_generator(start, end):
         start += timedelta(days=7)
 
 
+def start_month_generator(start, end):
+    while start.month <= end.month:
+        yield start
+        start += timedelta(weeks=4)
+
+
 def param_gets(par):
     try:
         return int(Settings.objects.get(param=str(par)).value)
@@ -181,10 +187,11 @@ def sal_weekly_update(time_start, time_end):
         salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
         if salary_week.exists():
             # Группируем по сотрудникам и суммируем зп
-            sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum'))
+            sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum')).annotate(cashbx_sum=Sum('cash_box'))
             for dic in sal_group:
                 staff = Staff.objects.get(id=dic.get('staff'))
                 salary = dic.get('sal_sum', 0)
+                cashbx = dic.get('cashbx_sum', 0)
                 withdrawn = CashWithdrawn.objects.filter(
                     staff=staff,
                     date__in=date_generator(start_week + timedelta(days=7), end_week + timedelta(days=7))
@@ -199,7 +206,8 @@ def sal_weekly_update(time_start, time_end):
                     staff=staff,
                     week_begin=start_week,
                     week_end=end_week,
-                    defaults={'salary_sum': salary, 'cash_withdrawn': withdrawn, 'to_pay': salary - withdrawn}
+                    defaults={'salary_sum': salary, 'cash_box_week': cashbx,
+                              'cash_withdrawn': withdrawn, 'to_pay': salary - withdrawn}
                 )
                 action = 'Добавлено' if created else 'Обновлено'
                 print(f"sal_weekly_update => {salary_w}; {action}")
@@ -212,3 +220,7 @@ def sal_weekly_update(time_start, time_end):
                     status='Успешно'
                 )
                 print(f"ImplEvents - новая запись {rec}")
+
+
+def fin_stats_calc(time_start, time_end):
+    pass

@@ -17,6 +17,7 @@ urlpatterns = [
     path('salary/events/', sal_err_events, name='sal_events'),
     path('cash_withdrawn/', cash_withdrawn, name='cash_withdrawn'),
     path('update-schedule/', update_schedule, name='update_schedule'),
+    path('fin_stats/', fin_stats, name='fin_stats'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
     path('store/<int:pk>/delete', StoreDeleteView.as_view(), name='store_delete'),
     path('staff/<int:pk>/update', StaffUpdateView.as_view(), name='staff_update'),

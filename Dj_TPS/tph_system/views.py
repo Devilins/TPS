@@ -859,7 +859,7 @@ def main_page(request):
     sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store').order_by('store')
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
-    con_store = ConsumablesStore.objects.filter(count__lt=30)
+    con_store = ConsumablesStore.objects.filter(count__lt=1)
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
@@ -1075,4 +1075,29 @@ def sal_err_events(request):
         'title': 'Ошибки в подсчете зарплат',
         'err_events': err_events,
         'err_filter': err_filter
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.view_finstatsmonth', raise_exception=True)
+def fin_stats(request):
+    stats = FinStatsMonth.objects.all()
+    stats_staff = FinStatsStaff.objects.all()
+
+    # Пагинатор stats
+    paginator = Paginator(stats, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Пагинатор stats_staff
+    paginator_st = Paginator(stats_staff, 12)
+    page_number_st = request.GET.get('page')
+    page_obj_st = paginator.get_page(page_number_st)
+
+    return render(request, 'tph_system/fin_stats/fin_stats.html', {
+        'title': 'Финансы - кампания',
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'paginator_st': paginator_st,
+        'page_obj_st': page_obj_st
     })

@@ -182,6 +182,7 @@ class SalaryWeekly(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")
     week_begin = models.DateField(verbose_name=u"Начало периода")
     week_end = models.DateField(verbose_name=u"Конец периода")
+    cash_box_week = models.IntegerField(default=0, verbose_name=u"Касса за неделю")
     salary_sum = models.DecimalField(max_digits=8, decimal_places=2, verbose_name=u"Зарплата за неделю")
     cash_withdrawn = models.IntegerField(verbose_name=u"Забрали наличными за неделю")
     to_pay = models.DecimalField(max_digits=8, decimal_places=2, verbose_name=u"Осталось выплатить")
@@ -301,6 +302,43 @@ class ImplEvents(models.Model):
     @property
     def short_event_message(self):
         return truncatechars(self.event_message, 180)
+
+
+class FinStatsMonth(models.Model):
+    date = models.DateField(verbose_name=u"Отчетный месяц")
+    revenue = models.IntegerField(verbose_name=u"Выручка (Кассы)")
+    salaries = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=u"Зарплаты")
+    expenses = models.IntegerField(default=0, verbose_name=u"Расходы")
+    profit = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=u"Прибыль")
+    date_updated = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено")
+
+    class Meta:
+        verbose_name = 'Финансы - компания'
+        verbose_name_plural = 'Финансы - компания'
+        ordering = ['date']
+
+    def __str__(self):
+        return f'{self.date}'
+
+
+class FinStatsStaff(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")
+    date = models.DateField(verbose_name=u"Отчетный месяц")
+    cash_box = models.IntegerField(verbose_name=u"Касса")
+    salary = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=u"Зарплата")
+    date_updated = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено")
+
+    class Meta:
+        verbose_name = 'Финансы - сотрудники'
+        verbose_name_plural = 'Финансы - сотрудники'
+        ordering = ['date', 'staff']
+
+    def __str__(self):
+        return f'{self.date} - {self.staff}'
 
 
 # --------------------------------------Календарь отпусков не используемый--------------------------------
