@@ -1,0 +1,25 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card shadow" style="width: 30%; min-width: 500px">
+        <div class="card-header">
+            <h4 class="card-title">Рассчитать финансы за указанный ниже период</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+                {% for f in form %}
+                    <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
+                {% endfor %}
+                <button class="btn btn-success" type="submit">Начать расчет</button>
+                <a class="btn btn-warning" href="{% url 'fin_stats' %}" role="button">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

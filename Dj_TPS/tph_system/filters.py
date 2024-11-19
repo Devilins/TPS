@@ -1,6 +1,7 @@
 import django_filters
 from django_filters import CharFilter
 
+from .forms import FengyuanChenDatePickerInput
 from .models import *
 
 
@@ -61,6 +62,8 @@ class SalaryFilter(django_filters.FilterSet):
 
 
 class SalaryWeeklyFilter(django_filters.FilterSet):
+    week_begin = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+
     class Meta:
         model = SalaryWeekly
         fields = ['staff', 'week_begin', 'paid_out']
@@ -72,3 +75,17 @@ class ImplEventsFilter(django_filters.FilterSet):
     class Meta:
         model = ImplEvents
         fields = ['event_message']
+
+
+class FinStatsMonthFilter(django_filters.FilterSet):
+    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+
+    class Meta:
+        model = FinStatsMonth
+        fields = ['date']
+
+
+class FinStatsStaffFilter(django_filters.FilterSet):
+    class Meta:
+        model = FinStatsStaff
+        fields = ['staff', 'date']

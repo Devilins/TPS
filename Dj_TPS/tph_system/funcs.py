@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q, Count
 from django.http.response import Http404
@@ -25,9 +26,9 @@ def start_week_generator(start, end):
 
 
 def start_month_generator(start, end):
-    while start.month <= end.month:
-        yield start
-        start += timedelta(weeks=4)
+    while start < end:
+        yield start - timedelta(days=start.day - 1)
+        start += relativedelta(months=1)
 
 
 def param_gets(par):
@@ -223,4 +224,64 @@ def sal_weekly_update(time_start, time_end):
 
 
 def fin_stats_calc(time_start, time_end):
-    pass
+    for start_month in start_month_generator(time_start, time_end):
+        # Вычисляем конец месяца
+        end_month = start_month + relativedelta(months=1) - relativedelta(days=1)
+        # Расчеты за месяц
+        sales = Sales.objects.filter(date__gte=start_month, date__lte=end_month)
+        salary = Salary.objects.filter(date__gte=start_month, date__lte=end_month)
+        if sales.exists() or salary.exists():
+            cashboxes = int(sales.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+            salaries = int(salary.aggregate(sal_sum=Sum('salary_sum'))['sal_sum'])
+            profit = cashboxes - salaries
+
+            # Update в БД
+            fin_stats, created = FinStatsMonth.objects.update_or_create(
+                date=start_month,
+                defaults={'revenue': cashboxes, 'salaries': salaries, 'profit': profit}
+            )
+            action = 'Добавлено' if created else 'Обновлено'
+            print(f"fin_stats_calc => {fin_stats}; {action}")
+
+            # Новая запись в системных событиях
+            rec = ImplEvents.objects.create(
+                event_type='FinStatsMonth_Update',
+                event_message=f"В финансовые отчеты по кампании занесены данные за период {start_month} - {end_month}. "
+                              f"В БД {action}",
+                status='Успешно'
+            )
+            print(f"ImplEvents - новая запись {rec}")
+
+
+def fin_stats_staff_calc(time_start, time_end):
+    for start_month in start_month_generator(time_start, time_end):
+        # Вычисляем конец месяца
+        end_month = start_month + relativedelta(months=1) - relativedelta(days=1)
+        # Расчеты за месяц
+        salary_month = Salary.objects.filter(date__in=date_generator(start_month, end_month))
+        if salary_month.exists():
+            # Группируем по сотрудникам и суммируем зп
+            sal_group = salary_month.values('staff').annotate(sal_sum=Sum('salary_sum')).annotate(
+                cashbx_sum=Sum('cash_box'))
+            for dic in sal_group:
+                staff = Staff.objects.get(id=dic.get('staff'))
+                salary = dic.get('sal_sum', 0)
+                cashbx = dic.get('cashbx_sum', 0)
+
+                # Update в БД
+                fin_stats, created = FinStatsStaff.objects.update_or_create(
+                    date=start_month,
+                    staff=staff,
+                    defaults={'cash_box': cashbx, 'salary': salary}
+                )
+                action = 'Добавлено' if created else 'Обновлено'
+                print(f"fin_stats_calc => {fin_stats}; {action}")
+
+                # Новая запись в системных событиях
+                rec = ImplEvents.objects.create(
+                    event_type='FinStatsStaff_Update',
+                    event_message=f"В финансовые отчеты по сотрудникам занесены данные за период {start_month} - {end_month}. "
+                                  f"Сотрудник - {staff}. В БД {action}",
+                    status='Успешно'
+                )
+                print(f"ImplEvents - новая запись {rec}")

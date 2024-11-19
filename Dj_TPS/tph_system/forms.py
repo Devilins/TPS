@@ -670,3 +670,52 @@ class ImplEventsForm(ModelForm):
                 'label': 'Решено'
             })
         }
+
+
+class FinStatsMonthForm(ModelForm):
+    class Meta:
+        model = FinStatsMonth
+        fields = ['expenses']
+
+        labels = {
+            'expenses': 'Расходы'
+        }
+
+        widgets = {
+            "expenses": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Расходы'
+            })
+        }
+
+    def clean_expenses(self):
+        expenses = self.cleaned_data["expenses"]
+        if expenses < 0:
+            raise ValidationError('Сумма должна быть положительной')
+        return expenses
+
+
+class FinStatsStaffForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['staff'].empty_label = "Выберите сотрудника"
+
+    class Meta:
+        model = FinStatsStaff
+        fields = ['staff', 'date']
+
+        labels = {
+            'date': 'Отчетный месяц',
+            'staff': 'Сотрудник'
+        }
+
+        widgets = {
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Отчетный месяц'
+            }),
+            "staff": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Сотрудник'
+            })
+        }

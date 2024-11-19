@@ -322,6 +322,10 @@ class FinStatsMonth(models.Model):
     def __str__(self):
         return f'{self.date}'
 
+    def save(self, *args, **kwargs):
+        self.profit = self.revenue - self.salaries - self.expenses
+        super().save(*args, **kwargs)
+
 
 class FinStatsStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")

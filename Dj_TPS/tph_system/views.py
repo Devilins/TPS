@@ -18,7 +18,8 @@ from django.core.paginator import Paginator
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
-    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm
+    RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
+    FinStatsMonthForm
 from .filters import *
 from .funcs import *
 
@@ -467,6 +468,31 @@ class ImplEventsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateVi
     }
     permission_required = 'tph_system.change_implevents'
     permission_denied_message = 'У вас нет прав на редактирование событий'
+
+
+class FinStatsMonthUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = FinStatsMonth
+    form_class = FinStatsMonthForm
+    template_name = 'tph_system/fin_stats/fin_stats_update.html'
+    success_url = '/fin_stats/'
+    extra_context = {
+        'title': 'Финансы компании - редактирование',
+        'card_title': 'Редактирование расходов за'
+    }
+    permission_required = 'tph_system.change_finstatsmonth'
+    permission_denied_message = 'У вас нет прав на редактирование расходов за месяц'
+
+
+class FinStatsMonthDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = FinStatsMonth
+    success_url = '/fin_stats/'
+    template_name = 'tph_system/fin_stats/fin_stats_delete.html'
+    extra_context = {
+        'title': 'Финансы компании - удаление',
+        'card_title': 'Удаление записи с финансами по компании'
+    }
+    permission_required = 'tph_system.delete_finstatsmonth'
+    permission_denied_message = 'У вас нет прав на удаление записи с финансами по компании'
 
 
 # ---------------------------Классы календаря----------------------------------
@@ -1084,6 +1110,14 @@ def fin_stats(request):
     stats = FinStatsMonth.objects.all()
     stats_staff = FinStatsStaff.objects.all()
 
+    # Фильтр FinStatsMonth
+    stats_filter = FinStatsMonthFilter(request.GET, queryset=stats)
+    stats = stats_filter.qs
+
+    # Фильтр FinStatsStaff
+    stats_staff_filter = FinStatsStaffFilter(request.GET, queryset=stats_staff)
+    stats_staff = stats_staff_filter.qs
+
     # Пагинатор stats
     paginator = Paginator(stats, 6)
     page_number = request.GET.get('page')
@@ -1092,12 +1126,34 @@ def fin_stats(request):
     # Пагинатор stats_staff
     paginator_st = Paginator(stats_staff, 12)
     page_number_st = request.GET.get('page')
-    page_obj_st = paginator.get_page(page_number_st)
+    page_obj_st = paginator_st.get_page(page_number_st)
 
     return render(request, 'tph_system/fin_stats/fin_stats.html', {
         'title': 'Финансы - кампания',
         'page_obj': page_obj,
         'paginator': paginator,
         'paginator_st': paginator_st,
-        'page_obj_st': page_obj_st
+        'page_obj_st': page_obj_st,
+        'stats_filter': stats_filter,
+        'stats_staff_filter': stats_staff_filter
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.calculate_finstatsmonth', raise_exception=True)
+def fin_stats_calc_view(request):
+    if request.method == 'POST':
+        form = TimeSelectForm(request.POST)
+        if form.is_valid():
+            beg = form.cleaned_data['beg_date']
+            end = form.cleaned_data['end_date']
+            fin_stats_calc(beg, end)
+            fin_stats_staff_calc(beg, end)
+            return redirect('fin_stats')
+    else:
+        form = TimeSelectForm()
+
+    return render(request, 'tph_system/fin_stats/fin_stats_calc.html', {
+        'title': 'Расчет финансов',
+        'form': form
     })

@@ -106,17 +106,23 @@
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
                 </li>
             {% endif %}
-            {% for p in paginator.page_range %}
-                {% if page_obj.number == p %}
-                    <li class="page-item active">
-                        <a class="page-link" href="">{{ p }}</a>
-                    </li>
-                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
+            {% if paginator.num_pages > 1 %}
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                        <li class="page-item active">
+                            <a class="page-link" href="">{{ p }}</a>
+                        </li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+                        <li class="page-item">
+                            {% if '?param' in request.get_full_path %}
+                            <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
+                            {% else %}
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>

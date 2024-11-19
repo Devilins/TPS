@@ -5,9 +5,11 @@
     <a role="button" class="btn btn-outline-warning" href="{% url 'salary' %}">
         Зарплаты по дням
     </a>
+    {% if perms.tph_system.calculate_salary %}
     <a role="button" class="btn btn-outline-light" href="{% url 'salary_calculation' %}" style="margin-left: 20px;">
         Рассчитать зарплату за период
     </a>
+    {% endif %}
     {% if err_events_count == 0 %}
         <a role="button" class="btn btn-outline-success" href="{% url 'sal_events' %}" style="margin-left: 20px;">
             Ошибки выполнения ({{ err_events_count }})
@@ -83,17 +85,23 @@
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
                 </li>
             {% endif %}
-            {% for p in paginator.page_range %}
-                {% if page_obj.number == p %}
-                    <li class="page-item active">
-                        <a class="page-link" href="">{{ p }}</a>
-                    </li>
-                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
+            {% if paginator.num_pages > 1 %}
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                        <li class="page-item active">
+                            <a class="page-link" href="">{{ p }}</a>
+                        </li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+                        <li class="page-item">
+                            {% if '?param' in request.get_full_path %}
+                            <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
+                            {% else %}
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>

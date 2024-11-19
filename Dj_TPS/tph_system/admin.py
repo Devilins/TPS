@@ -105,7 +105,7 @@ class SettingsAdmin(admin.ModelAdmin):
 class ImplEventsAdmin(admin.ModelAdmin):
     readonly_fields = ('date_created', 'date_updated', 'user_edited')
     list_display = ('event_type', 'short_event_message', 'status', 'solved', 'date_updated', 'user_edited')
-    list_filter = ('status', 'event_type', 'solved')
+    list_filter = ('date_updated', 'status', 'solved', 'event_type')
     search_fields = ['event_message']
     search_help_text = 'Поиск по тексту события'
     list_per_page = 30
