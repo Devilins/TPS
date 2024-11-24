@@ -116,6 +116,71 @@ class TechUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     permission_required = 'tph_system.change_tech'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с фототехникой'
 
+    @atomic
+    def form_valid(self, form):
+        # Фиксируем текущие данные
+        t_count_old = self.get_object().count
+        t_store_old = self.get_object().store
+        t_serial_old = self.get_object().serial_num
+        t_name_old = self.get_object().name
+        t_date_buy_old = self.get_object().date_buy
+        t_warr_old = self.get_object().warranty_date
+
+        # Сохраняем экземпляр техники на точке
+        self.object = form.save()
+
+        # Данные из формы
+        t_store = form.cleaned_data['store']
+        t_name = form.cleaned_data['name']
+        t_serial = form.cleaned_data['serial_num']
+        t_count = form.cleaned_data['count']
+        t_date_buy = form.cleaned_data['date_buy']
+        t_warr = form.cleaned_data['warranty_date']
+
+        if t_serial != '':
+            ser = f" | {t_serial}"
+        else:
+            ser = ""
+
+        if t_serial_old != t_serial:
+            ser_ch = f"Серийный номер {t_serial_old} -> {t_serial}. "
+        else:
+            ser_ch = ""
+
+        if t_store_old != t_store:
+            store_ch = f"Точка {t_store_old} -> {t_store}. "
+        else:
+            store_ch = ""
+
+        if t_count_old != t_count:
+            cnt_ch = f"Количество {t_count_old} -> {t_count}. "
+        else:
+            cnt_ch = ""
+
+        if t_name_old != t_name:
+            name_ch = f"Наименование {t_name_old} -> {t_name}. "
+        else:
+            name_ch = ""
+
+        if t_date_buy_old != t_date_buy:
+            dt_buy_ch = f"Дата покупки {t_date_buy_old} -> {t_date_buy}. "
+        else:
+            dt_buy_ch = ""
+
+        if t_warr_old != t_warr:
+            warr_ch = f"Дата окончания гарантии {t_warr_old} -> {t_warr}. "
+        else:
+            warr_ch = ""
+
+        # Логируем изменение техники
+        ImplEvents.objects.create(
+            event_type=f"Tech_Update",
+            event_message=f"{t_name}{ser} на {t_store.name}. {name_ch}{ser_ch}{store_ch}{cnt_ch}{dt_buy_ch}{warr_ch}",
+            status='Успешно'
+        )
+
+        return super().form_valid(form)
+
 
 class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tech
@@ -158,26 +223,27 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         photo_count = form.cleaned_data['photo_count']
 
         try:
-            # Корректировка кол-ва расходников consumable.count в зависимости от разницы photo_count - photo_c_old
-            if sale_type == 'Печать 15x20':
-                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                prev_count = consumable.count
-                consumable.count += int(decimal.Decimal((photo_c_old - photo_count) / 2).quantize(  # округление
-                    decimal.Decimal('1'),
-                    rounding=decimal.ROUND_HALF_UP
-                ))
-            else:
+            # Корректировка кол-ва магнитов consumable.count в зависимости от разницы photo_count - photo_c_old
+            if sale_type in ('Вин. магн.', 'Ср. магн.', 'Бол. магн.'):
+                # Корректировка для 'Печать 15x20'. Сохраним на память
+                # if sale_type == 'Печать 15x20':
+                #     consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
+                #     prev_count = consumable.count
+                #     consumable.count += int(decimal.Decimal((photo_c_old - photo_count) / 2).quantize(  # округление
+                #         decimal.Decimal('1'),
+                #         rounding=decimal.ROUND_HALF_UP
+                #     ))
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 prev_count = consumable.count
                 consumable.count += photo_c_old - photo_count
-            consumable.save()
-            # Логируем изменение расходников
-            ImplEvents.objects.create(
-                event_type=f"ConsStore_Upd_{sale_type}",
-                event_message=f"Изменение количества расходников на {store.name} из-за корректировки продажи. "
-                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
-                status='Успешно'
-            )
+                consumable.save()
+                # Логируем изменение расходников
+                ImplEvents.objects.create(
+                    event_type=f"ConsStore_Upd_{sale_type}",
+                    event_message=f"Изменение количества расходников на {store.name} из-за корректировки продажи. "
+                                  f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                    status='Успешно'
+                )
         except ConsumablesStore.DoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Upd_Failed",
@@ -211,23 +277,19 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
         photo_count = self.get_object().photo_count
 
         try:
-            # Корректировка кол-ва расходников при удалении продажи
-            if sale_type == 'Печать 15x20':
-                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                prev_count = consumable.count
-                consumable.count += math.ceil(photo_count / 2)
-            else:
+            # Корректировка кол-ва магнитов при удалении продажи
+            if sale_type in ('Вин. магн.', 'Ср. магн.', 'Бол. магн.'):
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 prev_count = consumable.count
                 consumable.count += photo_count
-            consumable.save()
-            # Логируем изменение расходников
-            ImplEvents.objects.create(
-                event_type=f"ConsStore_Del_{sale_type}",
-                event_message=f"Изменение количества расходников на {store.name} из-за удаления продажи. "
-                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
-                status='Успешно'
-            )
+                consumable.save()
+                # Логируем изменение расходников
+                ImplEvents.objects.create(
+                    event_type=f"ConsStore_Del_{sale_type}",
+                    event_message=f"Изменение количества расходников на {store.name} из-за удаления продажи. "
+                                  f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                    status='Успешно'
+                )
         except ConsumablesStore.DoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Del_Failed",
@@ -298,23 +360,20 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         sale_type = form.cleaned_data['sale_type']
         photo_count = form.cleaned_data['photo_count']
 
+        # Меняем расходники только для магнитов
         try:
-            if sale_type == 'Печать 15x20':
-                consumable = ConsumablesStore.objects.get(cons_short='Печать A4', store=store)
-                prev_count = consumable.count
-                consumable.count -= math.ceil(photo_count / 2)
-            else:
+            if sale_type in ('Вин. магн.', 'Ср. магн.', 'Бол. магн.'):
                 consumable = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 prev_count = consumable.count
                 consumable.count -= photo_count
-            consumable.save()
-            # Логируем изменение расходников
-            ImplEvents.objects.create(
-                event_type=f"ConsStore_Crt_{sale_type}",
-                event_message=f"Изменение количества расходников на {store.name} из-за создания новой продажи. "
-                              f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
-                status='Успешно'
-            )
+                consumable.save()
+                # Логируем изменение расходников
+                ImplEvents.objects.create(
+                    event_type=f"ConsStore_Crt_{sale_type}",
+                    event_message=f"Изменение количества расходников на {store.name} из-за создания новой продажи. "
+                                  f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
+                    status='Успешно'
+                )
         except ConsumablesStore.DoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Crt_Failed",
@@ -436,7 +495,7 @@ class SalaryWeeklyUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Update
     model = SalaryWeekly
     form_class = SalaryWeeklyForm
     template_name = 'tph_system/salary_weekly/salary_w_upd.html'
-    success_url = '/salary_weekly/'
+    success_url = '/salary/weekly/'
     extra_context = {
         'title': 'Зарплаты по неделям - редактирование',
         'card_title': 'Редактирование записи с зарплатой по неделям'
@@ -447,7 +506,7 @@ class SalaryWeeklyUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Update
 
 class SalaryWeeklyDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = SalaryWeekly
-    success_url = '/salary_weekly/'
+    success_url = '/salary/weekly/'
     template_name = 'tph_system/salary_weekly/salary_w_del.html'
     extra_context = {
         'title': 'Зарплаты по неделям - удаление',
@@ -885,9 +944,18 @@ def main_page(request):
     sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store').order_by('store')
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
-    con_store = ConsumablesStore.objects.filter(count__lt=1)
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
+    tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
+
+
+    # Заканчивающиеся расходники
+    con_store = ConsumablesStore.objects.filter(count__lte=1)
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond 10x15', count__lte=1))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond А4', count__lte=1))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lte=20))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lte=30))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lte=30))
 
     dic = {}
 
@@ -919,7 +987,8 @@ def main_page(request):
         'error': error,
         'form': form,
         'sys_errors_count': sys_errors_count,
-        'err_events_count': err_events_count
+        'err_events_count': err_events_count,
+        'tech_upd_info': tech_upd_info
     })
 
 

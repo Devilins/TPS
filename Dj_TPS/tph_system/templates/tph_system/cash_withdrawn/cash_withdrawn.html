@@ -38,6 +38,8 @@
                     <th scope="col">Сотрудник</th>
                     <th scope="col">Дата</th>
                     <th scope="col">Забрали наличными</th>
+                    <th scope="col">Комментарий</th>
+                    <th scope="col">Дата изменения</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -48,6 +50,8 @@
                     <td>{{ c.staff }} </td>
                     <td>{{ c.date }}</td>
                     <td>{{ c.withdrawn }}</td>
+                    <td>{{ c.comment }}</td>
+                    <td>{{ c.date_upd }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
                             <a href="{% url 'c_w_update' c.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
@@ -75,8 +79,9 @@
                             <div class="form-error">{{ form.store.errors }}</div>
                             {{ form.staff }}<br>
                             {{ form.date }}<br>
-                            {{ form.withdrawn }}
+                            {{ form.withdrawn }}<br>
                             <div class="form-error">{{ form.withdrawn.errors }}</div>
+                            {{ form.comment }}
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" type="submit">Сохранить</button>

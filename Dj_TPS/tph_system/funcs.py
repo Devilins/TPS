@@ -47,6 +47,10 @@ def param_gets(par):
                             f"добавьте в Настройки новый параметр {str(par)} с нужным вам значением.")
 
 
+def dt_format(date):
+    return date.strftime("%d.%m.%Y")
+
+
 def sal_calc(time_start, time_end):
     for day_date in date_generator(time_start, time_end):
         # Продажи за день без заказов
@@ -175,7 +179,7 @@ def sal_calc(time_start, time_end):
             # Новая запись в системных событиях
             rec = ImplEvents.objects.create(
                 event_type='Salary_Calculation',
-                event_message=f"Произведен расчет зарплаты за {day_date} по сотруднику {sch.staff}. В БД {action}",
+                event_message=f"Произведен расчет зарплаты за {dt_format(day_date)} по сотруднику {sch.staff}. В БД {action}",
                 status='Успешно'
             )
             print(f"ImplEvents - новая запись {rec}")
@@ -216,7 +220,7 @@ def sal_weekly_update(time_start, time_end):
                 # Новая запись в системных событиях
                 rec = ImplEvents.objects.create(
                     event_type='Salary_Weekly_Update',
-                    event_message=f"В зарплаты за неделю занесены данные за период {start_week} - {end_week} "
+                    event_message=f"В зарплаты за неделю занесены данные за период {dt_format(start_week)} - {dt_format(end_week)} "
                                   f"по сотруднику {staff}. В БД {action}",
                     status='Успешно'
                 )
@@ -246,7 +250,7 @@ def fin_stats_calc(time_start, time_end):
             # Новая запись в системных событиях
             rec = ImplEvents.objects.create(
                 event_type='FinStatsMonth_Update',
-                event_message=f"В финансовые отчеты по кампании занесены данные за период {start_month} - {end_month}. "
+                event_message=f"В финансовые отчеты по кампании занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}. "
                               f"В БД {action}",
                 status='Успешно'
             )
@@ -280,7 +284,7 @@ def fin_stats_staff_calc(time_start, time_end):
                 # Новая запись в системных событиях
                 rec = ImplEvents.objects.create(
                     event_type='FinStatsStaff_Update',
-                    event_message=f"В финансовые отчеты по сотрудникам занесены данные за период {start_month} - {end_month}. "
+                    event_message=f"В финансовые отчеты по сотрудникам занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}. "
                                   f"Сотрудник - {staff}. В БД {action}",
                     status='Успешно'
                 )

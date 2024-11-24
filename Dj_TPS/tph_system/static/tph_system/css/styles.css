@@ -106,6 +106,10 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     width: 500px;
 }
 
+#main_view_card3 {
+    width: 1025px;
+}
+
 main .sale_add_cont {
     padding: 1%;
     float: left;

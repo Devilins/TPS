@@ -385,13 +385,14 @@ class CashWithdrawnForm(ModelForm):
 
     class Meta:
         model = CashWithdrawn
-        fields = ['store', 'staff', 'date', 'withdrawn']
+        fields = ['store', 'staff', 'date', 'withdrawn', 'comment']
 
         labels = {
             'store': 'Точка',
             'staff': 'Сотрудник',
             'date': 'Дата',
-            'withdrawn': 'Забрали наличными'
+            'withdrawn': 'Забрали наличными',
+            'comment': 'Комментарий'
         }
 
         widgets = {
@@ -412,6 +413,11 @@ class CashWithdrawnForm(ModelForm):
             "withdrawn": NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Сколько забрали наличными'
+            }),
+            "comment": Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Комментарий',
+                'rows': '2'
             })
         }
 

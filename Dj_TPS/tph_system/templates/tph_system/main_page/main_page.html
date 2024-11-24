@@ -71,7 +71,7 @@
                     <h4 class="card-title">Кто {{ now_date }} работает на точках: </h4>
                 </div>
 
-                <!-- Карточка с содержимым -->
+                <!-- Карточка с информацией о том, кто работает на точках -->
                 <div class="card-body">
                     <ul class="list-group">
                         {% regroup sch by store as sch_list %}
@@ -100,7 +100,7 @@
                     <h4 class="card-title">Кассы за {{ now_date }}: </h4>
                 </div>
 
-                <!-- Карточка с содержимым -->
+                <!-- Карточка с кассами за сегодня -->
                 <div class="card-body">
                     <ul class="list-group">
                         {% for store, summ in dic.items %}
@@ -129,7 +129,7 @@
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>
 
-        <!-- Карточка с содержимым -->
+        <!-- Карточка с заканчивающимися расходниками -->
         <div class="card-body">
             <ul class="list-group">
                 {% for c in con_store %}
@@ -142,6 +142,23 @@
                             <u><a href="{% url 'con_store_update' c.id %}">{{ c.consumable }}</a></u> - {{ c.count }}
                         </div>
                     </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
+        <div class="card-header">
+            <h4 class="card-title">Изменение фототехники на точках за {{ now_date }}: </h4>
+        </div>
+
+        <!-- Карточка с историей изменения техники -->
+        <div class="card-body">
+            <ul class="list-group">
+                {% for t in tech_upd_info %}
+                <li class="list-group-item">
+                    {{ t.event_message }}
                 </li>
                 {% endfor %}
             </ul>
