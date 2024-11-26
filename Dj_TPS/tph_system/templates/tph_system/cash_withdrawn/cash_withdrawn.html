@@ -4,9 +4,14 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для добавления записи о снятии наличных -->
 {% if perms.tph_system.add_cashwithdrawn %}
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
-    Забрать наличные
-</button>
+
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
+                Забрать наличные
+            </button>
+        </a>
+    </li>
 {% endif %}
 {% endblock func_buttons %}
 

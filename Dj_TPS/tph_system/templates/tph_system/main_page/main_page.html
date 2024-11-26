@@ -4,9 +4,13 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода новых примеров -->
 {% if perms.tph_system.add_refsandtips %}
-    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-tip-form">
-        Добавить Пример
-    </button>
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-tip-form">
+                Добавить Пример
+            </button>
+        </a>
+    </li>
 {% endif %}
 {% endblock func_buttons %}
 
@@ -14,21 +18,21 @@
 {% if perms.tph_system.view_implevents %}
     <!-- Сообщения об ошибках выполнения бизнес функций -->
     {% if err_events_count == 0 %}
-            <a role="button" class="btn btn-outline-success" style="margin-right: 20px;">
+            <a role="button" class="btn btn-sm btn-outline-success" style="margin-right: 10px;">
                 Ошибки выполнения ({{ err_events_count }})
             </a>
         {% else %}
-            <a role="button" class="btn btn-warning" style="margin-right: 20px;">
+            <a role="button" class="btn btn-sm btn-warning" style="margin-right: 10px;">
                 Ошибки выполнения ({{ err_events_count }})
             </a>
         {% endif %}
     <!-- Сообщения о системных ошибках -->
     {% if sys_errors_count == 0 %}
-        <a role="button" class="btn btn-outline-success" style="margin-right: 20px;">
+        <a role="button" class="btn btn-sm btn-outline-success">
             Системные ошибки ({{ sys_errors_count }})
         </a>
     {% else %}
-        <a role="button" class="btn btn-danger" style="margin-right: 20px;">
+        <a role="button" class="btn btn-sm btn-danger">
             Системные ошибки ({{ sys_errors_count }})
         </a>
     {% endif %}

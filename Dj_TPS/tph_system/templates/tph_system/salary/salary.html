@@ -2,14 +2,20 @@
 {% load static %}
 
 {% block func_buttons %}
-    <a role="button" class="btn btn-outline-warning" href="{% url 'salary_weekly' %}">
-        К зарплатам по неделям
-    </a>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'salary_weekly' %}">
+            <button type="button" class="btn btn-sm btn-warning">К зарплатам по неделям</button>
+        </a>
+    </li>
     <!-- Кнопка модального окна для ввода зарплат -->
     {% if perms.tph_system.add_salary %}
-    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form" style="margin-left: 20px;">
-        Добавить Запись
-    </button>
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+                Добавить Запись
+            </button>
+        </a>
+    </li>
     {% endif %}
 {% endblock func_buttons %}
 

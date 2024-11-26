@@ -14,31 +14,78 @@
     <link rel="stylesheet" href="{% static 'tph_system/css/styles.css' %}" type="text/css" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css">
-</head>
-<body>
-    <div class="container cont_login">
-        <div class="card shadow">
-            <div class="card-header">
-                <h4 class="card-title">Take Photo ERP System</h4>
-            </div>
 
-            <div class="card-body">
-                <!-- Форма авторизации -->
-                <form method="post" class="form-control">
-                    {% csrf_token %}
-                    <div class="error_style">
-                        {% for error in form.non_field_errors %}
-                            <i>{{error}}</i>
-                        {% endfor %}
-                    </div>
-                    {% for f in form %}
-                    <p><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label><br>{{ f }}</p>
-                    <div class="form-error">{{ f.errors }}</div>
-                    {% endfor %}
-                    <p><button class="btn btn-success" type="submit">Войти</button></p>
-                </form>
-            </div>
+    <style>
+        .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+        }
+
+        @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+        }
+
+        html,
+        body {
+          height: 100%;
+        }
+
+        body {
+          display: flex;
+          align-items: center;
+          padding-top: 40px;
+          padding-bottom: 40px;
+          background-color: #f5f5f5;
+        }
+
+        main {
+            text-align: center;
+            background-color: #f5f5f5;  /* Цвет Main */
+        }
+
+        .form-signin {
+          width: 100%;
+          max-width: 330px;
+          padding: 15px;
+          margin: auto;
+        }
+
+        .form-signin .checkbox {
+          font-weight: 400;
+        }
+
+        .form-signin .form-floating:focus-within {
+          z-index: 2;
+        }
+    </style>
+
+</head>
+    <body>
+<main class="form-signin">
+    <!-- Форма авторизации -->
+    <form method="post">
+        {% csrf_token %}
+        <img class="mb-4" src="{% static 'tph_system/images/logo_TPS_round.png'%}" alt="" width="90" height="90">
+        <h1 class="h3 mb-4 fw-normal">Take Photo ERP System</h1>
+        <div class="error_style">
+            {% for error in form.non_field_errors %}
+                <i>{{error}}</i>
+            {% endfor %}
         </div>
-    </div>
-</body>
+        {% for f in form %}
+        <div class="form-floating">
+            {{ f }}
+            <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+            <div class="form-error">{{ f.errors }}</div>
+        </div>
+        {% endfor %}
+        <p><button class="w-100 mt-3 btn btn-lg btn-primary" type="submit">Войти</button></p>
+    </form>
+</main>
+    </body>
 </html>

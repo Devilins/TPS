@@ -44,6 +44,8 @@ urlpatterns = [
     path('salary/events/<int:pk>/update', ImplEventsUpdateView.as_view(), name='sal_events_update'),
     path('fin_stats/<int:pk>/update', FinStatsMonthUpdateView.as_view(), name='fin_stats_update'),
     path('fin_stats/<int:pk>/delete', FinStatsMonthDeleteView.as_view(), name='fin_stats_delete'),
+
+    # path('base/', base_fx, name='base_fx'),
     # Календарь
     path('calendar/', CalendarView.as_view(), name='calendar'),
     path('calendar/event/add/', EventCreateView.as_view(), name='event_add'),

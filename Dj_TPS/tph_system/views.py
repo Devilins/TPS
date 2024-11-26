@@ -656,7 +656,7 @@ def staff(request):
     form = StaffForm()
 
     # Пагинатор
-    paginator = Paginator(staffs, 12)
+    paginator = Paginator(staffs, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -702,7 +702,7 @@ def cons_store(request):
         form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
     # Пагинатор
-    paginator = Paginator(con_store, 12)
+    paginator = Paginator(con_store, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -747,7 +747,7 @@ def tech_mtd(request):
         form = TechForm(initial={'store': store_staff_working_obj})
 
     # Пагинатор
-    paginator = Paginator(tech, 12)
+    paginator = Paginator(tech, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -923,7 +923,7 @@ def sales(request):
     })
 
     # Пагинатор
-    paginator = Paginator(sales_all, 12)
+    paginator = Paginator(sales_all, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1034,7 +1034,7 @@ def cash_withdrawn(request):
         })
 
     # Пагинатор
-    paginator = Paginator(cash, 12)
+    paginator = Paginator(cash, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1068,7 +1068,7 @@ def settings(request):
         form = SettingsForm()
 
     # Пагинатор
-    paginator = Paginator(stng, 12)
+    paginator = Paginator(stng, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1093,7 +1093,7 @@ def salary_weekly(request):
     slr = sw_filter.qs
 
     # Пагинатор
-    paginator = Paginator(slr, 12)
+    paginator = Paginator(slr, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1144,7 +1144,7 @@ def salary_details(request):
         form = SalaryForm()
 
     # Пагинатор
-    paginator = Paginator(slr, 12)
+    paginator = Paginator(slr, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1188,7 +1188,7 @@ def fin_stats(request):
     stats_staff = stats_staff_filter.qs
 
     # Пагинатор stats
-    paginator = Paginator(stats, 6)
+    paginator = Paginator(stats, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1225,4 +1225,10 @@ def fin_stats_calc_view(request):
     return render(request, 'tph_system/fin_stats/fin_stats_calc.html', {
         'title': 'Расчет финансов',
         'form': form
+    })
+
+
+def base_fx(request):
+    return render(request, 'tph_system/base_my.html', {
+        'title': 'Старый базовый шаблон'
     })

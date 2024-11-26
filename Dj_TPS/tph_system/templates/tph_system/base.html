@@ -1,7 +1,11 @@
 {% load static %}
+{% load tags_extras %}
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="ru" data-bs-theme="auto">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Take Photo ERP System">
     {% block title %}
     {% endblock title %}
     <title>{{ title }}</title>
@@ -24,118 +28,272 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css">
 
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #8e8d8a;">
-        <div class="container-fluid">
-            <a class="navbar-brand" style="color: #ffffff;">
-                <img src="{% static 'tph_system/images/logo_TPS_round.png'%}" width="30" height="30" class="d-inline-block align-top" alt="">
-                Take Photo ERP System
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-                    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Переключатель навигации">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <meta name="theme-color" content="#7952b3">
 
-                <nav class="navbar ms-5">
-                    <div class="container-fluid justify-content-start">
-                        {% block func_buttons %}
-                        {% endblock func_buttons %}
-                    </div>
-                </nav>
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
 
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <!--
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'store' %}" style="color: #ffffff;">Точки</a>
-                    </li>  -->
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
 
-                    {% block event_msg %}
-                    {% endblock event_msg %}
+        /* Стили для нового базового шаблона */
+        body {
+          font-size: .875rem;
+        }
 
-                    <!-- Выпадающий список пользователя справва -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" style="color: #ffffff;">
-                            {{ user.first_name }} {{ user.last_name }}
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <!--    <a class="dropdown-item" href="#">Настройки пользователя</a>  -->
-                            <a class="dropdown-item" href="{% url 'users:password_change' %}">Сменить пароль</a>
-                            <a class="dropdown-item" href="{% url 'users:logout' %}">Выход</a>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        .feather {
+          width: 16px;
+          height: 16px;
+          vertical-align: text-bottom;
+        }
+
+        /*
+         * Sidebar
+         */
+
+        .sidebar {
+          position: fixed;
+          top: 0;
+          /* rtl:raw:
+          right: 0;
+          */
+          bottom: 0;
+          /* rtl:remove */
+          left: 0;
+          z-index: 100; /* Behind the navbar */
+          padding: 48px 0 0; /* Height of navbar */
+          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+
+        @media (max-width: 767.98px) {
+          .sidebar {
+            top: 5rem;
+          }
+        }
+
+        .sidebar-sticky {
+          position: relative;
+          top: 0;
+          height: calc(100vh - 48px);
+          padding-top: .5rem;
+          overflow-x: hidden;
+          overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+        }
+
+        .sidebar .nav-link {
+          font-weight: 500;
+          color: #333;
+        }
+
+        .sidebar .nav-link .feather {
+          margin-right: 4px;
+          color: #727272;
+        }
+
+        .sidebar .nav-link.active {
+          color: #007bff;
+        }
+
+        .sidebar .nav-link:hover .feather,
+        .sidebar .nav-link.active .feather {
+          color: inherit;
+        }
+
+        .sidebar-heading {
+          font-size: .75rem;
+          text-transform: uppercase;
+        }
+
+        /*
+         * Navbar
+         */
+
+        .navbar-brand {
+          padding-top: .75rem;
+          padding-bottom: .75rem;
+          font-size: 1rem;
+          background-color: rgba(0, 0, 0, .25);
+          box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+        }
+
+        .navbar .navbar-toggler {
+          top: .25rem;
+          right: 1rem;
+        }
+
+        .navbar .form-control {
+          padding: .75rem 1rem;
+          border-width: 0;
+          border-radius: 0;
+        }
+
+        .form-control-dark {
+          color: #fff;
+          background-color: rgba(255, 255, 255, .1);
+          border-color: rgba(255, 255, 255, .1);
+        }
+
+        .form-control-dark:focus {
+          border-color: transparent;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+        }
+
+        img {
+            float: left;
+            width: 25px;
+            margin-right: 10px;
+        }
+
+        main {
+            background-color: #ffffff;  /* Цвет Main */
+        }
+
+        body {
+          background: #ffffff;
+        }
+
+        .navbar-dark .navbar-brand {      /* Цвет названия navbar */
+            color: #ffffff;
+        }
+
+        nav div ul li:hover, nav div ul a:hover {
+            transform: scale(1.02);            /* Эффекты */
+            transition: all 0.1s ease;
+        }
+    </style>
+
+    </head>
+  <body>
+
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{% url 'main_page' %}">
+    <img src="{% static 'tph_system/images/logo_TPS_round.png'%}" width="25" height="25" class="d-inline-block align-top" alt="">
+    Take Photo ERP System
+  </a>
+  <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="container justify-content-end">
+      {% block event_msg %}
+      {% endblock event_msg %}
+  </div>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link active">{{ user.first_name }} {{ user.last_name }}</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="{% url 'users:password_change' %}">Сменить пароль</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="{% url 'users:logout' %}">Выход</a>
+    </li>
+  </ul>
+
+
+<!--  <ul class="navbar-nav px-4">-->
+<!--    <ul class="nav">-->
+<!--      <li class="nav-item text-nowrap">-->
+<!--        <a class="nav-link active" href="#">{{ user.first_name }} {{ user.last_name }}</a>-->
+<!--      </li>-->
+<!--      <li class="nav-item text-nowrap">-->
+<!--        <a class="nav-link" href="{% url 'users:password_change' %}">Сменить пароль</a>-->
+<!--      </li>-->
+<!--      <li class="nav-item text-nowrap">-->
+<!--        <a class="nav-link" href="{% url 'users:logout' %}">Выход</a>-->
+<!--      </li>-->
+<!--    </ul>-->
+<!--  </ul>-->
+
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          {% if perms.tph_system.view_main_page %}
+          <li class="nav-item"><a{% if request.path|startswith:'/main_page/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'main_page' %}">
+              <img src="{% static 'tph_system/images/i_mainmenu.png' %}">Главная страница</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_schedule %}
+          <li class="nav-item"><a{% if request.path|startswith:'/schedule/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'schedule' %}">
+              <img src="{% static 'tph_system/images/i_schedule.png' %}">График сотрудников</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_sales %}
+          <li class="nav-item"><a{% if request.path|startswith:'/sales/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'sales' %}">
+              <img src="{% static 'tph_system/images/i_sales.png' %}">Продажи</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_consumablesstore %}
+          <li class="nav-item"><a{% if request.path|startswith:'/consumables/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'cons_store' %}">
+              <img src="{% static 'tph_system/images/i_consumable.png' %}">Расходники</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_staff %}
+          <li class="nav-item"><a{% if request.path|startswith:'/staff/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'staff' %}">
+              <img src="{% static 'tph_system/images/i_staff.png' %}">Сотрудники</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_store %}
+          <li class="nav-item"><a{% if request.path|startswith:'/store/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'store' %}">
+              <img src="{% static 'tph_system/images/i_store.png' %}">Точки</a></li>
+          {% endif %}
+          {% if perms.tph_system.view_cashwithdrawn %}
+          <li class="nav-item"><a{% if request.path|startswith:'/cash_withdrawn/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'cash_withdrawn' %}">
+              <img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
+          {% endif %}
+          {% if perms.tph_system.view_salaryweekly %}
+          <li class="nav-item"><a{% if request.path|startswith:'/salary/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'salary_weekly' %}">
+              <img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
+          {% endif %}
+          {% if perms.tph_system.view_finstatsmonth %}
+          <li class="nav-item"><a{% if request.path|startswith:'/fin_stats/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'fin_stats' %}">
+              <img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
+          {% endif %}
+          {% if perms.tph_system.view_tech %}
+          <li class="nav-item"><a{% if request.path|startswith:'/tech/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'tech' %}">
+              <img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
+          {% endif %}
+          {% if perms.tph_system.view_settings %}
+          <li class="nav-item"><a{% if request.path|startswith:'/settings/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'settings' %}">
+              <img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>
+          {% endif %}
+
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Функциональные кнопки</span>
+          <a class="link-secondary" href="#" aria-label="Add a new report">
+            <span data-feather="plus-circle"></span>
+          </a>
+        </h6>
+        <ul class="nav flex-column mb-2">
+
+          {% block func_buttons %}
+          {% endblock func_buttons %}
+
+        </ul>
+      </div>
     </nav>
 
-    {% block head %}
-    {% endblock head %}
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
 
-    <script>
-        $(document).ready(function() {
-          $('.nav-link-collapse').on('click', function() {
-            $('.nav-link-collapse').not(this).removeClass('nav-link-show');
-            $(this).toggleClass('nav-link-show');
-          });
-        });
-    </script>
+      {% block content %}
+      {% endblock content %}
 
-</head>
-<body>
-    <aside>
-        <div class="container-md" id="leftpanel"style="margin-top: 30px;">
-            <nav class="navbar navbar-expand-lg" style="margin-top: 30px;">
-                <div class="container-fluid" style="padding: 0px;">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#AsideDropdown"
-                            aria-controls="AsideDropdown" aria-expanded="false" aria-label="Toggle menu">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="AsideDropdown">
-                        <ul class="nomarker">
-                            {% if perms.tph_system.view_main_page %}
-                            <li><a href="{% url 'main_page' %}"><img src="{% static 'tph_system/images/i_mainmenu.png' %}"> Главная </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_schedule %}
-                            <li><a href="{% url 'schedule' %}"><img src="{% static 'tph_system/images/i_schedule.png' %}"> График сотрудников </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_sales %}
-                            <li><a href="{% url 'sales' %}"><img src="{% static 'tph_system/images/i_sales.png' %}"> Продажи </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_consumablesstore %}
-                            <li><a href="{% url 'cons_store' %}"><img src="{% static 'tph_system/images/i_consumable.png' %}"> Расходники </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_staff %}
-                            <li><a href="{% url 'staff' %}"><img src="{% static 'tph_system/images/i_staff.png' %}"> Сотрудники </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_store %}
-                            <li><a href="{% url 'store' %}"><img src="{% static 'tph_system/images/i_store.png' %}"> Точки </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_cashwithdrawn %}
-                            <li><a href="{% url 'cash_withdrawn' %}"><img src="{% static 'tph_system/images/i_cash_withdrawn.png' %}"> Зарплата наличными </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_salaryweekly %}
-                            <li><a href="{% url 'salary_weekly' %}"><img src="{% static 'tph_system/images/i_salary.png' %}"> Зарплаты </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_finstatsmonth %}
-                            <li><a href="{% url 'fin_stats' %}"><img src="{% static 'tph_system/images/i_money.png' %}"> Финансовая отчетность </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_tech %}
-                            <li><a href="{% url 'tech' %}"><img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
-                            {% endif %}
-                            {% if perms.tph_system.view_settings %}
-                            <li><a href="{% url 'settings' %}"><img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </aside>
-    <main>
-        {% block content %}
-        {% endblock content %}
     </main>
+  </div>
+</div>
 
-</body>
-
+  </body>
 </html>

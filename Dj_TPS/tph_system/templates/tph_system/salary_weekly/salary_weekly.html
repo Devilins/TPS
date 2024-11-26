@@ -2,23 +2,29 @@
 {% load static %}
 
 {% block func_buttons %}
-    <a role="button" class="btn btn-outline-warning" href="{% url 'salary' %}">
-        Зарплаты по дням
-    </a>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'salary' %}">
+            <button type="button" class="btn btn-sm btn-warning">Зарплаты по дням</button>
+        </a>
+    </li>
     {% if perms.tph_system.calculate_salary %}
-    <a role="button" class="btn btn-outline-light" href="{% url 'salary_calculation' %}" style="margin-left: 20px;">
-        Рассчитать зарплату за период
-    </a>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'salary_calculation' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Рассчитать зарплату за период</button>
+        </a>
+    </li>
     {% endif %}
+    <li class="nav-item">
     {% if err_events_count == 0 %}
-        <a role="button" class="btn btn-outline-success" href="{% url 'sal_events' %}" style="margin-left: 20px;">
-            Ошибки выполнения ({{ err_events_count }})
+        <a class="nav-link" href="{% url 'sal_events' %}">
+            <button type="button" class="btn btn-sm btn-outline-success">Ошибки выполнения ({{ err_events_count }})</button>
         </a>
     {% else %}
-        <a role="button" class="btn btn-danger" href="{% url 'sal_events' %}" style="margin-left: 20px;">
-            Ошибки выполнения ({{ err_events_count }})
+        <a class="nav-link" href="{% url 'sal_events' %}">
+            <button type="button" class="btn btn-sm btn-danger">Ошибки выполнения ({{ err_events_count }})</button>
         </a>
     {% endif %}
+    </li>
 {% endblock func_buttons %}
 
 {% block content %}

@@ -83,9 +83,9 @@ form {    /* Стили формы ввода данных (в модально�
 main .staffs, .cont_store{    /* Стили для изменения всего контейнера с сотрудниками */
     padding: 1%;
     float: left;
-    margin-top: 69px;     /* Отступ сверху, из-за фиксированного навбара */
-    font-size: 17px;
-    max-width: 83%;
+    /* margin-top: 69px;      Отступ сверху, из-за фиксированного навбара */
+    font-size: 15px;
+    max-width: 100%;
 }
 
 main .staffs  a {    /* Стиль для ссылок в .staffs (Используется в кнопках со ссылками...) */
@@ -99,7 +99,7 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     padding: 1%;
     float: left;
     margin-top: 10px;
-    font-size: 17px;
+    font-size: 15px;
 }
 
 #upd_del_forms, #store_card, #main_view_card, #main_view_card2 {
@@ -113,9 +113,9 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
 main .sale_add_cont {
     padding: 1%;
     float: left;
-    margin-top: 69px;     /* Отступ сверху, из-за фиксированного навбара */
-    font-size: 17px;
-    max-width: 83%;
+    /* margin-top: 0px;      Отступ сверху, из-за фиксированного навбара */
+    font-size: 15px;
+    max-width: 100%;
 }
 
 main #sales_table {
@@ -136,7 +136,7 @@ main #sales_table {
     text-align: center;
     float: center;
     margin-top: 15%;
-    font-size: 17px;
+    font-size: 15px;
     width: 500px;
 }
 
@@ -148,3 +148,7 @@ main #sales_table {
     list-style-type: none;
     color: #ff2626;
 }
+
+
+/* Стили для нового базового шаблона */
+

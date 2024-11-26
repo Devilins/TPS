@@ -4,9 +4,13 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода настроек -->
 {% if perms.tph_system.add_settings %}
-    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-store-form">
-        Добавить Настройку
-    </button>
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-store-form">
+                Добавить Настройку
+            </button>
+        </a>
+    </li>
 {% endif %}
 {% endblock func_buttons %}
 
