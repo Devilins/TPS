@@ -155,7 +155,8 @@ $(document).ready(function() {
             data: {
                 'staff_id': employeeId,
                 'date': date,
-                'store': store
+                'store': store,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
             },
             success: function(response) {
                 if (response.status === 'success') {

@@ -9,15 +9,15 @@ from django.urls import reverse_lazy
 from django.db.transaction import atomic
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie, requires_csrf_token
 from django.views.decorators.http import require_http_methods
 from rest_framework.viewsets import ModelViewSet
-from django.views.generic import UpdateView, DeleteView, TemplateView, CreateView
+from django.views.generic import UpdateView, DeleteView, CreateView
 from django.core.paginator import Paginator
 
 from tph_system.models import *
 from tph_system.serializers import StaffSerializer
-from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, ScheduleForm, SalesForm, CashWithdrawnForm, \
+from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
     FinStatsMonthForm
 from .filters import *
@@ -28,9 +28,9 @@ from schedule.views import CalendarByPeriodsView
 from schedule.periods import Month
 
 
-class StaffViewSet(LoginRequiredMixin, ModelViewSet):
-    queryset = Staff.objects.all()
-    serializer_class = StaffSerializer
+# class StaffViewSet(LoginRequiredMixin, ModelViewSet):
+#     queryset = Staff.objects.all()
+#     serializer_class = StaffSerializer
 
 
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -808,8 +808,8 @@ def schedule_mtd(request):
     })
 
 
-@csrf_exempt
 @login_required
+@permission_required(perm='tph_system.change_schedule', raise_exception=True)
 @require_http_methods(["POST"])
 def update_schedule(request):
     # Получаем данные из POST-запроса
@@ -1228,6 +1228,7 @@ def fin_stats_calc_view(request):
     })
 
 
+@login_required
 def base_fx(request):
     return render(request, 'tph_system/base_my.html', {
         'title': 'Старый базовый шаблон'

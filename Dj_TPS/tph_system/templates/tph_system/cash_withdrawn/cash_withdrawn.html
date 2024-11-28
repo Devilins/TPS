@@ -80,6 +80,11 @@
                     <form method="post">
                         <div class="modal-body">
                             {% csrf_token %}
+                            <div class="error_style">
+                                {% for error in form.non_field_errors %}
+                                    <i>{{error}}</i>
+                                {% endfor %}
+                            </div>
                             {{ form.store }}<br>
                             <div class="form-error">{{ form.store.errors }}</div>
                             {{ form.staff }}<br>
