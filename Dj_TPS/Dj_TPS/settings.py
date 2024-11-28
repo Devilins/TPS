@@ -140,4 +140,8 @@ LOGIN_REDIRECT_URL = 'main_page'
 LOGOUT_REDIRECT_URL = 'users:login'
 LOGIN_URL = 'users:login'
 
-SESSION_COOKIE_AGE = 30 * 60
+SESSION_COOKIE_AGE = 60 * 60    # 1 час
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+LOGIN_ATTEMPTS_LIMIT = 20       # Макс. кол-во ошибок ввода пароля
+LOGIN_ATTEMPTS_TIMEOUT = 300    # Время, на которое блокируется аккаунт, если кто-то дрочит
