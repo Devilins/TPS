@@ -24,3 +24,9 @@ class UserPasswordChange(LoginRequiredMixin, PasswordChangeView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy("users:password_change_done")
     template_name = "users/password_change_form.html"
+
+
+def user_lockout(request, credentials):
+    return render(request, 'users/login_lock.html', {
+        'title': 'Аккаунт заблокирован'
+    })

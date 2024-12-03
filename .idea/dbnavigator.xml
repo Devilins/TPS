@@ -61,14 +61,23 @@ update tph_system_schedule
 set position = 'Кракозябра'
 where date = '2024-11-03' and store_id = 1 and staff_id = 5;
 
-select * from tph_system_implevents;]]></console>
+select * from tph_system_implevents;
+
+select * from background_task;
+select * from background_task_completedtask;
+
+SELECT SUM("tph_system_sales"."sum") AS "sum__sum"
+  FROM "tph_system_sales"
+ WHERE ("tph_system_sales"."date" = '2024-12-02'::date AND "tph_system_sales"."store_id" = 12);]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" object-ref="consoles/tps_db" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />

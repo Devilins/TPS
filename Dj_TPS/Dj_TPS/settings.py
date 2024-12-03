@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-
+    'background_task',
     'tph_system.apps.TphSystemConfig',
     'users.apps.UsersConfig',
-    'schedule'
+    'schedule',
+    'axes',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tph_system.middleware.CurrentUserMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+    # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
+    # It only formats user lockout messages and renders Axes lockout responses
+    # on failed user authentication attempts from login views.
+    # If you do not want Axes to override the authentication response
+    # you can skip installing the middleware and use your own views.
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'Dj_TPS.urls'
@@ -110,6 +120,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = [
+    # AxesStandaloneBackend should be the first backend in the AUTHENTICATION_BACKENDS list.
+    'axes.backends.AxesStandaloneBackend',
+
+    # Django ModelBackend is the default authentication backend.
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -143,5 +162,21 @@ LOGIN_URL = 'users:login'
 SESSION_COOKIE_AGE = 60 * 60    # 1 час
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-LOGIN_ATTEMPTS_LIMIT = 20       # Макс. кол-во ошибок ввода пароля
-LOGIN_ATTEMPTS_TIMEOUT = 300    # Время, на которое блокируется аккаунт, если кто-то дрочит
+# Настройки для background tasks (необязательно)
+MAX_ATTEMPTS = 3  # Максимальное число попыток выполнения задачи
+
+# Axes settings
+AXES_FAILURE_LIMIT = 20
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_COOLOFF_TIME = 0.083   # lockout 5 mins
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False
+# Блокировка только по username. Если хотим по пользаку или ip, то ["username", "ip_address"]
+# А если хотим по комбинации username и ip, то [["username", "ip_address"]]
+AXES_LOCKOUT_PARAMETERS = ["username"]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_CALLABLE = 'users.views.user_lockout'
+
+# For django-debug
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

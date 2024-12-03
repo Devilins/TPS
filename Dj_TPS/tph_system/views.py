@@ -639,7 +639,7 @@ def store(request):
 @login_required
 @permission_required(perm='tph_system.view_staff', raise_exception=True)
 def staff(request):
-    staffs = Staff.objects.all()
+    staffs = Staff.objects.all().select_related('st_username')
 
     s_filter = StaffFilter(request.GET, queryset=staffs)
     staffs = s_filter.qs
@@ -685,9 +685,9 @@ def cons_store(request):
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.consumables_view_all_stores'):
-        con_store = ConsumablesStore.objects.all()
+        con_store = ConsumablesStore.objects.all().select_related('store')
     else:
-        con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj)
+        con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj).select_related('store')
 
     #Фильтр
     cs_filter = ConsumablesStoreFilter(request.GET, queryset=con_store)
@@ -730,9 +730,9 @@ def tech_mtd(request):
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.tech_view_all_stores'):
-        tech = Tech.objects.all()
+        tech = Tech.objects.all().select_related('store')
     else:
-        tech = Tech.objects.filter(store=store_staff_working_obj)
+        tech = Tech.objects.filter(store=store_staff_working_obj).select_related('store')
 
     # Фильтр
     t_filter = TechFilter(request.GET, queryset=tech)
@@ -883,22 +883,23 @@ def m_position_select(request):
 @permission_required(perm='tph_system.view_sales', raise_exception=True)
 def sales(request):
     auth_user = User.objects.get(id=request.user.id)
-
+    auth_staff = Staff.objects.get(st_username=auth_user)
     try:
         store_staff_working_obj = Store.objects.get(
             name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+                                      staff_id=auth_staff).store)
     except ObjectDoesNotExist:
         store_staff_working_obj = None
 
-    #Сотрудник видит только сегодняшние продажи точки, на которой работает по графику, если нет права на просмотр всех продаж
+    # Сотрудник видит только сегодняшние продажи точки, на которой работает по графику, если нет права на просмотр всех продаж
     if auth_user.has_perm('tph_system.user_sales_view_all'):
-        sales_all = Sales.objects.all()
+        sales_all = Sales.objects.all().select_related('store', 'staff', 'photographer', 'user_edited')
     else:
-        sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now())
+        sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now()
+                                         ).select_related('store', 'staff', 'photographer', 'user_edited')
 
     flag = 0
-    today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=Staff.objects.get(st_username=auth_user))
+    today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=auth_staff)
     positions = [i.position for i in today_staff]
     if 'Роль не указана' in positions:
         flag = 1
@@ -919,7 +920,7 @@ def sales(request):
     form = SalesForm(initial={
         'store': store_staff_working_obj,
         'date': datetime.now(),
-        'staff': Staff.objects.get(st_username=auth_user)
+        'staff': auth_staff
     })
 
     # Пагинатор
@@ -941,7 +942,7 @@ def sales(request):
 @login_required
 @permission_required(perm='tph_system.view_main_page', raise_exception=True)
 def main_page(request):
-    sch = Schedule.objects.filter(date=datetime.now()).prefetch_related('staff', 'store').order_by('store')
+    sch = Schedule.objects.filter(date=datetime.now()).select_related('staff', 'store').order_by('store')
     now_date = datetime.now().strftime('%d.%m.%Y')
     sales_today = Sales.objects.filter(date=datetime.now())
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
@@ -950,12 +951,12 @@ def main_page(request):
 
 
     # Заканчивающиеся расходники
-    con_store = ConsumablesStore.objects.filter(count__lte=1)
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond 10x15', count__lte=1))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond А4', count__lte=1))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lte=20))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lte=30))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lte=30))
+    con_store = ConsumablesStore.objects.filter(count__lte=1).select_related('store')
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond 10x15', count__lte=1).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond А4', count__lte=1).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lte=20).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lte=30).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lte=30).select_related('store'))
 
     dic = {}
 
@@ -996,12 +997,13 @@ def main_page(request):
 @permission_required(perm='tph_system.view_cashwithdrawn', raise_exception=True)
 def cash_withdrawn(request):
     auth_user = User.objects.get(id=request.user.id)
+    auth_staff = Staff.objects.get(st_username=auth_user)
 
     try:
         store_staff_working_obj = Store.objects.get(
             name=Schedule.objects.get(
                 date=datetime.now(),
-                staff_id=Staff.objects.get(st_username=auth_user)
+                staff_id=auth_staff
             ).store
         )
     except ObjectDoesNotExist:
@@ -1010,12 +1012,12 @@ def cash_withdrawn(request):
     # Сотрудник видит только свои списания на точке, на которой работает по графику,
     # если нет права на просмотр всех списаний зарплаты
     if auth_user.has_perm('tph_system.view_all_cashwithdrawn'):
-        cash = CashWithdrawn.objects.all()
+        cash = CashWithdrawn.objects.all().select_related('store', 'staff')
     else:
         cash = CashWithdrawn.objects.filter(
             store=store_staff_working_obj,
-            staff_id=Staff.objects.get(st_username=auth_user)
-        )
+            staff_id=auth_staff
+        ).select_related('store', 'staff')
 
     # Фильтр
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
@@ -1030,7 +1032,7 @@ def cash_withdrawn(request):
         form = CashWithdrawnForm(initial={
             'store': store_staff_working_obj,
             'date': datetime.now(),
-            'staff': Staff.objects.get(st_username=auth_user)
+            'staff': auth_staff
         })
 
     # Пагинатор
@@ -1085,7 +1087,7 @@ def settings(request):
 @login_required
 @permission_required(perm='tph_system.view_salaryweekly', raise_exception=True)
 def salary_weekly(request):
-    slr = SalaryWeekly.objects.all()
+    slr = SalaryWeekly.objects.all().select_related('staff')
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
     # Фильтр
@@ -1129,7 +1131,7 @@ def salary_calculation(request):
 @login_required
 @permission_required(perm='tph_system.view_salary', raise_exception=True)
 def salary_details(request):
-    slr = Salary.objects.all()
+    slr = Salary.objects.all().select_related('store', 'staff')
 
     # Фильтр
     s_filter = SalaryFilter(request.GET, queryset=slr)
@@ -1177,7 +1179,7 @@ def sal_err_events(request):
 @permission_required(perm='tph_system.view_finstatsmonth', raise_exception=True)
 def fin_stats(request):
     stats = FinStatsMonth.objects.all()
-    stats_staff = FinStatsStaff.objects.all()
+    stats_staff = FinStatsStaff.objects.all().select_related('staff')
 
     # Фильтр FinStatsMonth
     stats_filter = FinStatsMonthFilter(request.GET, queryset=stats)
