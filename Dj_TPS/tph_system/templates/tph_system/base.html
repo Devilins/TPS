@@ -48,6 +48,8 @@
         /* Стили для нового базового шаблона */
         body {
           font-size: .875rem;
+          padding-top: 50px;   /* Из-за того, что у нас Navbar верхний fixed-top */
+                /* Осознанно идем на то, что при сворачивании Navbar будет перекрывать верхушку страницы на 75px */
         }
 
         .feather {
@@ -174,7 +176,7 @@
     </head>
   <body>
 
-<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+<header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
   <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{% url 'main_page' %}">
     <img src="{% static 'tph_system/images/logo_TPS_round.png'%}" width="25" height="25" class="d-inline-block align-top" alt="">
     Take Photo ERP System
@@ -222,7 +224,7 @@
 <div class="container-fluid">
   <div class="row">
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-      <div class="position-sticky pt-3">
+      <div class="position-sticky pt-3 navbar-nav-scroll overflow-auto overflow-x-hidden" style="--bs-scroll-height: 90vh;">
         <ul class="nav flex-column">
           {% if perms.tph_system.view_main_page %}
           <li class="nav-item"><a{% if request.path|startswith:'/main_page/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'main_page' %}">
@@ -281,7 +283,7 @@
 
           {% block func_buttons %}
           {% endblock func_buttons %}
-
+            <br>
         </ul>
       </div>
     </nav>

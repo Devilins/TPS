@@ -1,22 +1,15 @@
-import decimal
-import math
 from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django import forms
 from django.urls import reverse_lazy
 from django.db.transaction import atomic
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import ensure_csrf_cookie, requires_csrf_token
 from django.views.decorators.http import require_http_methods
-from rest_framework.viewsets import ModelViewSet
 from django.views.generic import UpdateView, DeleteView, CreateView
 from django.core.paginator import Paginator
 
-from tph_system.models import *
-from tph_system.serializers import StaffSerializer
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
     FinStatsMonthForm
