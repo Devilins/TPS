@@ -24,8 +24,8 @@
 {% endblock func_buttons %}
 
 {% block content %}
-<div class="container container-fluid cont_store" id="sales_table">
-    <div class="card shadow" style="width: 100%; min-width: 1340px;">
+<div class="container container-fluid cont_store">
+    <div class="card shadow" id="sales_table">
         <div class="card-header">
             <h4 class="card-title">
                 Продажи <br>
@@ -168,5 +168,13 @@
     </nav>
 
 </div>
+
+<!-- Скрипт для динамического изменения ширины контейнера в зависимости от ширины таблицы продаж -->
+<script>
+    $( document ).ready(function() {
+    var topWidth = $('#tableCons').width();
+    $('#sales_table').css('width', topWidth + 1.5 + 'px' );
+    });
+</script>
 
 {% endblock %}
