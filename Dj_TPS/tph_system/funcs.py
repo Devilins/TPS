@@ -30,6 +30,7 @@ def start_month_generator(start, end):
         yield start - timedelta(days=start.day - 1)
         start += relativedelta(months=1)
 
+
 s = Settings.objects.all()
 
 

@@ -3,8 +3,7 @@ import math
 import re
 
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory, \
-    BaseForm
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory
 from django import forms
 
 from .models import *
