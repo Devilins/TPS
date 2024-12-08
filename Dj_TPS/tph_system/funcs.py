@@ -30,11 +30,13 @@ def start_month_generator(start, end):
         yield start - timedelta(days=start.day - 1)
         start += relativedelta(months=1)
 
+s = Settings.objects.all()
+
 
 def param_gets(par):
     try:
-        return int(Settings.objects.get(param=str(par)).value)
-    except Settings.DoesNotExist:
+        return int(s.get(param=str(par)).value)
+    except ObjectDoesNotExist:
         error = ImplEvents.objects.create(
             event_type='Param_Gets_Error',
             event_message=f"Нет такого параметра в Настройках => {str(par)}. Для дальнейшей работы операции "

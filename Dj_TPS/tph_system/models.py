@@ -318,7 +318,7 @@ class FinStatsMonth(models.Model):
     class Meta:
         verbose_name = 'Финансы - компания'
         verbose_name_plural = 'Финансы - компания'
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f'{self.date}'
@@ -340,7 +340,7 @@ class FinStatsStaff(models.Model):
     class Meta:
         verbose_name = 'Финансы - сотрудники'
         verbose_name_plural = 'Финансы - сотрудники'
-        ordering = ['date', 'staff']
+        ordering = ['-date', 'staff']
 
     def __str__(self):
         return f'{self.date} - {self.staff}'

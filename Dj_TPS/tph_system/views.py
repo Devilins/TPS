@@ -237,7 +237,7 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                                   f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
                     status='Успешно'
                 )
-        except ConsumablesStore.DoesNotExist:
+        except ObjectDoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Upd_Failed",
                 event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
@@ -283,7 +283,7 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
                                   f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
                     status='Успешно'
                 )
-        except ConsumablesStore.DoesNotExist:
+        except ObjectDoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Del_Failed",
                 event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
@@ -367,7 +367,7 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
                                   f"{consumable.consumable} было {prev_count} => стало {consumable.count}",
                     status='Успешно'
                 )
-        except ConsumablesStore.DoesNotExist:
+        except ObjectDoesNotExist:
             ImplEvents.objects.create(
                 event_type=f"ConsStore_Crt_Failed",
                 event_message=f"Ошибка при изменении количества расходников на {store.name}. Расходник с "
