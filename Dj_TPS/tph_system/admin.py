@@ -128,8 +128,8 @@ class FinStatsStaffAdmin(admin.ModelAdmin):
     list_per_page = 30
 
 
-@admin.register(CalendarEvent)
-class CalendarEventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'event_type', 'start_date', 'end_date', 'employee')
-    list_filter = ('event_type', 'start_date')
-    search_fields = ('title', 'description', 'employee__username')
+# @admin.register(CalendarEvent)
+# class CalendarEventAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'event_type', 'start_date', 'end_date', 'employee')
+#     list_filter = ('event_type', 'start_date')
+#     search_fields = ('title', 'description', 'employee__username')

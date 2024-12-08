@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'background_task',
     'tph_system.apps.TphSystemConfig',
     'users.apps.UsersConfig',
-    'schedule',
     'axes',
     'debug_toolbar',
 ]

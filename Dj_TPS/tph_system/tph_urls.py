@@ -47,7 +47,7 @@ urlpatterns = [
 
     # path('base/', base_fx, name='base_fx'),
     # Календарь
-    path('calendar/', CalendarView.as_view(), name='calendar'),
-    path('calendar/event/add/', EventCreateView.as_view(), name='event_add'),
-    path('calendar/vacation/add/', VacationCreateView.as_view(), name='vacation_add')
+    # path('calendar/', CalendarView.as_view(), name='calendar'),
+    # path('calendar/event/add/', EventCreateView.as_view(), name='event_add'),
+    # path('calendar/vacation/add/', VacationCreateView.as_view(), name='vacation_add')
 ]

@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('schedule', '0014_use_autofields_for_pk'),
+       #  ('schedule', '0014_use_autofields_for_pk'),
         ('tph_system', '0022_alter_salaryweekly_paid_out'),
     ]
 
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('end_date', models.DateField(verbose_name='Дата окончания')),
                 ('description', models.TextField(blank=True, verbose_name='Описание')),
                 ('employee', models.ForeignKey(blank=True, help_text='Заполняется только для отпусков', null=True, on_delete=django.db.models.deletion.CASCADE, to='tph_system.staff', verbose_name='Сотрудник')),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='schedule.event')),
+                #('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='schedule.event')),
             ],
             options={
                 'verbose_name': 'Календарь событий',

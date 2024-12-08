@@ -17,8 +17,8 @@ from .filters import *
 from .funcs import *
 
 # Для календаря
-from schedule.views import CalendarByPeriodsView
-from schedule.periods import Month
+# from schedule.views import CalendarByPeriodsView
+# from schedule.periods import Month
 
 
 # class StaffViewSet(LoginRequiredMixin, ModelViewSet):
@@ -548,55 +548,55 @@ class FinStatsMonthDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delet
 
 
 # ---------------------------Классы календаря----------------------------------
-class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):
-    template_name = 'tph_system/calendar/calendar.html'
-    period = Month
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['events'] = CalendarEvent.objects.all()
-        context['event_types'] = CalendarEvent.EVENT_TYPES
-        context['event_colors'] = CalendarEvent.EVENT_COLORS
-        return context
-
-
-class EventCreateView(LoginRequiredMixin, CreateView):
-    model = CalendarEvent
-    template_name = 'tph_system/calendar/event_form.html'
-    success_url = reverse_lazy('calendar')
-
-    def get_form_class(self):
-        from django import forms
-
-        class EventForm(forms.ModelForm):
-            class Meta:
-                model = CalendarEvent
-                fields = ['event_type', 'title', 'start_date', 'end_date', 'description']
-
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})
-                self.fields['end_date'].widget = forms.DateInput(attrs={'type': 'date'})
-
-        return EventForm
-
-    def form_valid(self, form):
-        if form.instance.event_type == 'vacation':
-            form.instance.employee = self.request.user
-        return super().form_valid(form)
-
-
-class VacationCreateView(EventCreateView):
-    template_name = 'tph_system/calendar/vacation_form.html'
-
-    def get_form_class(self):
-        form_class = super().get_form_class()
-        form_class._meta.fields = ['start_date', 'end_date', 'description']
-        return form_class
-
-    def form_valid(self, form):
-        form.instance.event_type = 'vacation'
-        return super().form_valid(form)
+# class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):
+#     template_name = 'tph_system/calendar/calendar.html'
+#     period = Month
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['events'] = CalendarEvent.objects.all()
+#         context['event_types'] = CalendarEvent.EVENT_TYPES
+#         context['event_colors'] = CalendarEvent.EVENT_COLORS
+#         return context
+#
+#
+# class EventCreateView(LoginRequiredMixin, CreateView):
+#     model = CalendarEvent
+#     template_name = 'tph_system/calendar/event_form.html'
+#     success_url = reverse_lazy('calendar')
+#
+#     def get_form_class(self):
+#         from django import forms
+#
+#         class EventForm(forms.ModelForm):
+#             class Meta:
+#                 model = CalendarEvent
+#                 fields = ['event_type', 'title', 'start_date', 'end_date', 'description']
+#
+#             def __init__(self, *args, **kwargs):
+#                 super().__init__(*args, **kwargs)
+#                 self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})
+#                 self.fields['end_date'].widget = forms.DateInput(attrs={'type': 'date'})
+#
+#         return EventForm
+#
+#     def form_valid(self, form):
+#         if form.instance.event_type == 'vacation':
+#             form.instance.employee = self.request.user
+#         return super().form_valid(form)
+#
+#
+# class VacationCreateView(EventCreateView):
+#     template_name = 'tph_system/calendar/vacation_form.html'
+#
+#     def get_form_class(self):
+#         form_class = super().get_form_class()
+#         form_class._meta.fields = ['start_date', 'end_date', 'description']
+#         return form_class
+#
+#     def form_valid(self, form):
+#         form.instance.event_type = 'vacation'
+#         return super().form_valid(form)
 # --------------------------------Конец--------------------------------
 
 

@@ -3,7 +3,6 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import truncatechars
-from schedule.models import Event, Calendar
 from django.utils.translation import gettext_lazy as _
 
 
@@ -347,58 +346,58 @@ class FinStatsStaff(models.Model):
 
 
 # --------------------------------------Календарь отпусков не используемый--------------------------------
-class CalendarEvent(models.Model):
-    EVENT_TYPES = [
-        ('vacation', 'Отпуск'),
-        ('holiday', 'Праздничный день'),
-        ('school_break', 'Школьные каникулы'),
-    ]
-
-    EVENT_COLORS = {
-        'vacation': '#FF9999',  # Красноватый для отпусков
-        'holiday': '#99FF99',  # Зеленоватый для праздников
-        'school_break': '#9999FF',  # Синеватый для каникул
-    }
-
-    title = models.CharField(_('Название'), max_length=200)
-    event_type = models.CharField(_('Тип события'), max_length=20, choices=EVENT_TYPES)
-    start_date = models.DateField(_('Дата начала'))
-    end_date = models.DateField(_('Дата окончания'))
-    description = models.TextField(_('Описание'), blank=True)
-    employee = models.ForeignKey(
-        Staff,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        verbose_name=_('Сотрудник'),
-        help_text=_('Заполняется только для отпусков')
-    )
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = _('Календарь событий')
-        verbose_name_plural = _('Календарь событий')
-
-    def save(self, *args, **kwargs):
-        if not self.pk:  # Если объект создается впервые
-            calendar = Calendar.objects.get(slug='company-calendar')
-
-            # Формируем заголовок события
-            if self.event_type == 'vacation':
-                title = f'Отпуск: {self.employee.get_full_name()}'    # Есть вопросы к методу
-            else:
-                title = self.title
-
-            # Создаем событие в календаре
-            event = Event(
-                start=self.start_date,
-                end=self.end_date,
-                title=title,
-                description=self.description,
-                calendar=calendar,
-                color_event=self.EVENT_COLORS[self.event_type],
-                creator=self.employee if self.employee else None
-            )
-            event.save()
-            self.event = event
-        super().save(*args, **kwargs)
+# class CalendarEvent(models.Model):
+#     EVENT_TYPES = [
+#         ('vacation', 'Отпуск'),
+#         ('holiday', 'Праздничный день'),
+#         ('school_break', 'Школьные каникулы'),
+#     ]
+#
+#     EVENT_COLORS = {
+#         'vacation': '#FF9999',  # Красноватый для отпусков
+#         'holiday': '#99FF99',  # Зеленоватый для праздников
+#         'school_break': '#9999FF',  # Синеватый для каникул
+#     }
+#
+#     title = models.CharField(_('Название'), max_length=200)
+#     event_type = models.CharField(_('Тип события'), max_length=20, choices=EVENT_TYPES)
+#     start_date = models.DateField(_('Дата начала'))
+#     end_date = models.DateField(_('Дата окончания'))
+#     description = models.TextField(_('Описание'), blank=True)
+#     employee = models.ForeignKey(
+#         Staff,
+#         on_delete=models.CASCADE,
+#         null=True,
+#         blank=True,
+#         verbose_name=_('Сотрудник'),
+#         help_text=_('Заполняется только для отпусков')
+#     )
+#     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         verbose_name = _('Календарь событий')
+#         verbose_name_plural = _('Календарь событий')
+#
+#     def save(self, *args, **kwargs):
+#         if not self.pk:  # Если объект создается впервые
+#             calendar = Calendar.objects.get(slug='company-calendar')
+#
+#             # Формируем заголовок события
+#             if self.event_type == 'vacation':
+#                 title = f'Отпуск: {self.employee.get_full_name()}'    # Есть вопросы к методу
+#             else:
+#                 title = self.title
+#
+#             # Создаем событие в календаре
+#             event = Event(
+#                 start=self.start_date,
+#                 end=self.end_date,
+#                 title=title,
+#                 description=self.description,
+#                 calendar=calendar,
+#                 color_event=self.EVENT_COLORS[self.event_type],
+#                 creator=self.employee if self.employee else None
+#             )
+#             event.save()
+#             self.event = event
+#         super().save(*args, **kwargs)
