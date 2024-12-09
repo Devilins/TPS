@@ -1,19 +1,20 @@
 [tool.poetry]
 name = "TPS"
 version = "0.1.0"
-description = ""
-authors = ["Гей Саня"]
+description = "Take Photo ERP System"
+authors = ["Александр Кривов"]
 packages = [{include = "Dj_TPS"}, {include = "tph_system"}, {include = "users"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-django = "^5.0.6"
+django = "^5.1.4"
 django-filter = "^24.3"
 django-axes = "^7.0.1"
 django-debug-toolbar = "^4.4.6"
 django-background-tasks = "^1.2.8"
 psycopg2 = "^2.9.10"
 icalendar = "^6.1.0"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

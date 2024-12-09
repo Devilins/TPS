@@ -942,14 +942,11 @@ def main_page(request):
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
     tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
 
-
     # Заканчивающиеся расходники
     con_store = ConsumablesStore.objects.filter(count__lte=1).select_related('store')
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond 10x15', count__lte=1).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Бумага Lomond А4', count__lte=1).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lte=20).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lte=30).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lte=30).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lt=30).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lt=30).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lt=30).select_related('store'))
 
     dic = {}
 
