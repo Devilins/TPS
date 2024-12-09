@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16.4
+    container_name: tps_postgres
+    volumes:
+      - ~/.pg/pg_data/tps:/var/lib/postgresql/data
+    env_file:
+      - .env
+  tps:
+    image: tps_image:latest
+    container_name: tps_system
+    depends_on:
+      - db
+    command: >
+      bash -c "./manage.py migrate && poetry run python manage.py runserver"
+  nginx:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./docker/nginx/
+    container_name: tps_nginx
+    image: tps_nginx
+    depends_on:
+      - tps
+    ports:
+      - "${NGINX_EXTERNAL_PORT}:80"
