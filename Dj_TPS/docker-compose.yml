@@ -1,27 +1,28 @@
-version: "3.9"
+networks:
+  bridge: {}
 
 services:
-  db:
+  tps_postgres:
     image: postgres:16.4
     container_name: tps_postgres
+    restart: always
     volumes:
       - ~/.pg/pg_data/tps:/var/lib/postgresql/data
     env_file:
       - .env
-  tps:
-    image: tps_image:latest
-    container_name: tps_system
-    depends_on:
-      - db
-    command: >
-      bash -c "./manage.py migrate && poetry run python manage.py runserver"
-  nginx:
-    build:
-      dockerfile: ./Dockerfile
-      context: ./docker/nginx/
-    container_name: tps_nginx
-    image: tps_nginx
-    depends_on:
-      - tps
+    networks:
+      - bridge
     ports:
-      - "${NGINX_EXTERNAL_PORT}:80"
+      - "5433:5432"
+  tps:
+    container_name: tps_system
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - tps_postgres
+    networks:
+      - bridge
+    command: bash -c "poetry run python manage.py makemigrations && poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
