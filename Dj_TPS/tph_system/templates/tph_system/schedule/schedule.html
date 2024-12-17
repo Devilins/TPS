@@ -110,8 +110,16 @@ $(document).ready(function() {
                         // Устанавливаем текущее значение смены
                         select.val(day.store);
 
+                        //var worktime = $('<input>')
+                            //.addClass('form-control')
+                            //.attr({name: 'WorkTime'})
+                            //.attr('id', 'id_worktime');
+                            // .attr('wt_value', добавить переменную)
+                        //$('<td>').append(worktime).attr('id', 'td_colored');
+
                         //row.append($('<td>').append(select).addClass('table-success'));
                         row.append($('<td>').append(select).attr('id', 'td_colored'));
+
                     });
 
                     tbody.append(row);

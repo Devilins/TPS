@@ -24,7 +24,9 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ t_filter.form.store }}
+                        {% if perms.tph_system.tech_view_all_stores %}
+                            Точка: {{ t_filter.form.store }}
+                        {% endif %}
                         Название техники: {{ t_filter.form.name }}
                         Серийный номер: {{ t_filter.form.serial_num }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>

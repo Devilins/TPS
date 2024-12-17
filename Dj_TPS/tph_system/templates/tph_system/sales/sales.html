@@ -35,9 +35,11 @@
                     <div class="container text-left">
                         <form method="get">
                             <div class="row">
-                                <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
+                                {% if perms.tph_system.user_sales_view_all %}
+                                    <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
+                                    <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
+                                {% endif %}
                                 <div class="col col-md-auto">Что продали:<br>{{ sale_filter.form.sale_type }}</div>
-                                <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
                             </div>
                             <div class="row" style="margin-top: 10px">
                                 <div class="col col-md-auto">Администратор:<br>{{ sale_filter.form.staff }}</div>
@@ -54,7 +56,7 @@
         </div>
 
         <!-- Таблица продаж -->
-        <table class="table table-hover table-bordered align-middle" id="tableCons">
+        <table class="table table-sm table-hover table-bordered align-middle" id="tableCons">
             <thead>
                 <tr>
                     <th scope="col">Точка</th>
@@ -96,6 +98,21 @@
                     </td>
                 </tr>
                 {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Итоги продаж (мини таблица) -->
+        <br>
+        <table class="table table-sm table-hover table-bordered align-middle caption-top">
+            <caption><b style="margin-left: 20px;"> Итоги по продажам: </b></caption>
+            <tbody>
+                <tr>
+                    <th>Общая касса: {{ cashbx_all }}</th>
+                    <th>Безнал: {{ cashbx_card }}</th>
+                    <th>Наличные: {{ cashbx_cash }}</th>
+                    <th>QR и перевод: {{ cashbx_qr_p }}</th>
+                    <th>Заказы: {{ cashbx_orders }}</th>
+                </tr>
             </tbody>
         </table>
 

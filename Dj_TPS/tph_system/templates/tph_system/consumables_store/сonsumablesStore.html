@@ -25,7 +25,9 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Точка: {{ cs_filter.form.store }}
+                        {% if perms.tph_system.consumables_view_all_stores %}
+                            Точка: {{ cs_filter.form.store }}
+                        {% endif %}
                         Расходник: {{ cs_filter.form.consumable }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
                     </form>

@@ -901,6 +901,20 @@ def sales(request):
     sale_filter = SalesFilter(request.GET, queryset=sales_all)
     sales_all = sale_filter.qs
 
+    # Итоги продаж
+    cashbx_all = sales_all.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_card = sales_all.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
+                                 ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+
+    if cashbx_all is None: cashbx_all = 0
+    if cashbx_card is None: cashbx_card = 0
+    if cashbx_cash is None: cashbx_cash = 0
+    if cashbx_qr_p is None: cashbx_qr_p = 0
+    if cashbx_orders is None: cashbx_orders = 0
+
     error = ''
     if request.method == 'POST':
         form_p = SalesForm(request.POST)
@@ -928,7 +942,12 @@ def sales(request):
         'sale_filter': sale_filter,
         'flag': flag,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'cashbx_all': cashbx_all,
+        'cashbx_card': cashbx_card,
+        'cashbx_cash': cashbx_cash,
+        'cashbx_qr_p': cashbx_qr_p,
+        'cashbx_orders': cashbx_orders
     })
 
 
@@ -1077,7 +1096,15 @@ def settings(request):
 @login_required
 @permission_required(perm='tph_system.view_salaryweekly', raise_exception=True)
 def salary_weekly(request):
-    slr = SalaryWeekly.objects.all().select_related('staff')
+    auth_user = User.objects.get(id=request.user.id)
+
+    # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
+    if auth_user.has_perm('tph_system.view_all_salary'):
+        slr = SalaryWeekly.objects.all().select_related('staff')
+    else:
+        slr = SalaryWeekly.objects.filter(staff=Staff.objects.get(st_username=auth_user)
+                                          ).select_related('staff')
+
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
     # Фильтр
@@ -1121,7 +1148,14 @@ def salary_calculation(request):
 @login_required
 @permission_required(perm='tph_system.view_salary', raise_exception=True)
 def salary_details(request):
-    slr = Salary.objects.all().select_related('store', 'staff')
+    auth_user = User.objects.get(id=request.user.id)
+
+    # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
+    if auth_user.has_perm('tph_system.view_all_salary'):
+        slr = Salary.objects.all().select_related('store', 'staff')
+    else:
+        slr = Salary.objects.filter(staff=Staff.objects.get(st_username=auth_user)
+                                          ).select_related('store', 'staff')
 
     # Фильтр
     s_filter = SalaryFilter(request.GET, queryset=slr)

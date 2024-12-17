@@ -14,17 +14,19 @@
         </a>
     </li>
     {% endif %}
-    <li class="nav-item">
-    {% if err_events_count == 0 %}
-        <a class="nav-link" href="{% url 'sal_events' %}">
-            <button type="button" class="btn btn-sm btn-outline-success">Ошибки выполнения ({{ err_events_count }})</button>
-        </a>
-    {% else %}
-        <a class="nav-link" href="{% url 'sal_events' %}">
-            <button type="button" class="btn btn-sm btn-danger">Ошибки выполнения ({{ err_events_count }})</button>
-        </a>
+    {% if perms.tph_system.view_all_salary %}
+        <li class="nav-item">
+        {% if err_events_count == 0 %}
+            <a class="nav-link" href="{% url 'sal_events' %}">
+                <button type="button" class="btn btn-sm btn-outline-success">Ошибки выполнения ({{ err_events_count }})</button>
+            </a>
+        {% else %}
+            <a class="nav-link" href="{% url 'sal_events' %}">
+                <button type="button" class="btn btn-sm btn-danger">Ошибки выполнения ({{ err_events_count }})</button>
+            </a>
+        {% endif %}
+        </li>
     {% endif %}
-    </li>
 {% endblock func_buttons %}
 
 {% block content %}
@@ -37,7 +39,9 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Сотрудник: {{ sw_filter.form.staff}}
+                        {% if perms.tph_system.view_all_salary %}
+                            Сотрудник: {{ sw_filter.form.staff}}
+                        {% endif %}
                         Дата начала недели: {{ sw_filter.form.week_begin}}
                         Выплачено: {{ sw_filter.form.paid_out}}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>

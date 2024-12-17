@@ -29,7 +29,9 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Сотрудник: {{ s_filter.form.staff}}
+                        {% if perms.tph_system.view_all_salary %}
+                            Сотрудник: {{ s_filter.form.staff}}
+                        {% endif %}
                         Дата: {{ s_filter.form.date}}
                         Зарплата: {{ s_filter.form.salary_sum}}
                         Точка: {{ s_filter.form.store }}
