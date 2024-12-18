@@ -17,10 +17,18 @@
                         <i>{{error}}</i>
                     {% endfor %}
                 </div>
-                {% for f in form %}
-                <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
-                <div class="form-error">{{ f.errors }}</div>
-                {% endfor %}
+
+                <p><label class="form-label"><i>{{ form.store.label }}:</i></label><br>{{ form.store }}</p>
+                <div class="form-error">{{ form.store.errors }}</div>
+                <p><label class="form-label"><i>{{ form.consumable.label }}:</i></label><br>{{ form.consumable }}</p>
+                <div class="form-error">{{ form.consumable.errors }}</div>
+                {% if perms.tph_system.consumables_view_all_stores %}
+                    <p><label class="form-label"><i>{{ form.cons_short.label }}:</i></label><br>{{ form.cons_short }}</p>
+                    <div class="form-error">{{ form.cons_short.errors }}</div>
+                {% endif %}
+                <p><label class="form-label"><i>{{ form.count.label }}:</i></label><br>{{ form.count }}</p>
+                <div class="form-error">{{ form.count.errors }}</div>
+
                 <button class="btn btn-success" type="submit">Сохранить</button>
                 <a class="btn btn-warning" href="{% url 'cons_store' %}" role="button">Отмена</a>
                 <a class="btn btn-danger" style="margin-left : 20px;" href="{% url 'con_store_delete' consumablesstore.id %}" role="button">Удалить</a>

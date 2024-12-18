@@ -1009,24 +1009,26 @@ def cash_withdrawn(request):
     auth_staff = Staff.objects.get(st_username=auth_user)
 
     try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(
-                date=datetime.now(),
-                staff_id=auth_staff
-            ).store
-        )
+        staff_sch = Schedule.objects.get(date=datetime.now(), staff_id=auth_staff)
+        store_staff_working_obj = Store.objects.get(name=staff_sch.store)
     except ObjectDoesNotExist:
+        staff_sch = None
         store_staff_working_obj = None
 
-    # Сотрудник видит только свои списания на точке, на которой работает по графику,
-    # если нет права на просмотр всех списаний зарплаты
+    # Сотрудник видит только свои списания, если нет права на просмотр всех списаний зарплаты
     if auth_user.has_perm('tph_system.view_all_cashwithdrawn'):
         cash = CashWithdrawn.objects.all().select_related('store', 'staff')
     else:
         cash = CashWithdrawn.objects.filter(
-            store=store_staff_working_obj,
             staff_id=auth_staff
         ).select_related('store', 'staff')
+
+        # Если сотрудник админ - то видит списание налички всех работников в этот день на этой точке
+        if staff_sch.position == 'Администратор':
+            sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj
+                                          ).exclude(staff_id=auth_staff).values_list('staff', flat = True)
+            cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
+                                                           ).select_related('store', 'staff')).order_by('-date')
 
     # Фильтр
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)

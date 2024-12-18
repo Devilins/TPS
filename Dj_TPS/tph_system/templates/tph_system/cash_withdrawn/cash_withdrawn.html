@@ -26,7 +26,9 @@
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
                         Точка: {{ c_filter.form.store }}
-                        Сотрудник: {{ c_filter.form.staff }}
+                        {% if perms.tph_system.view_all_cashwithdrawn %}
+                            Сотрудник: {{ c_filter.form.staff }}
+                        {% endif %}
                         Дата: {{ c_filter.form.date }}
                         Сумма: {{ c_filter.form.withdrawn }}
                         <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>

@@ -41,7 +41,9 @@
                 <tr>
                     <th scope="col">Точка</th>
                     <th scope="col">Расходник</th>
-                    <th scope="col">Короткое имя</th>
+                    {% if perms.tph_system.consumables_view_all_stores %}
+                        <th scope="col">Короткое имя</th>
+                    {% endif %}
                     <th scope="col">Количество</th>
                     <th scope="col">Дата изменения</th>
                     <th scope="col"></th>
@@ -52,7 +54,9 @@
                 <tr>
                     <td>{{ cn.store }}</td>
                     <td>{{ cn.consumable }}</td>
-                    <td>{{ cn.cons_short }}</td>
+                    {% if perms.tph_system.consumables_view_all_stores %}
+                        <td>{{ cn.cons_short }}</td>
+                    {% endif %}
                     <td>{{ cn.count }}</td>
                     <td>{{ cn.change_data }}</td>
                     <td>
