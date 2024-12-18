@@ -143,7 +143,7 @@
                             <i>{{ c.store }}</i>
                         </div>
                         <div class="col-md-auto">
-                            <u><a href="{% url 'con_store_update' c.id %}">{{ c.consumable }}</a></u> - {{ c.count }}
+                            <u><a href="{% url 'con_store_update' c.id %}">{{ c.consumable }}</a></u> - {{ c.count|floatformat }}
                         </div>
                     </div>
                 </li>

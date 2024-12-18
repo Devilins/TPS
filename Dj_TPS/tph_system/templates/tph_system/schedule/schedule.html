@@ -94,12 +94,19 @@ $(document).ready(function() {
 
                     // Добавляем ячейки с select для каждого дня недели
                     $.each(staff.schedule, function(index, day) {
+                        var cellContainer = $('<td>').attr('id', 'td_colored');
+
                         var select = $('<select>')
                             .addClass('schedule-select form-select')
                             //.attr('onchange', 'colorset(this)')
                             .attr('id', 'id_store_select')
                             .attr('data-employee', staff.staff_id)
-                            .attr('data-date', day.date);
+                            .attr('data-date', day.date)
+                            {% if not perms.tph_system.change_schedule %}
+                                .attr('disabled', true);
+                            {% else %}
+                                ;
+                            {% endif %}
 
                         // Добавляем опции в select
                         $('<option>').val('').text('').appendTo(select);
@@ -110,15 +117,29 @@ $(document).ready(function() {
                         // Устанавливаем текущее значение смены
                         select.val(day.store);
 
-                        //var worktime = $('<input>')
-                            //.addClass('form-control')
-                            //.attr({name: 'WorkTime'})
-                            //.attr('id', 'id_worktime');
-                            // .attr('wt_value', добавить переменную)
-                        //$('<td>').append(worktime).attr('id', 'td_colored');
+                        // Добавляем input для времени работы
+                        var workTimeInput = $('<input>')
+                            .addClass('form-control work-time-input')
+                            .attr({
+                                'type': 'text',
+                                //'placeholder': 'Время работы',
+                                'data-employee': staff.staff_id,
+                                'data-date': day.date
+                            })
+                            .val(day.work_time || '')
+                            {% if not perms.tph_system.change_schedule %}
+                                .attr('disabled', true);
+                            {% else %}
+                                ;
+                            {% endif %}
 
-                        //row.append($('<td>').append(select).addClass('table-success'));
-                        row.append($('<td>').append(select).attr('id', 'td_colored'));
+                        // Добавляем select и input в ячейку
+                        cellContainer.append(select).append(workTimeInput);
+                        row.append(cellContainer);
+
+                        //row.append($('<td>').append(select).addClass('table-success')); // Не используется
+
+                        //row.append($('<td>').append(select).attr('id', 'td_colored')); // Старый ввод
 
                     });
 
@@ -151,11 +172,12 @@ $(document).ready(function() {
     // Инициализация таблицы при загрузке страницы
     updateTable(currentDate);
 
-    // Обработчик изменения значения в select
-    $(document).on('change', '.schedule-select', function() {
+    // Обработчик изменения значения в select или input
+    $(document).on('change', '.schedule-select, .work-time-input', function() {
         var employeeId = $(this).data('employee');
         var date = $(this).data('date');
-        var store = $(this).val();
+        var store = $(this).closest('td').find('.schedule-select').val();
+        var workTime = $(this).closest('td').find('.work-time-input').val();
 
         $.ajax({
             url: '{% url "update_schedule" %}',
@@ -164,6 +186,7 @@ $(document).ready(function() {
                 'staff_id': employeeId,
                 'date': date,
                 'store': store,
+                'work_time': workTime,
                 csrfmiddlewaretoken: '{{ csrf_token }}'
             },
             success: function(response) {
@@ -180,7 +203,7 @@ $(document).ready(function() {
             }
         });
 
-        console.log('Сотрудник ' + employeeId + ', дата ' + date + ', точка ' + store);
+        console.log('Сотрудник ' + employeeId + ', дата ' + date + ', точка ' + store + ', время работы ' + workTime);
     });
 });
 </script>

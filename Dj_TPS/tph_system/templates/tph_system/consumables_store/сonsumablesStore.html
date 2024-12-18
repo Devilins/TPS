@@ -57,7 +57,7 @@
                     {% if perms.tph_system.consumables_view_all_stores %}
                         <td>{{ cn.cons_short }}</td>
                     {% endif %}
-                    <td>{{ cn.count }}</td>
+                    <td>{{ cn.count|floatformat }}</td>
                     <td>{{ cn.change_data }}</td>
                     <td>
                         <button type="button" class="btn btn-link">

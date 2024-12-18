@@ -46,9 +46,9 @@
                 <tr>
                     <td>{{ s.date|date:"F Y" }}</td>
                     <td>{{ s.revenue }}</td>
-                    <td>{{ s.salaries }}</td>
+                    <td>{{ s.salaries|floatformat }}</td>
                     <td>{{ s.expenses }}</td>
-                    <td>{{ s.profit }}</td>
+                    <td>{{ s.profit|floatformat }}</td>
                     <td>{{ s.date_updated }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
@@ -125,7 +125,7 @@
                     <td>{{ s.date|date:"F Y" }}</td>
                     <td>{{ s.staff }}</td>
                     <td>{{ s.cash_box }}</td>
-                    <td>{{ s.salary }}</td>
+                    <td>{{ s.salary|floatformat }}</td>
                     <td>{{ s.date_updated }}</td>
                 </tr>
                 {% endfor %}

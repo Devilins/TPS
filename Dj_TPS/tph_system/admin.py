@@ -18,7 +18,7 @@ class StoreAdmin(admin.ModelAdmin):
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('date', 'store', 'staff', 'position', 'date_upd', 'user_edited')
+    list_display = ('date', 'store', 'work_time', 'staff', 'position', 'date_upd', 'user_edited')
     list_filter = ('date', 'position', 'store', 'staff')
     list_per_page = 30
 

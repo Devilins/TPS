@@ -71,9 +71,9 @@
                     <td>{{ s.staff }}</td>
                     <td>{{ s.week_begin|date:"d M" }} - {{ s.week_end|date:"d M" }}</td>
                     <td>{{ s.cash_box_week }}</td>
-                    <td>{{ s.salary_sum }}</td>
+                    <td>{{ s.salary_sum|floatformat }}</td>
                     <td>{{ s.cash_withdrawn }}</td>
-                    <td>{{ s.to_pay }}</td>
+                    <td>{{ s.to_pay|floatformat }}</td>
                     <td>{{ s.paid_out }}</td>
                     <td>{{ s.date_updated }}</td>
                     <td>

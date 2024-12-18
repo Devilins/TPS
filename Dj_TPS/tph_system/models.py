@@ -54,6 +54,7 @@ class Schedule(models.Model):
     store = models.ForeignKey(Store, on_delete=models.PROTECT, verbose_name=u"Точка")
     position = models.CharField(max_length=40, default='Роль не указана', choices=SLCT_POSITION, verbose_name=u"Роль")
     date = models.DateField(verbose_name=u"Дата")
+    work_time = models.CharField(verbose_name=u"Время работы", max_length=20, blank=True, null=True)
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
                                     verbose_name=u"Кем было изменено")
@@ -62,6 +63,7 @@ class Schedule(models.Model):
         verbose_name = 'График сотрудников'
         verbose_name_plural = 'График сотрудников'
         ordering = ['-date', 'store']
+        unique_together = ('staff', 'date')  # Гарантируем уникальность записи для сотрудника в определенный день
 
     def __str__(self):
         return f'{self.date} - {self.staff} - {self.store} - {self.position}'
@@ -72,7 +74,7 @@ class ConsumablesStore(models.Model):
     cons_short = models.CharField(max_length=40, default='', blank=True,
                                   verbose_name=u"Функциональное наименование (не изменять)")
     store = models.ForeignKey(Store, on_delete=models.PROTECT, default="Точка", verbose_name=u"Точка")
-    count = models.IntegerField(verbose_name=u"Количество на точке")
+    count = models.DecimalField(verbose_name=u"Количество на точке", max_digits=8, decimal_places=1)
     change_data = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
                                     verbose_name=u"Кем было изменено")

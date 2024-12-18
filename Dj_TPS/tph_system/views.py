@@ -782,7 +782,8 @@ def schedule_mtd(request):
                 schedule = staff_schedules.filter(date=date).first()
                 week_data.append({
                     'date': date.strftime('%Y-%m-%d'),
-                    'store': schedule.store.short_name if schedule else ''
+                    'store': schedule.store.short_name if schedule else '',
+                    'work_time': schedule.work_time if schedule else '',  # Добавляем информацию о времени работы
                 })
             schedule_data.append({
                 'staff_id': stf.id,
@@ -809,6 +810,7 @@ def update_schedule(request):
     staff_id = request.POST.get('staff_id')
     date = request.POST.get('date')
     sel_store = request.POST.get('store')
+    work_time = request.POST.get('work_time', '')  # Новое поле для времени работы
 
     try:
         # Получаем сотрудника по ID
@@ -825,12 +827,15 @@ def update_schedule(request):
             schedule, created = Schedule.objects.update_or_create(
                 staff=employee,
                 date=date,
-                defaults={'store': f_store}
+                defaults={
+                    'store': f_store,
+                    'work_time': work_time  # Добавляем время работы
+                }
             )
             action = 'Добавлено' if created else 'Обновлено'
 
         # Возвращаем успешный ответ с информацией о выполненном действии
-        return JsonResponse({'status': 'success', 'action': action})
+        return JsonResponse({'status': 'success', 'action': action, 'work_time': work_time})
 
     except Exception as e:
         # Логируем ошибку
@@ -962,10 +967,10 @@ def main_page(request):
     tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
 
     # Заканчивающиеся расходники
-    con_store = ConsumablesStore.objects.filter(count__lte=1).select_related('store')
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит большой', count__lt=30).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит виниловый', count__lt=30).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(consumable='Магнит средний', count__lt=30).select_related('store'))
+    con_store = ConsumablesStore.objects.filter(count__lt=1).select_related('store')
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'], count__lt=30).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Чеки', 'Листочки'], count__lt=2).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки', count__lt=4).select_related('store'))
 
     dic = {}
 
