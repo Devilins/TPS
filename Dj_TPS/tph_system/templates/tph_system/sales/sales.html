@@ -56,7 +56,8 @@
         </div>
 
         <!-- Таблица продаж -->
-        <table class="table table-sm table-hover table-bordered align-middle" id="tableCons">
+        <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
+            <caption><b style="margin-left: 20px;"> Количество продаж: {{ count_sales }} </b></caption>
             <thead>
                 <tr>
                     <th scope="col">Точка</th>
@@ -102,7 +103,6 @@
         </table>
 
         <!-- Итоги продаж (мини таблица) -->
-        <br>
         <table class="table table-sm table-hover table-bordered align-middle caption-top">
             <caption><b style="margin-left: 20px;"> Итоги по продажам: </b></caption>
             <tbody>

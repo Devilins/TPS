@@ -83,6 +83,52 @@ class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
     permission_required = 'tph_system.change_consumablesstore'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с расходниками'
 
+    @atomic
+    def form_valid(self, form):
+        # Фиксируем текущие данные
+        c_consumable_old = self.get_object().consumable
+        c_cons_short_old = self.get_object().cons_short
+        c_store_old = self.get_object().store
+        c_count_old = self.get_object().count
+
+        # Сохраняем экземпляр техники на точке
+        self.object = form.save()
+
+        # Данные из формы
+        c_consumable = form.cleaned_data['consumable']
+        c_cons_short = form.cleaned_data['cons_short']
+        c_store = form.cleaned_data['store']
+        c_count = form.cleaned_data['count']
+
+        if c_consumable_old != c_consumable:
+            cons_ch = f"Расходник {c_consumable_old} -> {c_consumable}. "
+        else:
+            cons_ch = ""
+
+        if c_cons_short_old != c_cons_short:
+            cons_short_ch = f"Короткое имя {c_cons_short_old} -> {c_cons_short}. "
+        else:
+            cons_short_ch = ""
+
+        if c_store_old != c_store:
+            store_ch = f"Точка {c_store_old} -> {c_store}. "
+        else:
+            store_ch = ""
+
+        if c_count_old != c_count:
+            cnt_ch = f"Количество на точке {c_count_old} -> {c_count}. "
+        else:
+            cnt_ch = ""
+
+        # Логируем изменение техники
+        ImplEvents.objects.create(
+            event_type=f"Consumables_Update",
+            event_message=f"{c_consumable} на {c_store.name}. {cons_ch}{cons_short_ch}{store_ch}{cnt_ch}",
+            status='Успешно'
+        )
+
+        return super().form_valid(form)
+
 
 class ConStoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = ConsumablesStore
@@ -659,14 +705,14 @@ def staff(request):
         'error': error,
         's_filter': s_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'staff_count': paginator.count
     })
 
 
 @login_required
 @permission_required(perm='tph_system.view_consumablesstore', raise_exception=True)
 def cons_store(request):
-    stores = Store.objects.all()
     auth_user = User.objects.get(id=request.user.id)
 
     try:
@@ -702,10 +748,10 @@ def cons_store(request):
     return render(request, 'tph_system/consumables_store/сonsumablesStore.html', {
         'title': 'Расходники',
         'form': form,
-        'stores': stores,
         'cs_filter': cs_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'cons_count': paginator.count
     })
 
 
@@ -749,7 +795,8 @@ def tech_mtd(request):
         'form': form,
         't_filter': t_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'tech_count': paginator.count
     })
 
 
@@ -948,6 +995,7 @@ def sales(request):
         'flag': flag,
         'page_obj': page_obj,
         'paginator': paginator,
+        'count_sales': paginator.count,
         'cashbx_all': cashbx_all,
         'cashbx_card': cashbx_card,
         'cashbx_cash': cashbx_cash,
@@ -979,7 +1027,8 @@ def main_page(request):
         if sales_sum is not None:
             dic[st.name] = sales_sum
 
-    tips = RefsAndTips.objects.all()
+    ll_tips = RefsAndTips.objects.filter(title='Лазерлэнд')
+    bw_tips = RefsAndTips.objects.filter(title='Бигвол')
 
     error = ''
     if request.method == 'POST':
@@ -998,7 +1047,8 @@ def main_page(request):
         'now_date': now_date,
         'dic': dic,
         'con_store': con_store,
-        'tips': tips,
+        'll_tips': ll_tips,
+        'bw_tips': bw_tips,
         'error': error,
         'form': form,
         'sys_errors_count': sys_errors_count,
@@ -1061,7 +1111,8 @@ def cash_withdrawn(request):
         'form': form,
         'c_filter': c_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'with_count': paginator.count
     })
 
 
@@ -1096,7 +1147,8 @@ def settings(request):
         'error': error,
         's_filter': s_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'set_count': paginator.count
     })
 
 
@@ -1128,7 +1180,8 @@ def salary_weekly(request):
         'sw_filter': sw_filter,
         'err_events_count': err_events_count,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'sal_week_count': paginator.count
     })
 
 
@@ -1186,7 +1239,8 @@ def salary_details(request):
         'form': form,
         's_filter': s_filter,
         'page_obj': page_obj,
-        'paginator': paginator
+        'paginator': paginator,
+        'sal_count': paginator.count
     })
 
 

@@ -127,7 +127,7 @@ main #sales_table {
     float: left;
 }
 
-#main_tip_for_staff {
+#main_tip_for_staff, #main_tip2_for_staff {
     width: 1025px;
 }
 

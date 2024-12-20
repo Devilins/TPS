@@ -74,8 +74,9 @@ class TechAdmin(admin.ModelAdmin):
 @admin.register(RefsAndTips)
 class RefsAndTipsAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('tip', 'refs', 'date_upd')
+    list_display = ('title', 'tip', 'refs', 'date_upd')
     search_fields = ['tip']
+    list_filter = ['title']
     search_help_text = 'Поиск по информации'
     list_per_page = 30
 

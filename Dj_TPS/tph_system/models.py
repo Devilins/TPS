@@ -241,6 +241,7 @@ class Tech(models.Model):
 
 
 class RefsAndTips(models.Model):
+    title = models.CharField(max_length=100, blank=True, verbose_name=u"Заголовок")
     tip = models.TextField(verbose_name=u"Информация")
     refs = models.CharField(max_length=200, verbose_name=u"Ссылки")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
@@ -253,7 +254,7 @@ class RefsAndTips(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return f'{self.tip}'
+        return f'{self.title} - {self.tip}'
 
 
 class Settings(models.Model):

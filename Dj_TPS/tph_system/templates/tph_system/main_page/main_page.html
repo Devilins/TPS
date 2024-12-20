@@ -53,6 +53,7 @@
             <form method="post">
                 <div class="modal-body">
                     {% csrf_token %}
+                    {{ form.title }}<br>
                     {{ form.tip }}<br>
                     {{ form.refs }}
                     <span>{{ error }}</span>
@@ -171,7 +172,7 @@
     {% endif %}
 
     {% if perms.tph_system.view_refsandtips %}
-    <div class="card shadow" id="main_tip_for_staff">
+    <div class="card shadow" id="main_tip_for_staff" style="margin-bottom: 20px">
         <div class="card-header">
             <h4 class="card-title">Примеры ФОТО Лазерлэнд: </h4>
         </div>
@@ -179,7 +180,7 @@
         <!-- Карточка с содержимым -->
         <div class="card-body">
             <ul class="list-group">
-                {% for t in tips %}
+                {% for t in ll_tips %}
                 <li class="list-group-item">
                     <div class="row justify-content-md-center">
                         <div class="col">
@@ -192,6 +193,37 @@
                         <div class="col-md-auto">
                             <button type="button" class="btn btn-link">
                                 <a href="{% url 'tips_update' t.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow" id="main_tip2_for_staff">
+        <div class="card-header">
+            <h4 class="card-title">Примеры ФОТО Бигвол: </h4>
+        </div>
+
+        <!-- Карточка с содержимым -->
+        <div class="card-body">
+            <ul class="list-group">
+                {% for bw in bw_tips %}
+                <li class="list-group-item">
+                    <div class="row justify-content-md-center">
+                        <div class="col">
+                            {{ bw.tip }}
+                        </div>
+                        <div class="col-md-auto">
+                            <a href="{{ bw.refs }}" style="color: #2373fc;">{{ bw.refs }}</a>
+                        </div>
+                        {% if perms.tph_system.main_page_edit_tips %}
+                        <div class="col-md-auto">
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'tips_update' bw.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
                         </div>
                         {% endif %}

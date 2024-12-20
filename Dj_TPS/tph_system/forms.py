@@ -356,14 +356,19 @@ class SalesForm(ModelForm):
 class RefsAndTipsForm(ModelForm):
     class Meta:
         model = RefsAndTips
-        fields = ['tip', 'refs']
+        fields = ['title', 'tip', 'refs']
 
         labels = {
+            'title': 'Заголовок',
             'tip': 'Информация',
             'refs': 'Ссылка'
         }
 
         widgets = {
+            "title": TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Заголовок'
+            }),
             "tip": Textarea(attrs={
                 'class': 'form-control',
                 'rows': '3',
