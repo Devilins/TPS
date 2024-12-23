@@ -1009,7 +1009,6 @@ def sales(request):
 def main_page(request):
     sch = Schedule.objects.filter(date=datetime.now()).select_related('staff', 'store').order_by('store')
     now_date = datetime.now().strftime('%d.%m.%Y')
-    sales_today = Sales.objects.filter(date=datetime.now())
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
     tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
@@ -1020,15 +1019,16 @@ def main_page(request):
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Чеки', 'Листочки'], count__lt=2).select_related('store'))
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки', count__lt=4).select_related('store'))
 
+    sls = list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
+    st = Store.objects.values('id', 'name')
     dic = {}
+    for i in sls:
+        dic[st.get(id=i['store'])['name']] = i['store_sum']
 
-    for st in Store.objects.all():
-        sales_sum = sales_today.filter(store=st).aggregate(Sum('sum'))['sum__sum']
-        if sales_sum is not None:
-            dic[st.name] = sales_sum
 
-    ll_tips = RefsAndTips.objects.filter(title='Лазерлэнд')
-    bw_tips = RefsAndTips.objects.filter(title='Бигвол')
+    tips = RefsAndTips.objects.all()
+    ll_tips = tips.filter(title='Лазерлэнд')
+    bw_tips = tips.filter(title='Бигвол')
 
     error = ''
     if request.method == 'POST':

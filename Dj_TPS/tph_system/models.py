@@ -241,7 +241,12 @@ class Tech(models.Model):
 
 
 class RefsAndTips(models.Model):
-    title = models.CharField(max_length=100, blank=True, verbose_name=u"Заголовок")
+    # селектор для title
+    SLCT_TITLE = (
+        ('Бигвол', 'Бигвол'),
+        ('Лазерлэнд', 'Лазерлэнд')
+    )
+    title = models.CharField(max_length=100, blank=True, choices=SLCT_TITLE, verbose_name=u"Заголовок")
     tip = models.TextField(verbose_name=u"Информация")
     refs = models.CharField(max_length=200, verbose_name=u"Ссылки")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")

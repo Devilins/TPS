@@ -338,17 +338,10 @@ class SalesForm(ModelForm):
             raise ValidationError('Фотограф не работает на выбранной точке в указанную дату')
 
         try:
-            if sale_type == 'Печать 15x20':
-                cons_type = 'Печать A4'
-                p_count = math.ceil(photo_count / 2)
-            else:
-                cons_type = sale_type
-                p_count = photo_count
-
-            cons = ConsumablesStore.objects.get(cons_short=cons_type, store=store)
-            if p_count > cons.count:
-                raise ValidationError(
-                    f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {sale_type}")
+            if sale_type in ('Вин. магн.', 'Ср. магн.', 'Бол. магн.'):
+                cons = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
+                if photo_count > cons.count:
+                    raise ValidationError(f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {cons.consumable}")
         except ConsumablesStore.DoesNotExist:
             pass
 
@@ -365,8 +358,8 @@ class RefsAndTipsForm(ModelForm):
         }
 
         widgets = {
-            "title": TextInput(attrs={
-                'class': 'form-control',
+            "title": Select(attrs={
+                'class': 'form-select',
                 'placeholder': 'Заголовок'
             }),
             "tip": Textarea(attrs={
