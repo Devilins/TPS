@@ -31,13 +31,16 @@ def start_month_generator(start, end):
         start += relativedelta(months=1)
 
 
-s = Settings.objects.all()
-
+s = list(Settings.objects.values('param', 'value'))
 
 def param_gets(par):
-    try:
-        return int(s.get(param=str(par)).value)
-    except ObjectDoesNotExist:
+    suc = 0
+    res = 0
+    for i in s:
+        if i['param'] == str(par):
+            suc += 1
+            res = int(i['value'])
+    if suc == 0:
         error = ImplEvents.objects.create(
             event_type='Param_Gets_Error',
             event_message=f"Нет такого параметра в Настройках => {str(par)}. Для дальнейшей работы операции "
@@ -46,8 +49,17 @@ def param_gets(par):
             solved='Нет'
         )
         print(f"ImplEvents - новая запись {error}")
-        raise SaleTypeError(f"Нет такого параметра в Настройках => {str(par)}. Для дальнейшей работы операции "
-                            f"добавьте в Настройки новый параметр {str(par)} с нужным вам значением.")
+    elif suc > 1:
+        error = ImplEvents.objects.create(
+            event_type='Param_Gets_Error',
+            event_message=f"В Настройках обнаружено {suc} одинаковых параметра {str(par)}. Для корректной работы операции "
+                          f"нужно, чтобы параметр {str(par)} был Уникальным!",
+            status='Системная ошибка',
+            solved='Нет'
+        )
+        print(f"ImplEvents - новая запись {error}")
+
+    return res
 
 
 def dt_format(date):

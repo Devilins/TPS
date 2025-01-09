@@ -1014,10 +1014,13 @@ def main_page(request):
     tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
 
     # Заканчивающиеся расходники
-    con_store = ConsumablesStore.objects.filter(count__lt=1).select_related('store')
-    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'], count__lt=30).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Чеки', 'Листочки'], count__lt=2).select_related('store'))
-    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки', count__lt=4).select_related('store'))
+    con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).select_related('store')
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'],
+                                                                count__lt=param_gets('cons_mgn')).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Чеки', 'Листочки'],
+                                                                count__lt=param_gets('cons_check_lists')).select_related('store'))
+    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки',
+                                                                count__lt=param_gets('cons_cards')).select_related('store'))
 
     sls = list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
     st = Store.objects.values('id', 'name')
