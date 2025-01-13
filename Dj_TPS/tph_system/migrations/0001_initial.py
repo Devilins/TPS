@@ -295,4 +295,24 @@ class Migration(migrations.Migration):
                 'ordering': ['store', 'name'],
             },
         ),
+        migrations.AddField(
+            model_name='refsandtips',
+            name='title',
+            field=models.CharField(blank=True, choices=[('Бигвол', 'Бигвол'), ('Лазерлэнд', 'Лазерлэнд')],
+                                   max_length=100, verbose_name='Заголовок'),
+        ),
+        migrations.AddField(
+            model_name='schedule',
+            name='work_time',
+            field=models.CharField(blank=True, max_length=20, null=True, verbose_name='Время работы'),
+        ),
+        migrations.AlterField(
+            model_name='consumablesstore',
+            name='count',
+            field=models.DecimalField(decimal_places=1, max_digits=8, verbose_name='Количество на точке'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='schedule',
+            unique_together={('staff', 'date')},
+        ),
     ]

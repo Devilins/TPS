@@ -1082,7 +1082,7 @@ def cash_withdrawn(request):
         ).select_related('store', 'staff')
 
         # Если сотрудник админ - то видит списание налички всех работников в этот день на этой точке
-        if staff_sch.position == 'Администратор':
+        if staff_sch is not None and staff_sch.position == 'Администратор':
             sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj
                                           ).exclude(staff_id=auth_staff).values_list('staff', flat = True)
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()

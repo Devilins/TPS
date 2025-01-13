@@ -32,6 +32,8 @@ def start_month_generator(start, end):
 
 
 s = list(Settings.objects.values('param', 'value'))
+print('Переменная s готова')
+
 
 def param_gets(par):
     suc = 0

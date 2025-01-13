@@ -26,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+# bool(os.getenv('DEBUG'))
 
 # 'ALLOWED_HOSTS' should be a single string of hosts with a space between each.
 # For example: 'ALLOWED_HOSTS=localhost 127.0.0.1 [::1]'
@@ -170,7 +171,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 MAX_ATTEMPTS = 3  # Максимальное число попыток выполнения задачи
 
 # Axes settings
-AXES_FAILURE_LIMIT = 20
+AXES_FAILURE_LIMIT = 10
 AXES_LOCK_OUT_AT_FAILURE = True
 AXES_COOLOFF_TIME = 0.083   # lockout 5 mins
 AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False

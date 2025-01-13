@@ -14,15 +14,38 @@ services:
       - bridge
     ports:
       - "5433:5432"
+
   tps:
     container_name: tps_system
     build: .
-    ports:
-      - "8000:8000"
+    volumes:
+      - static:/app/static
+      - media:/app/media
     env_file:
       - .env
     depends_on:
       - tps_postgres
     networks:
       - bridge
-    command: bash -c "poetry run python manage.py makemigrations && poetry run python manage.py migrate && poetry run python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "poetry run python manage.py makemigrations && poetry run python manage.py migrate && poetry run python manage.py collectstatic --noinput && poetry run python manage.py runserver 0.0.0.0:8000"
+
+  nginx:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./docker/nginx/
+    container_name: tps_nginx
+    image: tps_nginx
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    depends_on:
+      - tps
+    networks:
+      - bridge
+    ports:
+      - "${NGINX_EXTERNAL_PORT}:80"
+
+volumes:
+  pg_data:
+  static:
+  media:

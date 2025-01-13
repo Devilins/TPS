@@ -413,7 +413,7 @@ class CashWithdrawnForm(ModelForm):
             }),
             "comment": Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Комментарий',
+                'placeholder': 'Комментарий (Укажите за какую неделю забрали зп)',
                 'rows': '2'
             })
         }
