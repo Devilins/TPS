@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.db.transaction import atomic
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
@@ -484,25 +484,39 @@ class SettingsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
     model = Settings
     form_class = SettingsForm
     template_name = 'tph_system/settings/set_update.html'
-    success_url = '/settings/'
-    extra_context = {
-        'title': 'Настройки - редактирование',
-        'card_title': 'Редактирование параметра'
-    }
     permission_required = 'tph_system.change_settings'
     permission_denied_message = 'У вас нет прав на редактирование параметров'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        filter_params = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        return f'/settings/?{filter_params}'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Настройки - редактирование'
+        context['card_title'] = 'Редактирование параметра'
+        context['current_filter_params'] = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        return context
 
 
 class SettingsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Settings
-    success_url = '/settings/'
     template_name = 'tph_system/settings/set_delete.html'
-    extra_context = {
-        'title': 'Настройки - удаление',
-        'card_title': 'Удаление параметра'
-    }
     permission_required = 'tph_system.delete_settings'
     permission_denied_message = 'У вас нет прав на удаление параметра'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        filter_params = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        return f'/settings/?{filter_params}'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Настройки - удаление'
+        context['card_title'] = 'Удаление параметра'
+        context['current_filter_params'] = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        return context
 
 
 class SalaryUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -1021,6 +1035,7 @@ def main_page(request):
                                                                 count__lt=param_gets('cons_check_lists')).select_related('store'))
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки',
                                                                 count__lt=param_gets('cons_cards')).select_related('store'))
+    con_store = con_store.order_by('store')
 
     sls = list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
     st = Store.objects.values('id', 'name')
@@ -1124,6 +1139,9 @@ def cash_withdrawn(request):
 def settings(request):
     stng = Settings.objects.all()
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     s_filter = SettingsFilter(request.GET, queryset=stng)
     stng = s_filter.qs
@@ -1133,7 +1151,9 @@ def settings(request):
         form = SettingsForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('settings')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/settings/?{current_filter_params}')
+            # return redirect('settings')
         else:
             error = 'Ошибка в заполнении формы'
     else:
@@ -1151,7 +1171,8 @@ def settings(request):
         's_filter': s_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'set_count': paginator.count
+        'set_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
