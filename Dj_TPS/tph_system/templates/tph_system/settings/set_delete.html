@@ -15,7 +15,7 @@
                 Подтверждаете удаление параметра <b>{{ settings.param }}</b> cо значением <i>{{ settings.value }}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'set_update' settings.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'set_update' settings.id %}?current_filter_params={{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>
