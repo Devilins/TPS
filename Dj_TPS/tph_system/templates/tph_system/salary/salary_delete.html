@@ -15,7 +15,7 @@
                 Подтверждаете удаление записи с зарплатой сотрудника <b>{{ salary.staff }}</b> за дату <i>{{ salary.date }}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'salary_update' salary.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'salary_update' salary.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

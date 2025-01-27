@@ -30,23 +30,35 @@ class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Staff
     form_class = StaffForm
     template_name = 'tph_system/staff/staff_update.html'
-    success_url = '/staff/'
-    extra_context = {
-        'title': 'Сотрудники - редактирование'
-    }
     permission_required = 'tph_system.change_staff'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с сотрудниками'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('staff') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Сотрудники - редактирование'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class StaffDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Staff
-    success_url = '/staff/'
     template_name = 'tph_system/staff/staff_delete.html'
-    extra_context = {
-        'title': 'Сотрудники - удаление'
-    }
     permission_required = 'tph_system.delete_staff'
     permission_denied_message = 'У вас нет прав на удаление сотрудников'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('staff') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Сотрудники - удаление'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class StoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -77,11 +89,18 @@ class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
     form_class = ConsStoreForm
     template_name = 'tph_system/consumables_store/conStore_update.html'
     success_url = '/consumables/'
-    extra_context = {
-        'title': 'Расходники - редактирование'
-    }
     permission_required = 'tph_system.change_consumablesstore'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с расходниками'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('cons_store') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Расходники - редактирование'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
     @atomic
     def form_valid(self, form):
@@ -132,28 +151,40 @@ class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
 
 class ConStoreDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = ConsumablesStore
-    success_url = '/consumables/'
     template_name = 'tph_system/consumables_store/conStore_delete.html'
-    extra_context = {
-        'title': 'Расходники - удаление'
-    }
     permission_required = 'tph_system.delete_consumablesstore'
     permission_denied_message = 'У вас нет прав на удаление расходников'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('cons_store') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Расходники - удаление'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class TechUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Tech
     form_class = TechForm
     template_name = 'tph_system/tech/tech_update.html'
-    success_url = '/tech/'
-    extra_context = {
-        'title': 'Техника - редактирование',
-        'card_title': 'Изменение техники',
-        'url_cancel': 'tech',
-        'url_delete': 'tech_delete'
-    }
     permission_required = 'tph_system.change_tech'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с фототехникой'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('tech') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Техника - редактирование'
+        context['card_title'] = 'Изменение техники'
+        context['url_cancel'] = 'tech'
+        context['url_delete'] = 'tech_delete'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
     @atomic
     def form_valid(self, form):
@@ -223,30 +254,42 @@ class TechUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
 class TechDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tech
-    success_url = '/tech/'
     template_name = 'tph_system/tech/tech_delete.html'
-    extra_context = {
-        'title': 'Техника - удаление',
-        'card_title': 'Удаление техники',
-        'url_cancel': 'tech_update'
-    }
     permission_required = 'tph_system.delete_tech'
     permission_denied_message = 'У вас нет прав на удаление техники'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('tech') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Техника - удаление'
+        context['card_title'] = 'Удаление техники'
+        context['url_cancel'] = 'tech_update'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Sales
     form_class = SalesForm
     template_name = 'tph_system/sales/sales_update.html'
-    success_url = '/sales/'
-    extra_context = {
-        'title': 'Продажи - редактирование',
-        'card_title': 'Изменение продажи',
-        'url_cancel': 'sales',
-        'url_delete': 'sales_delete'
-    }
     permission_required = 'tph_system.change_sales'
     permission_denied_message = 'У вас нет прав на редактирование таблицы с продажами'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('sales') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Продажи - редактирование'
+        context['card_title'] = 'Изменение продажи'
+        context['url_cancel'] = 'sales'
+        context['url_delete'] = 'sales_delete'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
     @atomic
     def form_valid(self, form):
@@ -299,15 +342,21 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
 class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Sales
-    success_url = '/sales/'
     template_name = 'tph_system/sales/sales_delete.html'
-    extra_context = {
-        'title': 'Продажи - удаление',
-        'card_title': 'Удаление продажи',
-        'url_cancel': 'sales'
-    }
     permission_required = 'tph_system.delete_sales'
     permission_denied_message = 'У вас нет прав на удаление продаж'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('sales') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Продажи - удаление'
+        context['card_title'] = 'Удаление продажи'
+        context['url_cancel'] = 'sales'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
     def form_valid(self, form):
         # Данные из объекта БД
@@ -349,14 +398,20 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Sales
     form_class = SalesForm
     template_name = 'tph_system/sales/sale_add.html'
-    success_url = '/sales/'
-    extra_context = {
-        'title': 'Новая продажа',
-        'card_title': 'Добавление новой продажи',
-        'url_cancel': 'sales'
-    }
     permission_required = 'tph_system.add_sales'
     permission_denied_message = 'У вас нет прав на добавление новой продажи'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('sales') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Новая продажа'
+        context['card_title'] = 'Добавление новой продажи'
+        context['url_cancel'] = 'sales'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
     def get_initial(self):
         initial = super().get_initial()
@@ -431,28 +486,40 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
     model = CashWithdrawn
     form_class = CashWithdrawnForm
     template_name = 'tph_system/cash_withdrawn/c_w_update.html'
-    success_url = '/cash_withdrawn/'
-    extra_context = {
-        'title': 'Зарплата наличными - редактирование',
-        'card_title': 'Редактирование данных',
-        'url_cancel': 'cash_withdrawn',
-        'url_delete': 'c_w_delete'
-    }
     permission_required = 'tph_system.change_cashwithdrawn'
     permission_denied_message = 'У вас нет прав на редактирование истории выдачи наличных'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('cash_withdrawn') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплата наличными - редактирование'
+        context['card_title'] = 'Редактирование данных'
+        context['url_cancel'] = 'cash_withdrawn'
+        context['url_delete'] = 'c_w_delete'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = CashWithdrawn
-    success_url = '/cash_withdrawn/'
     template_name = 'tph_system/cash_withdrawn/c_w_delete.html'
-    extra_context = {
-        'title': 'Зарплата наличными - удаление',
-        'card_title': 'Удаление данных',
-        'url_cancel': 'c_w_update'
-    }
     permission_required = 'tph_system.delete_cashwithdrawn'
     permission_denied_message = 'У вас нет прав на удаление истории выдачи наличных'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('cash_withdrawn') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплата наличными - удаление'
+        context['card_title'] = 'Удаление данных'
+        context['url_cancel'] = 'c_w_update'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class RefsAndTipsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -489,14 +556,13 @@ class SettingsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
 
     def get_success_url(self):
         # Возвращаем URL с сохраненными параметрами фильтрации
-        filter_params = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
-        return f'/settings/?{filter_params}'
+        return reverse('settings') + '?' + self.request.GET.urlencode()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Настройки - редактирование'
         context['card_title'] = 'Редактирование параметра'
-        context['current_filter_params'] = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        context['current_filter_params'] = self.request.GET.urlencode()
         return context
 
 
@@ -508,14 +574,13 @@ class SettingsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView
 
     def get_success_url(self):
         # Возвращаем URL с сохраненными параметрами фильтрации
-        filter_params = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
-        return f'/settings/?{filter_params}'
+        return reverse('settings') + '?' + self.request.GET.urlencode()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Настройки - удаление'
         context['card_title'] = 'Удаление параметра'
-        context['current_filter_params'] = self.request.GET.get('current_filter_params', self.request.GET.urlencode())
+        context['current_filter_params'] = self.request.GET.urlencode()
         return context
 
 
@@ -523,88 +588,130 @@ class SalaryUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Salary
     form_class = SalaryForm
     template_name = 'tph_system/salary/salary_update.html'
-    success_url = '/salary/'
-    extra_context = {
-        'title': 'Зарплаты - редактирование',
-        'card_title': 'Редактирование записи с зарплатой'
-    }
     permission_required = 'tph_system.change_salary'
     permission_denied_message = 'У вас нет прав на редактирование зарплат'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('salary') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплаты - редактирование'
+        context['card_title'] = 'Редактирование записи с зарплатой'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class SalaryDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Salary
-    success_url = '/salary/'
     template_name = 'tph_system/salary/salary_delete.html'
-    extra_context = {
-        'title': 'Зарплаты - удаление',
-        'card_title': 'Удаление записи с зарплатой'
-    }
     permission_required = 'tph_system.delete_salary'
     permission_denied_message = 'У вас нет прав на удаление зарплат'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('salary') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплаты - удаление'
+        context['card_title'] = 'Удаление записи с зарплатой'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class SalaryWeeklyUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = SalaryWeekly
     form_class = SalaryWeeklyForm
     template_name = 'tph_system/salary_weekly/salary_w_upd.html'
-    success_url = '/salary/weekly/'
-    extra_context = {
-        'title': 'Зарплаты по неделям - редактирование',
-        'card_title': 'Редактирование записи с зарплатой по неделям'
-    }
     permission_required = 'tph_system.change_salaryweekly'
     permission_denied_message = 'У вас нет прав на редактирование зарплат по неделям'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('salary_weekly') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплаты по неделям - редактирование'
+        context['card_title'] = 'Редактирование записи с зарплатой по неделям'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class SalaryWeeklyDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = SalaryWeekly
-    success_url = '/salary/weekly/'
     template_name = 'tph_system/salary_weekly/salary_w_del.html'
-    extra_context = {
-        'title': 'Зарплаты по неделям - удаление',
-        'card_title': 'Удаление записи с зарплатой по неделям'
-    }
     permission_required = 'tph_system.delete_salaryweekly'
     permission_denied_message = 'У вас нет прав на удаление зарплат по неделям'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('salary_weekly') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Зарплаты по неделям - удаление'
+        context['card_title'] = 'Удаление записи с зарплатой по неделям'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class ImplEventsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = ImplEvents
     form_class = ImplEventsForm
     template_name = 'tph_system/salary/sal_events_edit.html'
-    success_url = '/salary/events/'
-    extra_context = {
-        'title': 'Ошибки в подсчете зарплат - редактирование',
-        'card_title': 'Редактирование событий'
-    }
     permission_required = 'tph_system.change_implevents'
     permission_denied_message = 'У вас нет прав на редактирование событий'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('sal_events') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Ошибки в подсчете зарплат - редактирование'
+        context['card_title'] = 'Редактирование событий'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class FinStatsMonthUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = FinStatsMonth
     form_class = FinStatsMonthForm
     template_name = 'tph_system/fin_stats/fin_stats_update.html'
-    success_url = '/fin_stats/'
-    extra_context = {
-        'title': 'Финансы компании - редактирование',
-        'card_title': 'Редактирование расходов за'
-    }
     permission_required = 'tph_system.change_finstatsmonth'
     permission_denied_message = 'У вас нет прав на редактирование расходов за месяц'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('fin_stats') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Финансы компании - редактирование'
+        context['card_title'] = 'Редактирование расходов за'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 class FinStatsMonthDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = FinStatsMonth
-    success_url = '/fin_stats/'
     template_name = 'tph_system/fin_stats/fin_stats_delete.html'
-    extra_context = {
-        'title': 'Финансы компании - удаление',
-        'card_title': 'Удаление записи с финансами по компании'
-    }
     permission_required = 'tph_system.delete_finstatsmonth'
     permission_denied_message = 'У вас нет прав на удаление записи с финансами по компании'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('fin_stats') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Финансы компании - удаление'
+        context['card_title'] = 'Удаление записи с финансами по компании'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
 
 
 # ---------------------------Классы календаря----------------------------------
@@ -694,6 +801,9 @@ def store(request):
 def staff(request):
     staffs = Staff.objects.all().select_related('st_username')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     s_filter = StaffFilter(request.GET, queryset=staffs)
     staffs = s_filter.qs
 
@@ -702,7 +812,8 @@ def staff(request):
         form_p = StaffForm(request.POST)
         if form_p.is_valid():
             form_p.save()
-            return redirect('staff')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/staff/?{current_filter_params}')
         else:
             error = 'Ошибка в заполнении формы'
 
@@ -720,7 +831,8 @@ def staff(request):
         's_filter': s_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'staff_count': paginator.count
+        'staff_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -742,6 +854,9 @@ def cons_store(request):
     else:
         con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj).select_related('store')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     #Фильтр
     cs_filter = ConsumablesStoreFilter(request.GET, queryset=con_store)
     con_store = cs_filter.qs
@@ -750,7 +865,8 @@ def cons_store(request):
         form = ConsStoreForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('cons_store')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/consumables/?{current_filter_params}')
     else:
         form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
@@ -765,7 +881,8 @@ def cons_store(request):
         'cs_filter': cs_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'cons_count': paginator.count
+        'cons_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -787,6 +904,9 @@ def tech_mtd(request):
     else:
         tech = Tech.objects.filter(store=store_staff_working_obj).select_related('store')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     t_filter = TechFilter(request.GET, queryset=tech)
     tech = t_filter.qs
@@ -795,7 +915,8 @@ def tech_mtd(request):
         form = TechForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('tech')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/tech/?{current_filter_params}')
     else:
         form = TechForm(initial={'store': store_staff_working_obj})
 
@@ -810,7 +931,8 @@ def tech_mtd(request):
         't_filter': t_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'tech_count': paginator.count
+        'tech_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -963,6 +1085,9 @@ def sales(request):
     if 'Роль не указана' in positions:
         flag = 1
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     #Фильтр
     sale_filter = SalesFilter(request.GET, queryset=sales_all)
     sales_all = sale_filter.qs
@@ -986,7 +1111,8 @@ def sales(request):
         form_p = SalesForm(request.POST)
         if form_p.is_valid():
             form_p.save()
-            return redirect('sales')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/sales/?{current_filter_params}')
         else:
             error = 'Ошибка в заполнении формы'
 
@@ -1014,7 +1140,8 @@ def sales(request):
         'cashbx_card': cashbx_card,
         'cashbx_cash': cashbx_cash,
         'cashbx_qr_p': cashbx_qr_p,
-        'cashbx_orders': cashbx_orders
+        'cashbx_orders': cashbx_orders,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -1103,6 +1230,9 @@ def cash_withdrawn(request):
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
                                                            ).select_related('store', 'staff')).order_by('-date')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
     cash = c_filter.qs
@@ -1111,7 +1241,9 @@ def cash_withdrawn(request):
         form = CashWithdrawnForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('cash_withdrawn')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/cash_withdrawn/?{current_filter_params}')
+            # return redirect('cash_withdrawn')
     else:
         form = CashWithdrawnForm(initial={
             'store': store_staff_working_obj,
@@ -1130,7 +1262,8 @@ def cash_withdrawn(request):
         'c_filter': c_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'with_count': paginator.count
+        'with_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -1153,7 +1286,7 @@ def settings(request):
             form.save()
             # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
             return redirect(f'/settings/?{current_filter_params}')
-            # return redirect('settings')
+            # return reverse('settings') + '?' + request.GET.urlencode()
         else:
             error = 'Ошибка в заполнении формы'
     else:
@@ -1190,6 +1323,9 @@ def salary_weekly(request):
 
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     sw_filter = SalaryWeeklyFilter(request.GET, queryset=slr)
     slr = sw_filter.qs
@@ -1205,7 +1341,8 @@ def salary_weekly(request):
         'err_events_count': err_events_count,
         'page_obj': page_obj,
         'paginator': paginator,
-        'sal_week_count': paginator.count
+        'sal_week_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -1241,6 +1378,9 @@ def salary_details(request):
         slr = Salary.objects.filter(staff=Staff.objects.get(st_username=auth_user)
                                           ).select_related('store', 'staff')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     s_filter = SalaryFilter(request.GET, queryset=slr)
     slr = s_filter.qs
@@ -1249,7 +1389,8 @@ def salary_details(request):
         form = SalaryForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('salary')
+            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
+            return redirect(f'/salary/?{current_filter_params}')
     else:
         form = SalaryForm()
 
@@ -1264,7 +1405,8 @@ def salary_details(request):
         's_filter': s_filter,
         'page_obj': page_obj,
         'paginator': paginator,
-        'sal_count': paginator.count
+        'sal_count': paginator.count,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -1273,6 +1415,9 @@ def salary_details(request):
 def sal_err_events(request):
     err_events = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет')
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Фильтр
     err_filter = ImplEventsFilter(request.GET, queryset=err_events)
     err_events = err_filter.qs
@@ -1280,7 +1425,8 @@ def sal_err_events(request):
     return render(request, 'tph_system/salary/sal_events.html', {
         'title': 'Ошибки в подсчете зарплат',
         'err_events': err_events,
-        'err_filter': err_filter
+        'err_filter': err_filter,
+        'current_filter_params': current_filter_params
     })
 
 
@@ -1289,6 +1435,9 @@ def sal_err_events(request):
 def fin_stats(request):
     stats = FinStatsMonth.objects.all()
     stats_staff = FinStatsStaff.objects.all().select_related('staff')
+
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
 
     # Фильтр FinStatsMonth
     stats_filter = FinStatsMonthFilter(request.GET, queryset=stats)
@@ -1315,7 +1464,8 @@ def fin_stats(request):
         'paginator_st': paginator_st,
         'page_obj_st': page_obj_st,
         'stats_filter': stats_filter,
-        'stats_staff_filter': stats_staff_filter
+        'stats_staff_filter': stats_staff_filter,
+        'current_filter_params': current_filter_params
     })
 
 

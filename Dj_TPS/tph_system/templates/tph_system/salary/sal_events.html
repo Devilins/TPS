@@ -48,7 +48,8 @@
                     <td>{{ ev.date_created }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'sal_events_update' ev.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'sal_events_update' ev.id %}?{{ current_filter_params }}">
+                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>

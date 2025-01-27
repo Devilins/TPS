@@ -15,7 +15,7 @@
                 Подтверждаете удаление техники <b>{{ tech.name }}</b> c серийным номером <i>{{ tech.serial_num }}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url url_cancel tech.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url url_cancel tech.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

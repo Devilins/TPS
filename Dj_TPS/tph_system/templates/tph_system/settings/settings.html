@@ -53,7 +53,7 @@
                     <td>{{ s.date_upd }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'set_update' s.id %}?current_filter_params={{ current_filter_params }}">
+                            <a href="{% url 'set_update' s.id %}?{{ current_filter_params }}">
                                 <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
