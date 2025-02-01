@@ -8,6 +8,9 @@ from tph_system.models import *
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
     readonly_fields = ['date_upd', 'user_edited']
+    list_display = ('name', 'o_name', 'f_name', 'dism_status', 'st_username')
+    list_filter = ('dism_status', 'name')
+    list_per_page = 30
 
 
 @admin.register(Store)

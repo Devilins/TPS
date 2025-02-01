@@ -33,6 +33,7 @@
                             <div class="row" style="margin-top: 10px">
                                 <div class="col col-md-auto">Дата найма:<br>{{ s_filter.form.date_empl }}</div>
                                 <div class="col col-md-auto">Дата увольнения:<br>{{ s_filter.form.date_dism }}</div>
+                                <div class="col col-md-auto">Статус:<br>{{ s_filter.form.dism_status }}</div>
                                 <div class="col col-md-auto">
                                     <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
                                 </div>
@@ -51,6 +52,7 @@
                     <th scope="col">ФИО</th>
                     <th scope="col">Дата найма</th>
                     <th scope="col">Дата увольнения</th>
+                    <th scope="col">Статус</th>
                     <th scope="col">Логин</th>
                     <th scope="col"></th>
                 </tr>
@@ -65,6 +67,7 @@
                     {% else %}
                         <td></td>
                     {% endif %}
+                    <td>{{ st.dism_status }}</td>
                     <td>{{ st.st_username }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
@@ -94,6 +97,7 @@
                             {{ form.o_name }}<br>
                             {{ form.date_empl }}<br>
                             {{ form.date_dism }}<br>
+                            {{ form.dism_status }}<br>
                             {{ form.st_username }}
                             <span>{{ error }}</span>
                         </div>

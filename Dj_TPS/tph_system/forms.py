@@ -39,10 +39,11 @@ class StaffForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['st_username'].empty_label = "Выберите Логин"
+        self.fields['dism_status'].empty_label = "Выберите статус"
 
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'st_username']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status', 'st_username']
 
         labels = {
             'f_name': 'Фамилия',
@@ -50,6 +51,7 @@ class StaffForm(ModelForm):
             'o_name': 'Отчество',
             'date_empl': 'Дата найма',
             'date_dism': 'Дата увольнения',
+            'dism_status': 'Статус',
             'st_username': 'Логин'
         }
 
@@ -73,6 +75,10 @@ class StaffForm(ModelForm):
             "date_dism": FengyuanChenDatePickerInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Дата увольнения'
+            }),
+            "dism_status": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Статус'
             }),
             "st_username": Select(attrs={
                 'class': 'form-select',
@@ -218,6 +224,8 @@ class ScheduleForm(ModelForm):
 class SalesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
+        self.fields['photographer'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
         self.fields['photographer'].empty_label = "Выберите сотрудника"
         self.fields['store'].empty_label = "Выберите точку"
@@ -377,6 +385,7 @@ class RefsAndTipsForm(ModelForm):
 class CashWithdrawnForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
         self.fields['store'].empty_label = "Выберите точку"
 
@@ -465,6 +474,7 @@ class SettingsForm(ModelForm):
 class SalaryForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
         self.fields['store'].empty_label = "Выберите точку"
 
@@ -589,6 +599,7 @@ class TimeSelectForm(Form):
 class SalaryWeeklyForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
 
     class Meta:
@@ -701,6 +712,7 @@ class FinStatsMonthForm(ModelForm):
 class FinStatsStaffForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
 
     class Meta:

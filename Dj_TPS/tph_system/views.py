@@ -799,6 +799,10 @@ def store(request):
 @login_required
 @permission_required(perm='tph_system.view_staff', raise_exception=True)
 def staff(request):
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET:
+        return redirect('{}?dism_status=Работает'.format(request.path))
+
     staffs = Staff.objects.all().select_related('st_username')
 
     # Сохраняем текущие GET-параметры для возможности возврата
@@ -950,7 +954,7 @@ def schedule_mtd(request):
     # Вычисляем конец недели (воскресенье)
     end_date = start_date + timedelta(days=6)
 
-    staffs = Staff.objects.all()
+    staffs = Staff.objects.filter(dism_status="Работает").select_related('st_username')
     stores = Store.objects.all()
     schedules = Schedule.objects.filter(date__range=[start_date, end_date])
 
@@ -1063,6 +1067,10 @@ def m_position_select(request):
 @login_required
 @permission_required(perm='tph_system.view_sales', raise_exception=True)
 def sales(request):
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET:
+        return redirect(('{}?date='+str(dt_format(datetime.now()))).format(request.path))
+
     auth_user = User.objects.get(id=request.user.id)
     auth_staff = Staff.objects.get(st_username=auth_user)
     try:
@@ -1312,6 +1320,11 @@ def settings(request):
 @login_required
 @permission_required(perm='tph_system.view_salaryweekly', raise_exception=True)
 def salary_weekly(request):
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    f_week_begin = datetime.now() - timedelta(datetime.weekday(datetime.now()))  # Вычисляем начало недели
+    if not request.GET:
+        return redirect(('{}?week_begin='+str(dt_format(f_week_begin))).format(request.path))
+
     auth_user = User.objects.get(id=request.user.id)
 
     # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
@@ -1369,6 +1382,10 @@ def salary_calculation(request):
 @login_required
 @permission_required(perm='tph_system.view_salary', raise_exception=True)
 def salary_details(request):
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET:
+        return redirect(('{}?date='+str(dt_format(datetime.now() - timedelta(1)))).format(request.path))
+
     auth_user = User.objects.get(id=request.user.id)
 
     # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
