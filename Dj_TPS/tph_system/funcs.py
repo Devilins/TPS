@@ -85,6 +85,7 @@ def sal_calc(time_start, time_end):
             sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
                                                            sale_type='Заказной фотосет'
                                                            ).exclude(photographer=sch.staff)
+            phot_in_store_cnt = len(Schedule.objects.filter(date=day_date, store=sch.store, position='Фотограф'))
 
             if sales_zak.exists():
                 # Касса заказов
@@ -130,14 +131,14 @@ def sal_calc(time_start, time_end):
                 elif day_date.weekday() in (5, 6):  # Выходные
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_wknd'):  # 15000
                         sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
-                    elif int(sch.aggregate(stsum=Count('staff'))['stsum']) < param_gets('phot_count_incr_pay_if'):
+                    elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
                         sal_staff += cashbx_sum * param_gets('phot_few_incr_perc_pay') / 100  # 0.22
                     else:
                         sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
                 else:
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_budn'):  # 10000
                         sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
-                    elif int(sch.aggregate(stsum=Count('staff'))['stsum']) < param_gets('phot_count_incr_pay_if'):
+                    elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
                         sal_staff += cashbx_sum * param_gets('phot_few_incr_perc_pay') / 100  # 0.22
                     else:
                         sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
