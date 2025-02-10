@@ -12,10 +12,21 @@
             <form method="post" class="form-control">
                 {% csrf_token %}
                 <div class="form-error">{{ form.non_field_errors }}</div>
-                {% for f in form %}
-                    <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
-                    <div class="form-error">{{ f.errors }}</div>
-                {% endfor %}
+                <p><label class="form-label" for="{{ form.beg_date.id_for_label }}"><i>{{ form.beg_date.label }}:</i></label><br>{{ form.beg_date }}</p>
+                <div class="form-error">{{ form.beg_date.errors }}</div>
+                <p><label class="form-label" for="{{ form.end_date.id_for_label }}"><i>{{ form.end_date.label }}:</i></label><br>{{ form.end_date }}</p>
+                <div class="form-error">{{ form.end_date.errors }}</div>
+                <div class="form-check form-switch" style="text-align: left;">
+                    {{ form.sal_calc_flag }}
+                    <label class="form-check-label" for="{{ form.sal_calc_flag.id_for_label }}">{{ form.sal_calc_flag.label }}</label>
+                    <div class="form-error">{{ form.sal_calc_flag.errors }}</div>
+                </div>
+                <div class="form-check form-switch" style="text-align: left;">
+                    {{ form.sal_weekly_flag }}
+                    <label class="form-check-label" for="{{ form.sal_weekly_flag.id_for_label }}">{{ form.sal_weekly_flag.label }}</label>
+                    <div class="form-error">{{ form.sal_weekly_flag.errors }}</div>
+                </div>
+                <br>
                 <button class="btn btn-success" type="submit">Начать расчет</button>
                 <a class="btn btn-warning" href="{% url 'salary_weekly' %}" role="button">Отмена</a>
             </form>

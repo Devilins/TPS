@@ -3,7 +3,7 @@ import math
 import re
 
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory, CheckboxInput
 from django import forms
 
 from .models import *
@@ -574,6 +574,51 @@ class TimeSelectForm(Form):
         'placeholder': 'Дата окончания'
     }),
         label='Дата окончания')
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data["end_date"]
+        if end_date > datetime.today().date():
+            raise ValidationError('Дата окончания не может быть в будущем')
+        return end_date
+
+    def clean_beg_date(self):
+        beg_date = self.cleaned_data["beg_date"]
+        if beg_date < datetime(2024, 1, 1).date():
+            raise ValidationError('Дата начала не может быть раньше 2024 года')
+        return beg_date
+
+    def clean(self):
+        cleaned_data = super().clean()
+        beg_date = cleaned_data.get("beg_date")
+        end_date = cleaned_data.get("end_date")
+        if end_date is not None:
+            if beg_date > end_date:
+                raise ValidationError('Начало периода не может быть больше окончания')
+
+
+class TimeAndTypeSelectForm(Form):
+    beg_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Дата начала'
+    }),
+        label='Дата начала')
+    end_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Дата окончания'
+    }),
+        label='Дата окончания')
+    sal_calc_flag = forms.BooleanField(required=False, widget=CheckboxInput(attrs={
+        'class': 'form-check-input',
+        'role': 'switch',
+        'placeholder': 'Считаем зарплату по дням'
+    }),
+        label='Считаем зарплату по дням')
+    sal_weekly_flag = forms.BooleanField(required=False, widget=CheckboxInput(attrs={
+        'class': 'form-check-input',
+        'role': 'switch',
+        'placeholder': 'Заполняем зарплаты понедельно на основе дневных зарплат'
+    }),
+        label='Заполняем зарплаты понедельно на основе дневных зарплат')
 
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]

@@ -42,7 +42,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for s in page_obj %}
+                {% for s in stats %}
                 <tr>
                     <td>{{ s.date|date:"F Y" }}</td>
                     <td>{{ s.revenue }}</td>
@@ -61,47 +61,6 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Пагинация -->
-    <nav class="list-pages">
-        <ul class="pagination justify-content-center" style="margin-top: 25px;">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    {% if '?date' in request.get_full_path %}
-                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
-                    {% else %}
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
-                    {% endif %}
-                </li>
-            {% endif %}
-            {% if paginator.num_pages > 1 %}
-                {% for p in paginator.page_range %}
-                    {% if page_obj.number == p %}
-                        <li class="page-item active">
-                            <a class="page-link" href="">{{ p }}</a>
-                        </li>
-                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
-                        <li class="page-item">
-                            {% if '?date' in request.get_full_path %}
-                            <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
-                            {% else %}
-                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                            {% endif %}
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    {% if '?date' in request.get_full_path %}
-                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
-                    {% else %}
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
-                    {% endif %}
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
 </div>
 
 <div class="container cont_store" style="margin-top: 0px;">

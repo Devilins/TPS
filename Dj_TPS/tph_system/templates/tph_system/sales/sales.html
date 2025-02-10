@@ -23,6 +23,21 @@
 {% endif %}
 {% endblock func_buttons %}
 
+{% block event_msg %}
+{% if perms.tph_system.view_implevents %}
+    <!-- Количество сотрудников без ролей -->
+    {% if staff_without_role == 0 %}
+            <a role="button" class="btn btn-sm btn-outline-success" style="margin-right: 10px;">
+                Сотрудники без ролей ({{ staff_without_role }})
+            </a>
+        {% else %}
+            <a role="button" class="btn btn-sm btn-warning" style="margin-right: 10px;">
+                Сотрудники без ролей ({{ staff_without_role }})
+            </a>
+        {% endif %}
+{% endif %}
+{% endblock event_msg %}
+
 {% block content %}
 <div class="container container-fluid cont_store">
     <div class="card shadow" id="sales_table">

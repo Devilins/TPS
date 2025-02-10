@@ -82,9 +82,7 @@ def sal_calc(time_start, time_end):
             sales_univ = sales_today.filter(staff=sch.staff, photographer=sch.staff)
             sales_zak = Sales.objects.filter(date=day_date, photographer=sch.staff,
                                              sale_type__in=['Заказной фотосет', 'Заказ выездной'])
-            sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
-                                                           sale_type='Заказной фотосет'
-                                                           ).exclude(photographer=sch.staff)
+
             phot_in_store_cnt = len(Schedule.objects.filter(date=day_date, store=sch.store, position='Фотограф'))
 
             if sales_zak.exists():
@@ -179,10 +177,15 @@ def sal_calc(time_start, time_end):
                     )
                     print(f"ImplEvents - новая запись {error}")
 
-            if sales_zak_admin_service.exists():
-                # Кол-во заказов. Для начисления админу за сопровождения заказа.
-                zak_count = sales_zak_admin_service.count()
-                sal_staff += zak_count * param_gets('admin_order_service')
+            if sch.position == 'Администратор':
+                # Заказы, где сотрудник является только админом. Работает только для роли администратор
+                sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
+                                                               sale_type='Заказной фотосет'
+                                                               ).exclude(photographer=sch.staff)
+                if sales_zak_admin_service.exists():
+                    # Кол-во заказов. Для начисления админу за сопровождения заказа.
+                    zak_count = sales_zak_admin_service.count()
+                    sal_staff += zak_count * param_gets('admin_order_service')
 
             # Update в БД
             salary, created = Salary.objects.update_or_create(

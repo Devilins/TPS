@@ -12,9 +12,10 @@ from django.core.paginator import Paginator
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
-    FinStatsMonthForm
+    FinStatsMonthForm, TimeAndTypeSelectForm
 from .filters import *
 from .funcs import *
+
 
 # Для календаря
 # from schedule.views import CalendarByPeriodsView
@@ -1047,7 +1048,10 @@ def m_position_select(request):
     except ObjectDoesNotExist:
         store_staff_working_obj = None
 
-    today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+    if auth_user.has_perm('tph_system.user_sales_view_all'):
+        today_sch = Schedule.objects.filter(date=datetime.now())
+    else:
+        today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
 
     if request.method == 'POST':
         formset = PositionSelectFormSet(request.POST, queryset=today_sch)
@@ -1069,7 +1073,7 @@ def m_position_select(request):
 def sales(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     if not request.GET:
-        return redirect(('{}?date='+str(dt_format(datetime.now()))).format(request.path))
+        return redirect(('{}?date=' + str(dt_format(datetime.now()))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
     auth_staff = Staff.objects.get(st_username=auth_user)
@@ -1105,7 +1109,7 @@ def sales(request):
     cashbx_card = sales_all.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
-                                 ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+                                   ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
 
     if cashbx_all is None: cashbx_all = 0
@@ -1113,6 +1117,9 @@ def sales(request):
     if cashbx_cash is None: cashbx_cash = 0
     if cashbx_qr_p is None: cashbx_qr_p = 0
     if cashbx_orders is None: cashbx_orders = 0
+
+    # Сотрудники без ролей
+    staff_without_role = len(Schedule.objects.filter(position='Роль не указана'))
 
     error = ''
     if request.method == 'POST':
@@ -1149,7 +1156,8 @@ def sales(request):
         'cashbx_cash': cashbx_cash,
         'cashbx_qr_p': cashbx_qr_p,
         'cashbx_orders': cashbx_orders,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        'staff_without_role': staff_without_role
     })
 
 
@@ -1164,12 +1172,15 @@ def main_page(request):
 
     # Заканчивающиеся расходники
     con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).select_related('store')
-    con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'],
-                                                                count__lt=param_gets('cons_mgn')).select_related('store'))
+    con_store = con_store.union(
+        ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'],
+                                        count__lt=param_gets('cons_mgn')).select_related('store'))
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short__in=['Чеки', 'Листочки'],
-                                                                count__lt=param_gets('cons_check_lists')).select_related('store'))
+                                                                count__lt=param_gets(
+                                                                    'cons_check_lists')).select_related('store'))
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки',
-                                                                count__lt=param_gets('cons_cards')).select_related('store'))
+                                                                count__lt=param_gets('cons_cards')).select_related(
+        'store'))
     con_store = con_store.order_by('store')
 
     sls = list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
@@ -1177,7 +1188,6 @@ def main_page(request):
     dic = {}
     for i in sls:
         dic[st.get(id=i['store'])['name']] = i['store_sum']
-
 
     tips = RefsAndTips.objects.all()
     ll_tips = tips.filter(title='Лазерлэнд')
@@ -1234,7 +1244,7 @@ def cash_withdrawn(request):
         # Если сотрудник админ - то видит списание налички всех работников в этот день на этой точке
         if staff_sch is not None and staff_sch.position in ('Администратор', 'Универсальный фотограф'):
             sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj
-                                          ).exclude(staff_id=auth_staff).values_list('staff', flat = True)
+                                          ).exclude(staff_id=auth_staff).values_list('staff', flat=True)
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
                                                            ).select_related('store', 'staff')).order_by('-date')
 
@@ -1323,7 +1333,7 @@ def salary_weekly(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     f_week_begin = datetime.now() - timedelta(datetime.weekday(datetime.now()))  # Вычисляем начало недели
     if not request.GET:
-        return redirect(('{}?week_begin='+str(dt_format(f_week_begin))).format(request.path))
+        return redirect(('{}?week_begin=' + str(dt_format(f_week_begin))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
 
@@ -1363,15 +1373,17 @@ def salary_weekly(request):
 @permission_required(perm='tph_system.calculate_salary', raise_exception=True)
 def salary_calculation(request):
     if request.method == 'POST':
-        form = TimeSelectForm(request.POST)
+        form = TimeAndTypeSelectForm(request.POST)
         if form.is_valid():
             beg = form.cleaned_data['beg_date']
             end = form.cleaned_data['end_date']
-            sal_calc(beg, end)
-            sal_weekly_update(beg, end)
+            calc_flag = form.cleaned_data['sal_calc_flag']
+            weekly_flag = form.cleaned_data['sal_weekly_flag']
+            if calc_flag is True: sal_calc(beg, end)
+            if weekly_flag is True: sal_weekly_update(beg, end)
             return redirect('salary_weekly')
     else:
-        form = TimeSelectForm()
+        form = TimeAndTypeSelectForm()
 
     return render(request, 'tph_system/salary/salary_calc.html', {
         'title': 'Расчет зарплаты',
@@ -1384,7 +1396,7 @@ def salary_calculation(request):
 def salary_details(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     if not request.GET:
-        return redirect(('{}?date='+str(dt_format(datetime.now() - timedelta(1)))).format(request.path))
+        return redirect(('{}?date=' + str(dt_format(datetime.now() - timedelta(1)))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
 
@@ -1393,7 +1405,7 @@ def salary_details(request):
         slr = Salary.objects.all().select_related('store', 'staff')
     else:
         slr = Salary.objects.filter(staff=Staff.objects.get(st_username=auth_user)
-                                          ).select_related('store', 'staff')
+                                    ).select_related('store', 'staff')
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1465,19 +1477,18 @@ def fin_stats(request):
     stats_staff = stats_staff_filter.qs
 
     # Пагинатор stats
-    paginator = Paginator(stats, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # paginator = Paginator(stats, 24)
+    # page_number = request.GET.get('page')
+    # page_obj = paginator.get_page(page_number)
 
     # Пагинатор stats_staff
-    paginator_st = Paginator(stats_staff, 12)
+    paginator_st = Paginator(stats_staff, 10)
     page_number_st = request.GET.get('page')
     page_obj_st = paginator_st.get_page(page_number_st)
 
     return render(request, 'tph_system/fin_stats/fin_stats.html', {
         'title': 'Финансы - кампания',
-        'page_obj': page_obj,
-        'paginator': paginator,
+        'stats': stats,
         'paginator_st': paginator_st,
         'page_obj_st': page_obj_st,
         'stats_filter': stats_filter,
