@@ -7,6 +7,9 @@ from django.http.response import Http404
 
 from .models import *
 
+import qrcode
+from PIL import Image, ImageDraw, ImageFont
+
 
 class SaleTypeError(Exception):
     pass
@@ -310,3 +313,73 @@ def fin_stats_staff_calc(time_start, time_end):
                     status='Успешно'
                 )
                 print(f"ImplEvents - новая запись {rec}")
+
+
+def qr_generate_tech():
+    tech = Tech.objects.filter(name__icontains='Тушка')
+    tech = tech.union(Tech.objects.filter(name__icontains='Объектив'))
+    tech = list(tech.union(Tech.objects.filter(name__icontains='Вспышка')))
+    for t in tech:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=1,
+        )
+
+        qr.add_data(f'https://takephoto-erp.ru/tech/{t.id}/update')
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        # Преобразуем изображение в режим RGB (для работы с текстом)
+        img = img.convert("RGB")
+
+        # Текст подписи (многострочный)
+        name = t.name.split(sep=" ", maxsplit=2)
+        text = f"{name[0]} {name[1]}\n{name[2]}\n{t.serial_num}"
+
+        # Параметры шрифта
+        font_size = 35  # Размер шрифта
+        font_path = 'C:/Windows/Fonts/Arial/arial.ttf'  # Путь к шрифту (должен поддерживать кириллицу)
+
+        # Загружаем шрифт
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except IOError:
+            print("Шрифт не найден, используется стандартный.")
+            font = ImageFont.load_default()  # Используем стандартный шрифт, если указанный недоступен
+
+        # Вычисляем размеры текста
+        draw = ImageDraw.Draw(img)
+        text_width = max(draw.textlength(line, font=font) for line in text.split("\n"))
+        text_height = sum(font.getbbox(line)[3] - font.getbbox(line)[1] for line in text.split("\n"))
+
+        # Отступы
+        padding = 0  # Отступ между QR-кодом и текстом
+        line_spacing = 10  # Расстояние между строками текста
+
+        # Создаем новое изображение с местом для текста
+        qr_width, qr_height = img.size
+        new_height = qr_height + padding + text_height + (len(text.split("\n")) - 1) * line_spacing + 20
+        new_img = Image.new("RGB", (max(qr_width, int(text_width)), new_height), "white")
+
+        # Вставляем QR-код в новое изображение
+        new_img.paste(img, ((new_img.width - qr_width) // 2, 0))
+
+        # Рисуем текст
+        draw = ImageDraw.Draw(new_img)
+        y_text = qr_height + padding  # Начальная позиция текста по вертикали
+
+        for line in text.split("\n"):
+            # Вычисляем ширину текущей строки
+            line_width = draw.textlength(line, font=font)
+            # Позиция текста по горизонтали (центрирование)
+            x_text = (new_img.width - line_width) // 2
+            # Рисуем строку
+            draw.text((x_text, y_text), line, fill="black", font=font)
+            # Обновляем позицию для следующей строки
+            y_text += font.getbbox(line)[3] - font.getbbox(line)[1] + line_spacing
+
+        # Сохраняем результат
+        new_img.save(f"QR_Codes_Tech/QR_{t.name}_{t.serial_num}.png")
