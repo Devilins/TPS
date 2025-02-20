@@ -28,7 +28,7 @@
                         {% endfor %}
                     </div>
                     <button class="btn btn-success" type="submit">Сохранить</button>
-                    <a class="btn btn-warning" href="{% url url_cancel %}" role="button">Отмена</a>
+                    <a class="btn btn-warning" href="{% url url_cancel %}?{{ current_filter_params }}" role="button">Отмена</a>
                 </form>
             </div>
         </div>

@@ -33,6 +33,7 @@
                             <div class="row" style="margin-top: 10px">
                                 <div class="col col-md-auto">Дата найма:<br>{{ s_filter.form.date_empl }}</div>
                                 <div class="col col-md-auto">Дата увольнения:<br>{{ s_filter.form.date_dism }}</div>
+                                <div class="col col-md-auto">Статус:<br>{{ s_filter.form.dism_status }}</div>
                                 <div class="col col-md-auto">
                                     <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
                                 </div>
@@ -51,6 +52,7 @@
                     <th scope="col">ФИО</th>
                     <th scope="col">Дата найма</th>
                     <th scope="col">Дата увольнения</th>
+                    <th scope="col">Статус</th>
                     <th scope="col">Логин</th>
                     <th scope="col"></th>
                 </tr>
@@ -65,10 +67,12 @@
                     {% else %}
                         <td></td>
                     {% endif %}
+                    <td>{{ st.dism_status }}</td>
                     <td>{{ st.st_username }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'staff_update' st.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'staff_update' st.id %}?{{ current_filter_params }}">
+                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -93,6 +97,7 @@
                             {{ form.o_name }}<br>
                             {{ form.date_empl }}<br>
                             {{ form.date_dism }}<br>
+                            {{ form.dism_status }}<br>
                             {{ form.st_username }}
                             <span>{{ error }}</span>
                         </div>
@@ -111,7 +116,11 @@
         <ul class="pagination justify-content-center" style="margin-top: 25px;">
             {% if page_obj.has_previous %}
                 <li class="page-item">
+                    {% if '?f_name' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% endif %}
                 </li>
             {% endif %}
             {% if paginator.num_pages > 1 %}
@@ -122,14 +131,22 @@
                         </li>
                     {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
                         <li class="page-item">
+                            {% if '?f_name' in request.get_full_path %}
+                            <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
+                            {% else %}
                             <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            {% endif %}
                         </li>
                     {% endif %}
                 {% endfor %}
             {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
+                    {% if '?f_name' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% endif %}
                 </li>
             {% endif %}
         </ul>

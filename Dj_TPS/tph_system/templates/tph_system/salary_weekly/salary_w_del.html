@@ -15,7 +15,7 @@
                 Подтверждаете удаление записи с зарплатой сотрудника <b>{{ salaryweekly.staff }}</b>?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'salary_w_upd' salaryweekly.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'salary_w_upd' salaryweekly.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

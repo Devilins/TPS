@@ -15,7 +15,7 @@
                 Подтверждаете удаление сотрудника <b>{{ staff.f_name }} {{ staff.name }}</b> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'staff_update' staff.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'staff_update' staff.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

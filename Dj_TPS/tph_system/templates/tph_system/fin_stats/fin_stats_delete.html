@@ -15,7 +15,7 @@
                 Подтверждаете удаление записи с финансами за <b>{{ finstatsmonth.date|date:"F Y" }}</b>?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'fin_stats_update' finstatsmonth.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'fin_stats_update' finstatsmonth.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

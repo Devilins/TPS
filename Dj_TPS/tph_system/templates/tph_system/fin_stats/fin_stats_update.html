@@ -22,8 +22,10 @@
                 <div class="form-error">{{ form.expenses.errors }}</div>
                 <br>
                 <button class="btn btn-success" type="submit">Сохранить</button>
-                <a class="btn btn-warning" href="{% url 'fin_stats' %}" role="button">Отмена</a>
-                <a class="btn btn-danger" style="margin-left : 20px;" href="{% url 'fin_stats_delete' finstatsmonth.id %}" role="button">Удалить</a>
+                <a class="btn btn-warning" href="{% url 'fin_stats' %}?{{ current_filter_params }}" role="button">Отмена</a>
+                <a class="btn btn-danger" style="margin-left : 20px;"
+                   href="{% url 'fin_stats_delete' finstatsmonth.id %}?{{ current_filter_params }}"
+                   role="button">Удалить</a>
             </form>
         </div>
     </div>

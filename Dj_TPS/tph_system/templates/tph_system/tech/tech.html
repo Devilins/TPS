@@ -66,7 +66,8 @@
                     <td>{{ t.date_change }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'tech_update' t.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'tech_update' t.id %}?{{ current_filter_params }}">
+                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -110,7 +111,11 @@
         <ul class="pagination justify-content-center" style="margin-top: 25px;">
             {% if page_obj.has_previous %}
                 <li class="page-item">
+                    {% if '?store' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% endif %}
                 </li>
             {% endif %}
             {% if paginator.num_pages > 1 %}
@@ -121,7 +126,7 @@
                         </li>
                     {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
                         <li class="page-item">
-                            {% if '?param' in request.get_full_path %}
+                            {% if '?store' in request.get_full_path %}
                             <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
                             {% else %}
                             <a class="page-link" href="?page={{ p }}">{{ p }}</a>
@@ -132,7 +137,11 @@
             {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
+                    {% if '?store' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% endif %}
                 </li>
             {% endif %}
         </ul>

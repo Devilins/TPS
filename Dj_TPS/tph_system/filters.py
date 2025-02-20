@@ -1,5 +1,5 @@
 import django_filters
-from django_filters import CharFilter
+from django_filters import CharFilter, ChoiceFilter
 
 from .forms import FengyuanChenDatePickerInput
 from .models import *
@@ -20,7 +20,7 @@ class StaffFilter(django_filters.FilterSet):
 
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status']
 
 
 class TechFilter(django_filters.FilterSet):
@@ -33,12 +33,22 @@ class TechFilter(django_filters.FilterSet):
 
 
 class SalesFilter(django_filters.FilterSet):
+    staff = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    photographer = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
     class Meta:
         model = Sales
         fields = ['store', 'date', 'staff', 'photographer', 'sale_type', 'sum']
 
 
 class CashWithdrawnFilter(django_filters.FilterSet):
+    staff = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
+
     class Meta:
         model = CashWithdrawn
         fields = ['store', 'staff', 'date', 'withdrawn']
@@ -55,6 +65,9 @@ class SettingsFilter(django_filters.FilterSet):
 
 class SalaryFilter(django_filters.FilterSet):
     salary_sum = CharFilter(field_name='salary_sum', lookup_expr='icontains')
+    staff = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
 
     class Meta:
         model = Salary
@@ -63,6 +76,9 @@ class SalaryFilter(django_filters.FilterSet):
 
 class SalaryWeeklyFilter(django_filters.FilterSet):
     week_begin = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+    staff = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
 
     class Meta:
         model = SalaryWeekly
@@ -86,6 +102,10 @@ class FinStatsMonthFilter(django_filters.FilterSet):
 
 
 class FinStatsStaffFilter(django_filters.FilterSet):
+    staff = django_filters.ModelChoiceFilter(
+        queryset=Staff.objects.filter(dism_status="Работает")
+    )
+
     class Meta:
         model = FinStatsStaff
         fields = ['staff', 'date']

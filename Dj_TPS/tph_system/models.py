@@ -7,11 +7,16 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Staff(models.Model):
+    SLCT_DISM_STATUS = (
+        ('Уволен', 'Уволен'),
+        ('Работает', 'Работает')
+    )
     f_name = models.CharField(max_length=30, verbose_name=u"Фамилия")
     name = models.CharField(max_length=30, verbose_name=u"Имя")
     o_name = models.CharField(max_length=30, blank=True, verbose_name=u"Отчество")
     date_empl = models.DateField(verbose_name=u"Дата найма")
     date_dism = models.DateField(null=True, blank=True, verbose_name=u"Дата увольнения")
+    dism_status = models.CharField(max_length=30, default="Работает", verbose_name=u"Статус", choices=SLCT_DISM_STATUS)
     st_username = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True,
                                     verbose_name=u"Учетная запись")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")

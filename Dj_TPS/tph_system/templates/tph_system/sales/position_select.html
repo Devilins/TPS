@@ -18,6 +18,9 @@
                 <thead>
                     <tr>
                         <th scope="col">Сотрудник</th>
+                        {% if perms.tph_system.user_sales_view_all %}
+                        <th scope="col">Точка</th>
+                        {% endif %}
                         <th scope="col">Роль</th>
                     </tr>
                 </thead>
@@ -25,6 +28,9 @@
                     {% for form in formset %}
                     <tr>
                         <td>{{ form.instance.staff.name }} {{ form.instance.staff.f_name }}</td>
+                        {% if perms.tph_system.user_sales_view_all %}
+                        <td>{{ form.instance.store }}</td>
+                        {% endif %}
                         <td>
                             {{ form.position }}
                             {# Скрытое поле для ID объекта #}

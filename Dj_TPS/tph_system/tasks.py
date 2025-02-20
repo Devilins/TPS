@@ -3,17 +3,22 @@ from django.utils import timezone
 from .funcs import *
 
 
+print("Мы в Tasks")
+
+
 @background
 def daily_salary_calculation():
+    print("Мы в daily_salary_calculation")
     try:
         time_start = datetime.now().replace(hour=0, minute=1, second=0, microsecond=0)
         time_end = datetime.now()
+        print(f"Пытаемся что-то сделать с {time_start} до {time_end}")
         sal_calc(time_start, time_end)
         sal_weekly_update(time_start, time_end)
 
         rec = ImplEvents.objects.create(
             event_type='Job_sal_calc',
-            event_message=f"Джоб подсчета зарплаты отработал за {datetime.now()}",
+            event_message=f"Джоб подсчета зарплаты отработал за {datetime.now()}. time_start - {time_start}, time_end - {time_end}",
             status='Успешно'
         )
         print(f"ImplEvents - новая запись {rec}")
@@ -28,7 +33,7 @@ def daily_salary_calculation():
 
 
 # Запуск каждый день в 23:45 (Почему-то создает на 2:45 если использовать timezone. С datetime все ок.)
-daily_salary_calculation(schedule=timezone.now().replace(hour=23, minute=45, second=0, microsecond=0), repeat=86400)
+daily_salary_calculation(schedule=timezone.now().replace(hour=20, minute=45, second=0, microsecond=0), repeat=86400)
 
 
 @background
@@ -41,7 +46,7 @@ def weekly_fin_calc():
 
         rec = ImplEvents.objects.create(
             event_type='Job_fin_stats_calc',
-            event_message=f"Джоб по финансовым отчетам отработал за {datetime.now()}",
+            event_message=f"Джоб по финансовым отчетам отработал за {datetime.now()}. time_start - {time_start}, time_end - {time_end}",
             status='Успешно'
         )
         print(f"ImplEvents - новая запись {rec}")
@@ -56,4 +61,4 @@ def weekly_fin_calc():
 
 
 # Запуск каждую неделю в 23:50 (Почему-то создает на 2:45 если использовать timezone. С datetime все ок.)
-weekly_fin_calc(schedule=timezone.now().replace(hour=23, minute=50, second=0, microsecond=0), repeat=86400 * 7)
+weekly_fin_calc(schedule=timezone.now().replace(hour=20, minute=50, second=0, microsecond=0), repeat=86400 * 7)

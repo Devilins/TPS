@@ -15,7 +15,7 @@
                 Подтверждаете удаление продажи <b>{{ sales.sale_type }}</b> от <b>{{ sales.date }}</b> на сумму <i>{{ sales.sum }}</i> ?<br>
                 <br>
                 <button class="btn btn-danger" type="submit">Удалить</button>
-                <a class="btn btn-warning" href="{% url 'sales_update' sales.id %}" role="button">Отмена</a>
+                <a class="btn btn-warning" href="{% url 'sales_update' sales.id %}?{{ current_filter_params }}" role="button">Отмена</a>
             </form>
         </div>
     </div>

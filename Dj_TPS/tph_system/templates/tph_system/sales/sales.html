@@ -16,12 +16,27 @@
     {% endif %}
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'sales_create' %}">
+        <a class="nav-link" href="{% url 'sales_create' %}?{{ current_filter_params }}">
             <button type="button" class="btn btn-sm btn-outline-primary">Добавить Продажу</button>
         </a>
     </li>
 {% endif %}
 {% endblock func_buttons %}
+
+{% block event_msg %}
+{% if perms.tph_system.view_implevents %}
+    <!-- Количество сотрудников без ролей -->
+    {% if staff_without_role == 0 %}
+            <a role="button" class="btn btn-sm btn-outline-success" style="margin-right: 10px;">
+                Сотрудники без ролей ({{ staff_without_role }})
+            </a>
+        {% else %}
+            <a role="button" class="btn btn-sm btn-warning" style="margin-right: 10px;">
+                Сотрудники без ролей ({{ staff_without_role }})
+            </a>
+        {% endif %}
+{% endif %}
+{% endblock event_msg %}
 
 {% block content %}
 <div class="container container-fluid cont_store">
@@ -94,7 +109,8 @@
                     <td>{{ sale.date_upd }}</td>
                     <td>
                         <button type="button" class="btn btn-link">
-                            <a href="{% url 'sales_update' sale.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            <a href="{% url 'sales_update' sale.id %}?{{ current_filter_params }}">
+                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                         </button>
                     </td>
                 </tr>
@@ -156,7 +172,11 @@
         <ul class="pagination justify-content-center" style="margin-top: 25px;">
             {% if page_obj.has_previous %}
                 <li class="page-item">
+                    {% if '?store' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% endif %}
                 </li>
             {% endif %}
             {% if paginator.num_pages > 1 %}
@@ -167,7 +187,7 @@
                         </li>
                     {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
                         <li class="page-item">
-                            {% if '?param' in request.get_full_path %}
+                            {% if '?store' in request.get_full_path %}
                             <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
                             {% else %}
                             <a class="page-link" href="?page={{ p }}">{{ p }}</a>
@@ -178,7 +198,11 @@
             {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
+                    {% if '?store' in request.get_full_path %}
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% else %}
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% endif %}
                 </li>
             {% endif %}
         </ul>

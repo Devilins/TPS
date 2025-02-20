@@ -129,7 +129,7 @@
         </div>
     </div>
 
-    <div class="card shadow" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px">
+    <div class="card shadow" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
         <div class="card-header">
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>
@@ -137,14 +137,18 @@
         <!-- Карточка с заканчивающимися расходниками -->
         <div class="card-body">
             <ul class="list-group">
-                {% for c in con_store %}
+                {% regroup con_store by store as con_list %}
+                {% for c in con_list %}
                 <li class="list-group-item">
                     <div class="row justify-content-md-center">
-                        <div class="col">
-                            <i>{{ c.store }}</i>
+                        <div class="col-5">
+                            <i>{{ c.grouper }}</i>
                         </div>
-                        <div class="col-md-auto">
-                            <u><a href="{% url 'con_store_update' c.id %}">{{ c.consumable }}</a></u> - {{ c.count|floatformat }}
+                        <div class="col">
+                            {% for con in c.list %}
+                                <u><a href="{% url 'con_store_update' con.id %}">{{ con.consumable }}</a></u> - {{ con.count|floatformat }}
+                                <br>
+                            {% endfor %}
                         </div>
                     </div>
                 </li>

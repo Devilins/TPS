@@ -22,8 +22,11 @@
                 <div class="form-error">{{ f.errors }}</div>
                 {% endfor %}
                 <button class="btn btn-success" type="submit">Сохранить</button>
-                <a class="btn btn-warning" href="{% url 'settings' %}" role="button">Отмена</a>
-                <a class="btn btn-danger" style="margin-left : 20px;" href="{% url 'set_delete' settings.id %}" role="button">Удалить</a>
+                <a class="btn btn-warning" href="{% url 'settings' %}?{{ current_filter_params }}" role="button">Отмена</a>
+                <a class="btn btn-danger" style="margin-left : 20px;"
+                   href="{% url 'set_delete' settings.id %}?{{ current_filter_params }}"
+                   role="button">Удалить
+                </a>
             </form>
         </div>
     </div>
