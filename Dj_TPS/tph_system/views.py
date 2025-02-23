@@ -1110,7 +1110,9 @@ def sales(request):
     cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
                                    ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
-    cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ',
+                                     sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                     ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
 
     if cashbx_all is None: cashbx_all = 0
     if cashbx_card is None: cashbx_card = 0
@@ -1119,7 +1121,7 @@ def sales(request):
     if cashbx_orders is None: cashbx_orders = 0
 
     # Сотрудники без ролей
-    staff_without_role = len(Schedule.objects.filter(position='Роль не указана'))
+    staff_without_role = len(Schedule.objects.filter(position='Роль не указана', date__lte=datetime.now()))
 
     error = ''
     if request.method == 'POST':

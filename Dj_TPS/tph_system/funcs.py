@@ -35,7 +35,7 @@ def start_month_generator(start, end):
 
 
 s = list(Settings.objects.values('param', 'value'))
-print('Переменная s готова')
+print('INFO - Settings загружены')
 
 
 def param_gets(par):
@@ -98,7 +98,6 @@ def sal_calc(time_start, time_end):
                             sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
                         else:
                             sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_budn')
-
                     elif sl.sale_type == 'Заказ выездной':
                         sal_staff += sl.photo_count * param_gets('order_ph_out')
                     else:
@@ -133,14 +132,16 @@ def sal_calc(time_start, time_end):
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_wknd'):  # 15000
                         sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
                     elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
-                        sal_staff += cashbx_sum * param_gets('phot_few_incr_perc_pay') / 100  # 0.22
+                        sal_staff += cashbx_sum * param_gets(
+                            str(sch.store.short_name) + '_phot_few_incr_perc_pay') / 100  # 0.22 / 0.23
                     else:
                         sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
                 else:
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_budn'):  # 10000
                         sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
                     elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
-                        sal_staff += cashbx_sum * param_gets('phot_few_incr_perc_pay') / 100  # 0.22
+                        sal_staff += cashbx_sum * param_gets(
+                            str(sch.store.short_name) + '_phot_few_incr_perc_pay') / 100  # 0.22 / 0.23
                     else:
                         sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
 
@@ -163,14 +164,17 @@ def sal_calc(time_start, time_end):
                     else:
                         sal_staff += cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
 
-            if not sales_zak.exists() and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists():
+            if (not Sales.objects.filter(date=day_date,
+                                         photographer=sch.staff,
+                                         sale_type='Заказ выездной').exists()
+                    and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists()):
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
                 if sch.position == 'Администратор':
                     sal_staff = param_gets('admin_min_payment')
                 elif sch.position == 'Фотограф':
                     sal_staff = param_gets('phot_min_payment')
                 elif sch.position == 'Универсальный фотограф':
-                    sal_staff = param_gets('univ_min_payment')
+                    sal_staff += param_gets('univ_min_payment')
                 else:
                     error = ImplEvents.objects.create(
                         event_type='Salary_PositionError',
@@ -216,7 +220,8 @@ def sal_weekly_update(time_start, time_end):
         salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
         if salary_week.exists():
             # Группируем по сотрудникам и суммируем зп
-            sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum')).annotate(cashbx_sum=Sum('cash_box'))
+            sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum')).annotate(
+                cashbx_sum=Sum('cash_box'))
             for dic in sal_group:
                 staff = Staff.objects.get(id=dic.get('staff'))
                 salary = dic.get('sal_sum', 0)

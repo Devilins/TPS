@@ -111,9 +111,9 @@
             {% if page_obj_st.has_previous %}
                 <li class="page-item">
                     {% if '?date' in request.get_full_path %}
-                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj_st.previous_page_number }}">Предыдущая</a>
                     {% else %}
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    <a class="page-link" href="?page={{ page_obj_st.previous_page_number }}">Предыдущая</a>
                     {% endif %}
                 </li>
             {% endif %}
@@ -137,9 +137,9 @@
             {% if page_obj_st.has_next %}
                 <li class="page-item">
                     {% if '?date' in request.get_full_path %}
-                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                    <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj_st.next_page_number }}">Следующая</a>
                     {% else %}
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    <a class="page-link" href="?page={{ page_obj_st.next_page_number }}">Следующая</a>
                     {% endif %}
                 </li>
             {% endif %}
