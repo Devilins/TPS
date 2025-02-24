@@ -27,17 +27,27 @@
                 Зарплаты сотрудников по дням <br>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="cs_filter">
-                    <form method="get">
-                        {% if perms.tph_system.view_all_salary %}
-                            Сотрудник: {{ s_filter.form.staff}}
-                        {% endif %}
-                        Дата: {{ s_filter.form.date}}
-                        Зарплата: {{ s_filter.form.salary_sum}}
-                        Точка: {{ s_filter.form.store }}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
-                    </form>
+                <div class="card card-body" id="s_filter">
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row">
+                                <div class="col col-md-auto">Зарплата:<br>{{ s_filter.form.salary_sum}}</div>
+                                {% if perms.tph_system.view_all_salary %}
+                                <div class="col col-md-auto">Сотрудник:<br>{{ s_filter.form.staff}}</div>
+                                {% endif %}
+                                <div class="col col-md-auto">Точка:<br>{{ s_filter.form.store }}</div>
+                            </div>
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col col-md-auto">Дата c:<br>{{ s_filter.form.date_from}}</div>
+                                <div class="col col-md-auto">Дата по:<br>{{ s_filter.form.date_by}}</div>
+                                <div class="col col-md-auto">
+                                    <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+
             </h4>
         </div>
 

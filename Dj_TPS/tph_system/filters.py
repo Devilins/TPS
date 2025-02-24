@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 import django_filters
 from django_filters import CharFilter, ChoiceFilter
+from django.forms import Select, NumberInput
 
 from .forms import FengyuanChenDatePickerInput
+from .funcs import dt_format
 from .models import *
 
 
@@ -39,14 +43,39 @@ class SalesFilter(django_filters.FilterSet):
     photographer = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
     )
+    date_from = django_filters.DateFilter(
+        label="Даты с",
+        field_name='date',
+        lookup_expr='gte',
+        widget=FengyuanChenDatePickerInput
+    )
+    date_by = django_filters.DateFilter(
+        label="Даты по",
+        field_name='date',
+        lookup_expr='lte',
+        widget=FengyuanChenDatePickerInput
+    )
+
     class Meta:
         model = Sales
-        fields = ['store', 'date', 'staff', 'photographer', 'sale_type', 'sum']
+        fields = ['store', 'date', 'staff', 'photographer', 'sale_type', 'payment_type', 'sum']
 
 
 class CashWithdrawnFilter(django_filters.FilterSet):
     staff = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    date_from = django_filters.DateFilter(
+        label="Даты с",
+        field_name='date',
+        lookup_expr='gte',
+        widget=FengyuanChenDatePickerInput
+    )
+    date_by = django_filters.DateFilter(
+        label="Даты по",
+        field_name='date',
+        lookup_expr='lte',
+        widget=FengyuanChenDatePickerInput
     )
 
     class Meta:
@@ -67,6 +96,18 @@ class SalaryFilter(django_filters.FilterSet):
     salary_sum = CharFilter(field_name='salary_sum', lookup_expr='icontains')
     staff = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    date_from = django_filters.DateFilter(
+        label="Даты с",
+        field_name='date',
+        lookup_expr='gte',
+        widget=FengyuanChenDatePickerInput  # (attrs={'class': 'form-control form-control-sm'})
+    )
+    date_by = django_filters.DateFilter(
+        label="Даты по",
+        field_name='date',
+        lookup_expr='lte',
+        widget=FengyuanChenDatePickerInput
     )
 
     class Meta:
@@ -109,3 +150,17 @@ class FinStatsStaffFilter(django_filters.FilterSet):
     class Meta:
         model = FinStatsStaff
         fields = ['staff', 'date']
+
+
+class MainPageFilter(django_filters.FilterSet):
+    selected_date = django_filters.DateFilter(
+        label="Выберите дату",
+        widget=FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control'
+            }),
+        initial=datetime.today()
+    )
+
+    class Meta:
+        model = Schedule
+        fields = []

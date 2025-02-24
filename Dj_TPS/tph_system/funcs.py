@@ -99,7 +99,19 @@ def sal_calc(time_start, time_end):
                         else:
                             sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_budn')
                     elif sl.sale_type == 'Заказ выездной':
-                        sal_staff += sl.photo_count * param_gets('order_ph_out')
+                        if sch.position == 'Выездной фотограф':
+                            sal_staff += sl.photo_count * param_gets('order_ph_out')
+                        elif sch.position == 'Видеограф':
+                            sal_staff += sl.photo_count * param_gets('video_order_ph_out')
+                        else:
+                            error = ImplEvents.objects.create(
+                                event_type='Salary_PositionError',
+                                event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position}. "
+                                              f"Влияет на расчет ЗП по выездному заказу",
+                                status='Бизнес ошибка',
+                                solved='Нет'
+                            )
+                            print(f"ImplEvents - новая запись {error}")
                     else:
                         error = ImplEvents.objects.create(
                             event_type='Salary_SaleTypeError',
@@ -207,7 +219,8 @@ def sal_calc(time_start, time_end):
             # Новая запись в системных событиях
             rec = ImplEvents.objects.create(
                 event_type='Salary_Calculation',
-                event_message=f"Произведен расчет зарплаты за {dt_format(day_date)} по сотруднику {sch.staff}. В БД {action}",
+                event_message=f"Произведен расчет зарплаты за {dt_format(day_date)} по сотруднику {sch.staff} - "
+                              f"salary_sum: {sal_staff}, cash_box: {cashbx_staff}. В БД {action}",
                 status='Успешно'
             )
             print(f"ImplEvents - новая запись {rec}")
@@ -250,7 +263,7 @@ def sal_weekly_update(time_start, time_end):
                 rec = ImplEvents.objects.create(
                     event_type='Salary_Weekly_Update',
                     event_message=f"В зарплаты за неделю занесены данные за период {dt_format(start_week)} - {dt_format(end_week)} "
-                                  f"по сотруднику {staff}. В БД {action}",
+                                  f"по сотруднику {staff} - salary_sum: {salary}, cash_box_week: {cashbx}, cash_withdrawn: {withdrawn}. В БД {action}",
                     status='Успешно'
                 )
                 print(f"ImplEvents - новая запись {rec}")

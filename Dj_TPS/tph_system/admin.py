@@ -29,7 +29,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 @admin.register(ConsumablesStore)
 class ConsumablesStoreAdmin(admin.ModelAdmin):
     readonly_fields = ('change_data', 'user_edited')
-    list_display = ('consumable', 'cons_short', 'store', 'count', 'change_data')
+    list_display = ('consumable', 'cons_short', 'store', 'count', 'change_data', 'user_edited')
     list_filter = ('store', 'consumable')
     list_per_page = 30
 
@@ -37,7 +37,7 @@ class ConsumablesStoreAdmin(admin.ModelAdmin):
 @admin.register(Sales)
 class SalesAdmin(admin.ModelAdmin):
     readonly_fields = ('date_created', 'date_upd', 'user_edited')
-    list_display = ('date', 'store', 'staff', 'photographer', 'sale_type', 'sum')
+    list_display = ('date', 'store', 'staff', 'photographer', 'sale_type', 'sum', 'date_upd', 'user_edited')
     list_filter = ('date', 'store')
     search_fields = ('sale_type', 'sum')
     search_help_text = 'Поиск по типу продажи или сумме'
@@ -53,7 +53,7 @@ class ConsumablesSalesAdmin(admin.ModelAdmin):
 @admin.register(Salary)
 class SalaryAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('date', 'store', 'staff', 'salary_sum', 'date_upd')
+    list_display = ('date', 'store', 'staff', 'salary_sum', 'date_upd', 'user_edited')
     list_filter = ('store', 'staff')
     list_per_page = 30
 
@@ -61,7 +61,7 @@ class SalaryAdmin(admin.ModelAdmin):
 @admin.register(CashWithdrawn)
 class CashWithdrawnAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('date', 'store', 'staff', 'withdrawn', 'date_upd')
+    list_display = ('date', 'store', 'staff', 'withdrawn', 'date_upd', 'user_edited')
     list_filter = ('store', 'staff')
     list_per_page = 30
 
@@ -69,7 +69,7 @@ class CashWithdrawnAdmin(admin.ModelAdmin):
 @admin.register(Tech)
 class TechAdmin(admin.ModelAdmin):
     readonly_fields = ('date_change', 'user_edited')
-    list_display = ('store', 'name', 'serial_num', 'count', 'date_change')
+    list_display = ('store', 'name', 'serial_num', 'count', 'date_change', 'user_edited')
     list_filter = ('store', 'name')
     list_per_page = 30
 
@@ -87,7 +87,7 @@ class RefsAndTipsAdmin(admin.ModelAdmin):
 @admin.register(Settings)
 class SettingsAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('param', 'param_f_name', 'value', 'date_upd')
+    list_display = ('param', 'param_f_name', 'value', 'date_upd', 'user_edited')
     search_fields = ('param', 'param_f_name')
     search_help_text = 'Поиск по параметру и описанию'
     list_per_page = 30
@@ -105,7 +105,7 @@ class ImplEventsAdmin(admin.ModelAdmin):
 
 @admin.register(SalaryWeekly)
 class SalaryWeeklyAdmin(admin.ModelAdmin):
-    list_display = ['week_begin', 'week_end', 'staff', 'cash_box_week', 'salary_sum', 'paid_out']
+    list_display = ['week_begin', 'week_end', 'staff', 'cash_box_week', 'salary_sum', 'paid_out', 'date_updated', 'user_edited']
     readonly_fields = ('date_updated', 'user_edited')
     list_filter = ['staff']
     list_per_page = 30

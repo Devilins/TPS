@@ -3,8 +3,8 @@
 
 {% block func_buttons %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'salary' %}">
-            <button type="button" class="btn btn-sm btn-warning">Зарплаты по дням</button>
+        <a class="nav-link" href="{% url 'salary_weekly' %}">
+            <button type="button" class="btn btn-sm btn-warning">К зарплатам по неделям</button>
         </a>
     </li>
 {% endblock func_buttons %}
@@ -14,7 +14,7 @@
     <div class="card shadow" style="width: 100%; min-width: 1000px">
         <div class="card-header">
             <h4 class="card-title">
-                Ошибки в подсчете зарплат <br>
+                Ошибки в работе системы <br>
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">

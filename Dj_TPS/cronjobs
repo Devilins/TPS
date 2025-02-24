@@ -1,0 +1,6 @@
+5 20 * * * root poetry run python manage.py run_sal_calc $(date +%Y-%m-%d) $(date +%Y-%m-%d) >> /var/log/cron.log 2>&1
+10 20 * * * root poetry run python manage.py run_fin_stats $(date -d '-1 day' +%Y-%m-%d) $(date +%Y-%m-%d) >> /var/log/cron.log 2>&1
+0 20 * * 4 root poetry run python manage.py run_sal_weekly $(date -d '-9 day' +%Y-%m-%d) $(date -d '-7 day' +%Y-%m-%d) >> /var/log/cron.log 2>&1
+45 20 * * 0 root poetry run python manage.py run_sal_weekly $(date -d '-9 day' +%Y-%m-%d) $(date -d '-7 day' +%Y-%m-%d) >> /var/log/cron.log 2>&1
+
+39 11 * * * /home/devilins/TPS/Dj_TPS/docker compose exec tps bash -c 'python manage.py run_sal_calc $(date +%Y-%m-%d) $(date +%Y-%m-%d)'

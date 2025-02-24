@@ -52,9 +52,11 @@
                             <div class="row">
                                 {% if perms.tph_system.user_sales_view_all %}
                                     <div class="col col-md-auto">Точка:<br>{{ sale_filter.form.store }}</div>
-                                    <div class="col col-md-auto">Дата продажи:<br>{{ sale_filter.form.date }}</div>
+                                    <div class="col col-md-auto">Даты c:<br>{{ sale_filter.form.date_from }}</div>
+                                    <div class="col col-md-auto">Даты по:<br>{{ sale_filter.form.date_by }}</div>
                                 {% endif %}
                                 <div class="col col-md-auto">Что продали:<br>{{ sale_filter.form.sale_type }}</div>
+                                <div class="col col-md-auto">Тип оплаты:<br>{{ sale_filter.form.payment_type }}</div>
                             </div>
                             <div class="row" style="margin-top: 10px">
                                 <div class="col col-md-auto">Администратор:<br>{{ sale_filter.form.staff }}</div>

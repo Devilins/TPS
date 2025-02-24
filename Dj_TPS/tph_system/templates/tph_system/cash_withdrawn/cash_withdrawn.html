@@ -23,17 +23,27 @@
                 История выдачи наличных <br>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="cs_filter">
-                    <form method="get">
-                        Точка: {{ c_filter.form.store }}
-                        {% if perms.tph_system.view_all_cashwithdrawn %}
-                            Сотрудник: {{ c_filter.form.staff }}
-                        {% endif %}
-                        Дата: {{ c_filter.form.date }}
-                        Сумма: {{ c_filter.form.withdrawn }}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
-                    </form>
+                <div class="card card-body" id="s_filter">
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row">
+                                <div class="col col-md-auto">Сумма:<br>{{ c_filter.form.withdrawn }}</div>
+                                {% if perms.tph_system.view_all_cashwithdrawn %}
+                                <div class="col col-md-auto">Сотрудник:<br>{{ c_filter.form.staff }}</div>
+                                {% endif %}
+                                <div class="col col-md-auto">Точка:<br>{{ c_filter.form.store }}</div>
+                            </div>
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col col-md-auto">Дата c:<br>{{ c_filter.form.date_from}}</div>
+                                <div class="col col-md-auto">Дата по:<br>{{ c_filter.form.date_by}}</div>
+                                <div class="col col-md-auto">
+                                    <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+
             </h4>
         </div>
 

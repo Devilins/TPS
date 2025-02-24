@@ -140,12 +140,13 @@ class ConStoreUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView
         else:
             cnt_ch = ""
 
-        # Логируем изменение техники
-        ImplEvents.objects.create(
-            event_type=f"Consumables_Update",
-            event_message=f"{c_consumable} на {c_store.name}. {cons_ch}{cons_short_ch}{store_ch}{cnt_ch}",
-            status='Успешно'
-        )
+        if cons_ch != "" or cons_short_ch != "" or store_ch != "" or cnt_ch != "":
+            # Логируем изменение техники
+            ImplEvents.objects.create(
+                event_type=f"Consumables_Update",
+                event_message=f"{c_consumable} на {c_store.name}. {cons_ch}{cons_short_ch}{store_ch}{cnt_ch}",
+                status='Успешно'
+            )
 
         return super().form_valid(form)
 
@@ -1073,7 +1074,8 @@ def m_position_select(request):
 def sales(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     if not request.GET:
-        return redirect(('{}?date=' + str(dt_format(datetime.now()))).format(request.path))
+        return redirect(('{}?date_from=' + str(dt_format(datetime.now())) +
+                         '&date_by=' + str(dt_format(datetime.now()))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
     auth_staff = Staff.objects.get(st_username=auth_user)
@@ -1166,11 +1168,22 @@ def sales(request):
 @login_required
 @permission_required(perm='tph_system.view_main_page', raise_exception=True)
 def main_page(request):
-    sch = Schedule.objects.filter(date=datetime.now()).select_related('staff', 'store').order_by('store')
-    now_date = datetime.now().strftime('%d.%m.%Y')
+
+    # Фильтр даты
+    date_filter = MainPageFilter(
+        request.GET or {'selected_date': datetime.today()},
+        queryset=Schedule.objects.filter(date=datetime.today())
+    )
+
+    # Извлекаем валидную дату из фильтра
+    selected_date = datetime.today()
+    if date_filter.form.is_valid():
+        selected_date = date_filter.form.cleaned_data.get('selected_date')
+
+    sch = Schedule.objects.filter(date=selected_date).select_related('staff', 'store').order_by('store')
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
-    tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=datetime.now().date())
+    tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=selected_date)
 
     # Заканчивающиеся расходники
     con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).select_related('store')
@@ -1185,7 +1198,7 @@ def main_page(request):
         'store'))
     con_store = con_store.order_by('store')
 
-    sls = list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
+    sls = list(Sales.objects.filter(date=selected_date).values('store').annotate(store_sum=Sum('sum')))
     st = Store.objects.values('id', 'name')
     dic = {}
     for i in sls:
@@ -1209,7 +1222,7 @@ def main_page(request):
     return render(request, 'tph_system/main_page/main_page.html', {
         'title': 'Главная страница',
         'sch': sch,
-        'now_date': now_date,
+        'now_date': selected_date,
         'dic': dic,
         'con_store': con_store,
         'll_tips': ll_tips,
@@ -1218,7 +1231,8 @@ def main_page(request):
         'form': form,
         'sys_errors_count': sys_errors_count,
         'err_events_count': err_events_count,
-        'tech_upd_info': tech_upd_info
+        'tech_upd_info': tech_upd_info,
+        'date_filter': date_filter
     })
 
 
@@ -1347,6 +1361,7 @@ def salary_weekly(request):
                                           ).select_related('staff')
 
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
+    sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1364,6 +1379,7 @@ def salary_weekly(request):
         'title': 'Зарплата по неделям',
         'sw_filter': sw_filter,
         'err_events_count': err_events_count,
+        'sys_errors_count': sys_errors_count,
         'page_obj': page_obj,
         'paginator': paginator,
         'sal_week_count': paginator.count,
@@ -1398,7 +1414,8 @@ def salary_calculation(request):
 def salary_details(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     if not request.GET:
-        return redirect(('{}?date=' + str(dt_format(datetime.now() - timedelta(1)))).format(request.path))
+        return redirect(('{}?date_from=' + str(dt_format(datetime.now() - timedelta(1))) +
+                         '&date_by=' + str(dt_format(datetime.now()))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
 
@@ -1444,7 +1461,7 @@ def salary_details(request):
 @login_required
 @permission_required(perm='tph_system.view_implevents', raise_exception=True)
 def sal_err_events(request):
-    err_events = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет')
+    err_events = ImplEvents.objects.filter(status__in=['Бизнес ошибка', 'Системная ошибка'], solved='Нет')
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1454,7 +1471,7 @@ def sal_err_events(request):
     err_events = err_filter.qs
 
     return render(request, 'tph_system/salary/sal_events.html', {
-        'title': 'Ошибки в подсчете зарплат',
+        'title': 'Ошибки в работе системы',
         'err_events': err_events,
         'err_filter': err_filter,
         'current_filter_params': current_filter_params

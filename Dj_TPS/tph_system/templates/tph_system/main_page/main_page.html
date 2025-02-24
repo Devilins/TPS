@@ -12,6 +12,23 @@
         </a>
     </li>
 {% endif %}
+{% if perms.tph_system.main_page_view_cards %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <div class="card text-primary border-primary" style="width: 160px;">
+                <div class="card-header">
+                    Дата в карточках:
+                </div>
+                <!-- Форма для выбора даты -->
+                <div class="card-body">
+                    <form method="get" id="date-filter-form">
+                        {{ date_filter.form.selected_date }}
+                    </form>
+                </div>
+            </div>
+        </a>
+    </li>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block event_msg %}
@@ -73,7 +90,7 @@
         <div class="col">
             <div class="card shadow" id="store_card">
                 <div class="card-header">
-                    <h4 class="card-title">Кто {{ now_date }} работает на точках: </h4>
+                    <h4 class="card-title">Кто {{ now_date|date:"d.m.Y" }} работает на точках: </h4>
                 </div>
 
                 <!-- Карточка с информацией о том, кто работает на точках -->
@@ -102,7 +119,7 @@
         <div class="col">
             <div class="card shadow" id="main_view_card">
                 <div class="card-header">
-                    <h4 class="card-title">Кассы за {{ now_date }}: </h4>
+                    <h4 class="card-title">Кассы за {{ now_date|date:"d.m.Y" }}: </h4>
                 </div>
 
                 <!-- Карточка с кассами за сегодня -->
@@ -129,6 +146,23 @@
         </div>
     </div>
 
+    <div class="card shadow" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
+        <div class="card-header">
+            <h4 class="card-title">Изменение фототехники на точках за {{ now_date|date:"d.m.Y" }}: </h4>
+        </div>
+
+        <!-- Карточка с историей изменения техники -->
+        <div class="card-body">
+            <ul class="list-group">
+                {% for t in tech_upd_info %}
+                <li class="list-group-item">
+                    {{ t.event_message }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
     <div class="card shadow" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
         <div class="card-header">
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
@@ -151,23 +185,6 @@
                             {% endfor %}
                         </div>
                     </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="card shadow" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
-        <div class="card-header">
-            <h4 class="card-title">Изменение фототехники на точках за {{ now_date }}: </h4>
-        </div>
-
-        <!-- Карточка с историей изменения техники -->
-        <div class="card-body">
-            <ul class="list-group">
-                {% for t in tech_upd_info %}
-                <li class="list-group-item">
-                    {{ t.event_message }}
                 </li>
                 {% endfor %}
             </ul>
@@ -239,4 +256,14 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка выбора даты
+    $('#id_selected_date').on('change', function() {
+        document.getElementById('date-filter-form').submit(); // Отправка формы
+    });
+});
+</script>
+
 {% endblock %}

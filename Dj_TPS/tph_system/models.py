@@ -53,7 +53,9 @@ class Schedule(models.Model):
         ('Роль не указана', 'Роль не указана'),
         ('Администратор', 'Администратор'),
         ('Фотограф', 'Фотограф'),
-        ('Универсальный фотограф', 'Универсальный фотограф')
+        ('Видеограф', 'Видеограф'),
+        ('Универсальный фотограф', 'Универсальный фотограф'),
+        ('Выездной фотограф', 'Выездной фотограф')
     )
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")
     store = models.ForeignKey(Store, on_delete=models.PROTECT, verbose_name=u"Точка")
@@ -113,6 +115,8 @@ class Sales(models.Model):
         ('Печать 15x20', 'Печать 15x20'),
         ('Печать A4', 'Печать A4'),
         ('Заказной фотосет', 'Заказной фотосет'),
+        ('Доп час к заказу', 'Доп час к заказу'),
+        ('Исходники заказа', 'Исходники заказа'),
         ('Заказ выездной', 'Заказ выездной')
     )
 
@@ -230,7 +234,7 @@ class Tech(models.Model):
     name = models.CharField(max_length=50, verbose_name=u"Название")
     serial_num = models.CharField(max_length=30, blank=True, verbose_name=u"Серийный номер")
     count = models.IntegerField(default=1, verbose_name=u"Количество на точке")
-    date_buy = models.DateField(verbose_name=u"Дата покупки")
+    date_buy = models.DateField(null=True, blank=True, verbose_name=u"Дата покупки")
     warranty_date = models.DateField(null=True, blank=True, verbose_name=u"Дата окончания гарантии")
     date_change = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
