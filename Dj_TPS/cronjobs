@@ -4,3 +4,12 @@
 45 20 * * 0 root poetry run python manage.py run_sal_weekly $(date -d '-9 day' +%Y-%m-%d) $(date -d '-7 day' +%Y-%m-%d) >> /var/log/cron.log 2>&1
 
 39 11 * * * /home/devilins/TPS/Dj_TPS/docker compose exec tps bash -c 'python manage.py run_sal_calc $(date +%Y-%m-%d) $(date +%Y-%m-%d)'
+
+
+Актуальный файл крона на сервере:
+
+0 22 * * * /home/devilins/TPS/Dj_TPS/tps_backup.sh
+50 20 * * * /home/devilins/TPS/Dj_TPS/job_sal_calc.sh >> /home/devilins/TPS/Dj_TPS/cron.log 2>&1
+0 20 * * 4 /home/devilins/TPS/Dj_TPS/job_sal_weekly.sh >> /home/devilins/TPS/Dj_TPS/cron.log 2>&1
+45 20 * * 0 /home/devilins/TPS/Dj_TPS/job_sal_weekly.sh >> /home/devilins/TPS/Dj_TPS/cron.log 2>&1
+55 20 * * * /home/devilins/TPS/Dj_TPS/job_fin_stats.sh >> /home/devilins/TPS/Dj_TPS/cron.log 2>&1
