@@ -408,11 +408,15 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         return reverse('sales') + '?' + self.request.GET.urlencode()
 
     def get_context_data(self, **kwargs):
+        # Типы продаж и их стоимость за единицу
+        stcst_var = Settings.objects.filter(param__icontains='stcst')
+
         context = super().get_context_data(**kwargs)
         context['title'] = 'Новая продажа'
         context['card_title'] = 'Добавление новой продажи'
         context['url_cancel'] = 'sales'
         context['current_filter_params'] = self.request.GET.urlencode()
+        context['stcst_var'] = stcst_var
         return context
 
     def get_initial(self):

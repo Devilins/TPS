@@ -34,4 +34,65 @@
         </div>
     </div>
 </div>
+
+<!-- Скрипт автоматом добавляет сумму при создании продажи -->
+<script>
+    const SALE_TYPE_COST = {
+        {% for st in stcst_var %}
+            "{{ st.param }}": {{ st.value }},
+        {% endfor %}
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sale_type = document.getElementById('id_sale_type');
+        const photo_count = document.getElementById('id_photo_count');
+        const sum = document.getElementById('id_sum');
+
+        function isWeekend(date = new Date()) {
+            return date.getDay() === 6 || date.getDay() === 0;
+        }
+
+        function calculateTotal() {
+            if (sale_type.value == "Email (все)" || sale_type.value == "Исходники заказа") {
+                // Блок для типов продаж где не нужно учитывать кол-во фото
+                const sale_type_val = 'stcst_' + sale_type.value;
+                const sum_val = SALE_TYPE_COST[sale_type_val] || 0;
+                sum.value = (sum_val);
+            } else if (sale_type.value == "Email (фото)") {
+                // Блок для учета скидки 50%
+                const sale_type_val = 'stcst_' + sale_type.value;
+                const photo_count_val = parseInt(photo_count.value) || 0;
+                const sum_val = SALE_TYPE_COST[sale_type_val] || 0;
+                if (photo_count_val < 10) {
+                    sum.value = (sum_val * photo_count_val);
+                } else {
+                    sum.value = (sum_val * photo_count_val) / 2;
+                }
+            } else {
+                // Блок для всех остальных продаж, где учитываем кол-во фото
+                if (sale_type.value == "Заказ выездной" || sale_type.value == "Заказной фотосет") {
+                    // Блок для разделения цен на заказы в выходные / будни
+                    if (isWeekend()) {
+                        sale_type_val = 'stcst_' + sale_type.value;
+                    } else {
+                        sale_type_val = 'stcst_' + sale_type.value + '_будни';
+                    }
+                } else {
+                    sale_type_val = 'stcst_' + sale_type.value;
+                }
+                const photo_count_val = parseInt(photo_count.value) || 0;
+                const sum_val = SALE_TYPE_COST[sale_type_val] || 0;
+                sum.value = (sum_val * photo_count_val);
+            }
+        }
+
+        sale_type.addEventListener('change', calculateTotal);
+        photo_count.addEventListener('input', calculateTotal);
+
+        // Инициализация при загрузке
+        calculateTotal();
+    });
+
+</script>
+
 {% endblock %}
