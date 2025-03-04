@@ -43,7 +43,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 Зарплаты сотрудников по неделям <br>
@@ -51,54 +51,66 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        {% if perms.tph_system.view_all_salary %}
-                            Сотрудник: {{ sw_filter.form.staff}}
-                        {% endif %}
-                        Дата начала недели: {{ sw_filter.form.week_begin}}
-                        Выплачено: {{ sw_filter.form.paid_out}}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                            <div class="col-md-auto">
+                                {% if perms.tph_system.view_all_salary %}
+                                    Сотрудник: {{ sw_filter.form.staff}}
+                                {% endif %}
+                            </div>
+                            <div class="col-md-auto">
+                                Дата начала недели: {{ sw_filter.form.week_begin}}
+                            </div>
+                            <div class="col-md-auto">
+                                Выплачено: {{ sw_filter.form.paid_out}}
+                            </div>
+                            <div class="col-md-auto">
+                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица с зарплатами -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Количество записей: {{ sal_week_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">Сотрудник</th>
-                    <th scope="col">Неделя</th>
-                    <th scope="col">Касса</th>
-                    <th scope="col">Зарплата</th>
-                    <th scope="col">Забрали наличными</th>
-                    <th scope="col">Осталось выплатить</th>
-                    <th scope="col">Выплачено</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in page_obj %}
-                <tr>
-                    <td>{{ s.staff }}</td>
-                    <td>{{ s.week_begin|date:"d M" }} - {{ s.week_end|date:"d M" }}</td>
-                    <td>{{ s.cash_box_week }}</td>
-                    <td>{{ s.salary_sum|floatformat }}</td>
-                    <td>{{ s.cash_withdrawn }}</td>
-                    <td>{{ s.to_pay|floatformat }}</td>
-                    <td>{{ s.paid_out }}</td>
-                    <td>{{ s.date_updated }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'salary_w_upd' s.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Количество записей: {{ sal_week_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Сотрудник</th>
+                        <th scope="col">Неделя</th>
+                        <th scope="col">Касса</th>
+                        <th scope="col">Зарплата</th>
+                        <th scope="col">Забрали наличными</th>
+                        <th scope="col">Осталось выплатить</th>
+                        <th scope="col">Выплачено</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in page_obj %}
+                    <tr>
+                        <td>{{ s.staff }}</td>
+                        <td>{{ s.week_begin|date:"d M" }} - {{ s.week_end|date:"d M" }}</td>
+                        <td>{{ s.cash_box_week }}</td>
+                        <td>{{ s.salary_sum|floatformat }}</td>
+                        <td>{{ s.cash_withdrawn }}</td>
+                        <td>{{ s.to_pay|floatformat }}</td>
+                        <td>{{ s.paid_out }}</td>
+                        <td>{{ s.date_updated }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'salary_w_upd' s.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Пагинация -->

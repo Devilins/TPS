@@ -16,7 +16,7 @@
 {% endblock func_buttons %}
 
 {% block content %}
-<div class="container cont_store">
+<div class="container cont_store" style="max-width: 500px;">
     <div class="card shadow" id="store_card">
         <div class="card-header">
             <h4 class="card-title">Список фототочек</h4>
@@ -31,7 +31,7 @@
                         <div class="col">
                             <p>{{ s.name }} - {{ s.short_name }}</p>
                         </div>
-                        <div class="col-md-auto">
+                        <div class="col-auto">
                             <button type="button" class="btn btn-link">
                                 <a href="{% url 'store_update' s.id %}"><img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>

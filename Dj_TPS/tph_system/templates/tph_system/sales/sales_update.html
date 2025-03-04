@@ -20,7 +20,7 @@
                     </div>
                     <div class="row row-cols-4">
                         {% for f in form %}
-                        <div class="col-md-3">
+                        <div class="col-lg-3 col-md-6 col-sm-11 col-11">
                             <p style="text-align: left;"><label class="form-label" for="{{ f.id_for_label }}"><b>{{ f.label }}:</b></label><br>{{ f }}</p>
                             <div class="form-error">{{ f.errors }}</div>
                         </div>

@@ -13,7 +13,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 Финансы - кампания <br>
@@ -21,50 +21,58 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Отчетный месяц: {{ stats_filter.form.date }}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                                <div class="col-md-auto">
+                                    Отчетный месяц: {{ stats_filter.form.date }}
+                                </div>
+                                <div class="col-md-auto">
+                                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                                </div>
+                            </div>
                     </form>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица с Финансами - кампания -->
-        <table class="table table-hover table-bordered align-middle" id="tableCons">
-            <thead>
-                <tr>
-                    <th scope="col">Отчетный месяц</th>
-                    <th scope="col">Выручка (Кассы)</th>
-                    <th scope="col">Зарплаты</th>
-                    <th scope="col">Расходы</th>
-                    <th scope="col">Прибыль</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in stats %}
-                <tr>
-                    <td>{{ s.date|date:"F Y" }}</td>
-                    <td>{{ s.revenue }}</td>
-                    <td>{{ s.salaries|floatformat }}</td>
-                    <td>{{ s.expenses }}</td>
-                    <td>{{ s.profit|floatformat }}</td>
-                    <td>{{ s.date_updated }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'fin_stats_update' s.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle" id="tableCons">
+                <thead>
+                    <tr>
+                        <th scope="col">Отчетный месяц</th>
+                        <th scope="col">Выручка (Кассы)</th>
+                        <th scope="col">Зарплаты</th>
+                        <th scope="col">Расходы</th>
+                        <th scope="col">Прибыль</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stats %}
+                    <tr>
+                        <td>{{ s.date|date:"F Y" }}</td>
+                        <td>{{ s.revenue }}</td>
+                        <td>{{ s.salaries|floatformat }}</td>
+                        <td>{{ s.expenses }}</td>
+                        <td>{{ s.profit|floatformat }}</td>
+                        <td>{{ s.date_updated }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'fin_stats_update' s.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <div class="container cont_store" style="margin-top: 0px;">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 Финансы - сотрудники <br>
@@ -72,37 +80,47 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="s_filter">
                     <form method="get">
-                        Отчетный месяц: {{ stats_staff_filter.form.date }}
-                        Сотрудник: {{ stats_staff_filter.form.staff}}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                            <div class="col-md-auto">
+                                Отчетный месяц: {{ stats_staff_filter.form.date }}
+                            </div>
+                            <div class="col-md-auto">
+                                Сотрудник: {{ stats_staff_filter.form.staff}}
+                            </div>
+                            <div class="col-md-auto">
+                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица с Финансами - сотрудники -->
-        <table class="table table-hover table-bordered align-middle" id="tableFin">
-            <thead>
-                <tr>
-                    <th scope="col">Отчетный месяц</th>
-                    <th scope="col">Сотрудник</th>
-                    <th scope="col">Касса</th>
-                    <th scope="col">Зарплата</th>
-                    <th scope="col">Дата изменения</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in page_obj_st %}
-                <tr>
-                    <td>{{ s.date|date:"F Y" }}</td>
-                    <td>{{ s.staff }}</td>
-                    <td>{{ s.cash_box }}</td>
-                    <td>{{ s.salary|floatformat }}</td>
-                    <td>{{ s.date_updated }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle" id="tableFin">
+                <thead>
+                    <tr>
+                        <th scope="col">Отчетный месяц</th>
+                        <th scope="col">Сотрудник</th>
+                        <th scope="col">Касса</th>
+                        <th scope="col">Зарплата</th>
+                        <th scope="col">Дата изменения</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in page_obj_st %}
+                    <tr>
+                        <td>{{ s.date|date:"F Y" }}</td>
+                        <td>{{ s.staff }}</td>
+                        <td>{{ s.cash_box }}</td>
+                        <td>{{ s.salary|floatformat }}</td>
+                        <td>{{ s.date_updated }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Пагинация -->

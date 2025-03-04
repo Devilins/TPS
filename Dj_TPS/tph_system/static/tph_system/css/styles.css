@@ -102,12 +102,8 @@ main #cs_filter, #s_filter {     /* Стили для фильтров данн�
     font-size: 15px;
 }
 
-#upd_del_forms, #store_card, #main_view_card, #main_view_card2 {
-    width: 500px;
-}
-
-#main_view_card3 {
-    width: 1025px;
+#upd_del_forms {
+    max-width: 500px;
 }
 
 main .sale_add_cont {
@@ -125,10 +121,6 @@ main #sales_table {
 #sale_add_form {        /* Стили для карточки добавления продажи */
     text-align: left;
     float: left;
-}
-
-#main_tip_for_staff, #main_tip2_for_staff {
-    width: 1025px;
 }
 
 .cont_login {

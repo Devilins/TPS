@@ -35,21 +35,21 @@
 {% if perms.tph_system.view_implevents %}
     <!-- Сообщения об ошибках выполнения бизнес функций -->
     {% if err_events_count == 0 %}
-            <a role="button" class="btn btn-sm btn-outline-success" style="margin-right: 10px;">
+            <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-outline-success" style="margin-right: 10px;">
                 Ошибки выполнения ({{ err_events_count }})
             </a>
         {% else %}
-            <a role="button" class="btn btn-sm btn-warning" style="margin-right: 10px;">
+            <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-warning my-xl-0 my-1" style="margin-right: 10px;">
                 Ошибки выполнения ({{ err_events_count }})
             </a>
         {% endif %}
     <!-- Сообщения о системных ошибках -->
     {% if sys_errors_count == 0 %}
-        <a role="button" class="btn btn-sm btn-outline-success">
+        <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-outline-success my-xl-0 my-1">
             Системные ошибки ({{ sys_errors_count }})
         </a>
     {% else %}
-        <a role="button" class="btn btn-sm btn-danger">
+        <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-danger">
             Системные ошибки ({{ sys_errors_count }})
         </a>
     {% endif %}
@@ -86,8 +86,8 @@
 
 <div class="container cont_store">
     {% if perms.tph_system.main_page_view_cards %}
-    <div class="row align-items-start">
-        <div class="col">
+    <div class="row align-items-start gy-3">
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
             <div class="card shadow" id="store_card">
                 <div class="card-header">
                     <h4 class="card-title">Кто {{ now_date|date:"d.m.Y" }} работает на точках: </h4>
@@ -116,7 +116,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
             <div class="card shadow" id="main_view_card">
                 <div class="card-header">
                     <h4 class="card-title">Кассы за {{ now_date|date:"d.m.Y" }}: </h4>
@@ -131,7 +131,7 @@
                                 <div class="col">
                                     <i>{{ store }}</i>
                                 </div>
-                                <div class="col-md-auto">
+                                <div class="col-auto">
                                     {{ summ }}
                                 </div>
                             </div>
@@ -146,7 +146,7 @@
         </div>
     </div>
 
-    <div class="card shadow" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
+    <div class="card shadow col-xxl-8 col-xl-10" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
         <div class="card-header">
             <h4 class="card-title">Изменение фототехники на точках за {{ now_date|date:"d.m.Y" }}: </h4>
         </div>
@@ -163,7 +163,7 @@
         </div>
     </div>
 
-    <div class="card shadow" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="card shadow col-xxl-8 col-xl-10" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
         <div class="card-header">
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>
@@ -193,7 +193,7 @@
     {% endif %}
 
     {% if perms.tph_system.view_refsandtips %}
-    <div class="card shadow" id="main_tip_for_staff" style="margin-bottom: 20px">
+    <div class="card shadow col-xxl-8 col-xl-10" id="main_tip_for_staff" style="margin-bottom: 20px">
         <div class="card-header">
             <h4 class="card-title">Примеры ФОТО Лазерлэнд: </h4>
         </div>
@@ -224,7 +224,7 @@
         </div>
     </div>
 
-    <div class="card shadow" id="main_tip2_for_staff">
+    <div class="card shadow col-xxl-8 col-xl-10" id="main_tip2_for_staff">
         <div class="card-header">
             <h4 class="card-title">Примеры ФОТО Бигвол: </h4>
         </div>

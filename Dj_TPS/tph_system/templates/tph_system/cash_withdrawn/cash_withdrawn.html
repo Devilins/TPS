@@ -17,7 +17,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 История выдачи наличных <br>
@@ -47,39 +47,41 @@
             </h4>
         </div>
 
-        <!-- Таблица с данными -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Количество записей: {{ with_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">Точка</th>
-                    <th scope="col">Сотрудник</th>
-                    <th scope="col">Дата</th>
-                    <th scope="col">Забрали наличными</th>
-                    <th scope="col">Комментарий</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in page_obj %}
-                <tr>
-                    <td>{{ c.store }}</td>
-                    <td>{{ c.staff }} </td>
-                    <td>{{ c.date }}</td>
-                    <td>{{ c.withdrawn }}</td>
-                    <td>{{ c.comment }}</td>
-                    <td>{{ c.date_upd }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'c_w_update' c.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <!-- Таблица с данными -->
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Количество записей: {{ with_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Точка</th>
+                        <th scope="col">Сотрудник</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Забрали наличными</th>
+                        <th scope="col">Комментарий</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in page_obj %}
+                    <tr>
+                        <td>{{ c.store }}</td>
+                        <td>{{ c.staff }} </td>
+                        <td>{{ c.date }}</td>
+                        <td>{{ c.withdrawn }}</td>
+                        <td>{{ c.comment }}</td>
+                        <td>{{ c.date_upd }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'c_w_update' c.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Модальное окно - ввод новых списаний -->
         <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"

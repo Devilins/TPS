@@ -181,20 +181,26 @@ def sal_calc(time_start, time_end):
                                          sale_type='Заказ выездной').exists()
                     and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists()):
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
-                if sch.position == 'Администратор':
-                    sal_staff = param_gets('admin_min_payment')
-                elif sch.position == 'Фотограф':
-                    sal_staff = param_gets('phot_min_payment')
-                elif sch.position == 'Универсальный фотограф':
-                    sal_staff += param_gets('univ_min_payment')
-                else:
-                    error = ImplEvents.objects.create(
-                        event_type='Salary_PositionError',
-                        event_message=f"В графике {sch} не указана роль. Текущее значение => {sch.position}",
-                        status='Бизнес ошибка',
-                        solved='Нет'
-                    )
-                    print(f"ImplEvents - новая запись {error}")
+                match sch.position:
+                    case 'Администратор':
+                        sal_staff = param_gets('admin_min_payment')
+                    case 'Фотограф':
+                        sal_staff = param_gets('phot_min_payment')
+                    case 'Универсальный фотограф':
+                        sal_staff += param_gets('univ_min_payment')
+                    case 'Видеограф':
+                        pass
+                    case 'Выездной фотограф':
+                        pass
+                    case _:
+                        error = ImplEvents.objects.create(
+                            event_type='Salary_PositionError',
+                            event_message=f"В графике {sch} не указана роль. Текущее значение => {sch.position}. "
+                                          f"Влияет на начисление минимальной зарплаты.",
+                            status='Бизнес ошибка',
+                            solved='Нет'
+                        )
+                        print(f"ImplEvents - новая запись {error}")
 
             if sch.position == 'Администратор':
                 # Заказы, где сотрудник является только админом. Работает только для роли администратор

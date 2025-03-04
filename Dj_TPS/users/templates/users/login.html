@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title }}</title>
     <link rel="shortcut icon" href="{% static 'tph_system/images/logo_TPS_round.png'%}">
 
@@ -38,8 +39,6 @@
         body {
           display: flex;
           align-items: center;
-          padding-top: 40px;
-          padding-bottom: 40px;
           background-color: #f5f5f5;
         }
 
@@ -50,7 +49,7 @@
 
         .form-signin {
           width: 100%;
-          max-width: 330px;
+          max-width: 350px;
           padding: 15px;
           margin: auto;
         }
@@ -66,26 +65,26 @@
 
 </head>
     <body>
-<main class="form-signin">
-    <!-- Форма авторизации -->
-    <form method="post">
-        {% csrf_token %}
-        <img class="mb-4" src="{% static 'tph_system/images/logo_TPS_round.png'%}" alt="" width="90" height="90">
-        <h1 class="h3 mb-4 fw-normal">Take Photo ERP System</h1>
-        <div class="error_style">
-            {% for error in form.non_field_errors %}
-                <i>{{error}}</i>
-            {% endfor %}
-        </div>
-        {% for f in form %}
-        <div class="form-floating">
-            {{ f }}
-            <label for="{{ f.id_for_label }}">{{ f.label }}</label>
-            <div class="form-error">{{ f.errors }}</div>
-        </div>
-        {% endfor %}
-        <p><button class="w-100 mt-3 btn btn-lg btn-primary" type="submit">Войти</button></p>
-    </form>
-</main>
+        <main class="form-signin">
+            <!-- Форма авторизации -->
+            <form method="post">
+                {% csrf_token %}
+                <img class="mb-4" src="{% static 'tph_system/images/logo_TPS_round.png'%}" alt="" width="90" height="90">
+                <h1 class="h3 mb-4 fw-normal">Take Photo ERP System</h1>
+                <div class="error_style">
+                    {% for error in form.non_field_errors %}
+                        <i>{{error}}</i>
+                    {% endfor %}
+                </div>
+                {% for f in form %}
+                <div class="form-floating">
+                    {{ f }}
+                    <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    <div class="form-error">{{ f.errors }}</div>
+                </div>
+                {% endfor %}
+                <p><button class="w-100 mt-3 btn btn-lg btn-primary" type="submit">Войти</button></p>
+            </form>
+        </main>
     </body>
 </html>

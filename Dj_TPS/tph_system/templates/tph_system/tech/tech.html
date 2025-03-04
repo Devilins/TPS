@@ -16,7 +16,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 Учет техники <br>
@@ -24,56 +24,68 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        {% if perms.tph_system.tech_view_all_stores %}
-                            Точка: {{ t_filter.form.store }}
-                        {% endif %}
-                        Название техники: {{ t_filter.form.name }}
-                        Серийный номер: {{ t_filter.form.serial_num }}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                            <div class="col-md-auto">
+                                {% if perms.tph_system.tech_view_all_stores %}
+                                    Точка: {{ t_filter.form.store }}
+                                {% endif %}
+                            </div>
+                            <div class="col-md-auto">
+                                Название техники: {{ t_filter.form.name }}
+                            </div>
+                            <div class="col-md-auto">
+                                Серийный номер: {{ t_filter.form.serial_num }}
+                            </div>
+                            <div class="col-md-auto">
+                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица техники -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Количество техники: {{ tech_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">Точка</th>
-                    <th scope="col">Название техники</th>
-                    <th scope="col">Серийный номер</th>
-                    <th scope="col">Количество</th>
-                    <th scope="col">Дата покупки</th>
-                    <th scope="col">Дата окончания гарантии</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in page_obj %}
-                <tr>
-                    <td>{{ t.store }}</td>
-                    <td>{{ t.name }}</td>
-                    <td>{{ t.serial_num }}</td>
-                    <td>{{ t.count }}</td>
-                    <td>{{ t.date_buy }}</td>
-                    {% if t.warranty_date != null %}
-                        <td>{{ t.warranty_date }}</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                    <td>{{ t.date_change }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'tech_update' t.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Количество техники: {{ tech_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Точка</th>
+                        <th scope="col">Название техники</th>
+                        <th scope="col">Серийный номер</th>
+                        <th scope="col">Количество</th>
+                        <th scope="col">Дата покупки</th>
+                        <th scope="col">Дата окончания гарантии</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in page_obj %}
+                    <tr>
+                        <td>{{ t.store }}</td>
+                        <td>{{ t.name }}</td>
+                        <td>{{ t.serial_num }}</td>
+                        <td>{{ t.count }}</td>
+                        <td>{{ t.date_buy }}</td>
+                        {% if t.warranty_date != null %}
+                            <td>{{ t.warranty_date }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td>{{ t.date_change }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'tech_update' t.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Модальное окно - ввод новой техники -->
         <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"

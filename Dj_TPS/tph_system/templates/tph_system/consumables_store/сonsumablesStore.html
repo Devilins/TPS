@@ -24,52 +24,64 @@
 
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
-                    <form method="get">
-                        {% if perms.tph_system.consumables_view_all_stores %}
-                            Точка: {{ cs_filter.form.store }}
-                        {% endif %}
-                        Расходник: {{ cs_filter.form.consumable }}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
-                    </form>
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                                <div class="col-md-auto">
+                                    {% if perms.tph_system.consumables_view_all_stores %}
+                                    Точка: {{ cs_filter.form.store }}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-auto">
+                                    Расходник: {{ cs_filter.form.consumable }}
+                                </div>
+                                <div class="col-md-auto">
+                                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица расходников -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Количество расходников: {{ cons_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">Точка</th>
-                    <th scope="col">Расходник</th>
-                    {% if perms.tph_system.consumables_view_all_stores %}
-                        <th scope="col">Короткое имя</th>
-                    {% endif %}
-                    <th scope="col">Количество</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cn in page_obj %}
-                <tr>
-                    <td>{{ cn.store }}</td>
-                    <td>{{ cn.consumable }}</td>
-                    {% if perms.tph_system.consumables_view_all_stores %}
-                        <td>{{ cn.cons_short }}</td>
-                    {% endif %}
-                    <td>{{ cn.count|floatformat }}</td>
-                    <td>{{ cn.change_data }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'con_store_update' cn.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Количество расходников: {{ cons_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Точка</th>
+                        <th scope="col">Расходник</th>
+                        {% if perms.tph_system.consumables_view_all_stores %}
+                            <th scope="col">Короткое имя</th>
+                        {% endif %}
+                        <th scope="col">Количество</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cn in page_obj %}
+                    <tr>
+                        <td>{{ cn.store }}</td>
+                        <td>{{ cn.consumable }}</td>
+                        {% if perms.tph_system.consumables_view_all_stores %}
+                            <td>{{ cn.cons_short }}</td>
+                        {% endif %}
+                        <td>{{ cn.count|floatformat }}</td>
+                        <td>{{ cn.change_data }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'con_store_update' cn.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Модальное окно - ввод новых расходников -->
         <div class="modal fade" id="modal-cons_store-form" data-bs-backdrop="static" data-bs-keyboard="false"

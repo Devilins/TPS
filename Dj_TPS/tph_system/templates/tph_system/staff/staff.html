@@ -45,40 +45,42 @@
         </div>
 
         <!-- Таблица сотрудников -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Количество сотрудников: {{ staff_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">ФИО</th>
-                    <th scope="col">Дата найма</th>
-                    <th scope="col">Дата увольнения</th>
-                    <th scope="col">Статус</th>
-                    <th scope="col">Логин</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for st in page_obj %}
-                <tr>
-                    <td>{{ st.name }} {{st.o_name}} {{ st.f_name }}</td>
-                    <td>{{ st.date_empl }}</td>
-                    {% if st.date_dism != null %}
-                        <td>{{ st.date_dism }}</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                    <td>{{ st.dism_status }}</td>
-                    <td>{{ st.st_username }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'staff_update' st.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Количество сотрудников: {{ staff_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">ФИО</th>
+                        <th scope="col">Дата найма</th>
+                        <th scope="col">Дата увольнения</th>
+                        <th scope="col">Статус</th>
+                        <th scope="col">Логин</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in page_obj %}
+                    <tr>
+                        <td>{{ st.name }} {{st.o_name}} {{ st.f_name }}</td>
+                        <td>{{ st.date_empl }}</td>
+                        {% if st.date_dism != null %}
+                            <td>{{ st.date_dism }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td>{{ st.dism_status }}</td>
+                        <td>{{ st.st_username }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'staff_update' st.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Модальное окно - ввод новых сотрудников -->
         <div class="modal fade" id="modal-staff-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

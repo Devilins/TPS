@@ -16,7 +16,7 @@
 
 {% block content %}
 <div class="container cont_store">
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 Настройки <br>
@@ -24,45 +24,54 @@
                 <!-- Фильтр -->
                 <div class="card card-body" id="cs_filter">
                     <form method="get">
-                        Параметр: {{ s_filter.form.param }}
-                        Описание: {{ s_filter.form.param_f_name}}
-                        <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
+                            <div class="col-md-auto">
+                                Параметр: {{ s_filter.form.param }}
+                            </div>
+                            <div class="col-md-auto">
+                                Описание: {{ s_filter.form.param_f_name}}
+                            </div>
+                            <div class="col-md-auto">
+                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </h4>
         </div>
 
         <!-- Таблица с настройками -->
-        <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
-            <caption><b style="margin-left: 20px;"> Если вы скорректировали какие-нибудь настройки, надо обязательно перезапустить сервер. Иначе для системы настройки останутся прежними. </b></caption>
-            <caption><b style="margin-left: 20px;"> Количество настроек: {{ set_count }} </b></caption>
-            <thead>
-                <tr>
-                    <th scope="col">Параметр</th>
-                    <th scope="col">Значение</th>
-                    <th scope="col">Описание</th>
-                    <th scope="col">Дата изменения</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in page_obj %}
-                <tr>
-                    <td>{{ s.param }}</td>
-                    <td>{{ s.value }}</td>
-                    <td>{{ s.param_f_name|truncatechars:80 }}</td>
-                    <td>{{ s.date_upd }}</td>
-                    <td>
-                        <button type="button" class="btn btn-link">
-                            <a href="{% url 'set_update' s.id %}?{{ current_filter_params }}">
-                                <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+                <caption><b style="margin-left: 20px;"> Если вы скорректировали какие-нибудь настройки, надо обязательно перезапустить сервер. Иначе для системы настройки останутся прежними. </b></caption>
+                <caption><b style="margin-left: 20px;"> Количество настроек: {{ set_count }} </b></caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Параметр</th>
+                        <th scope="col">Значение</th>
+                        <th scope="col">Описание</th>
+                        <th scope="col">Дата изменения</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in page_obj %}
+                    <tr>
+                        <td>{{ s.param }}</td>
+                        <td>{{ s.value }}</td>
+                        <td>{{ s.param_f_name|truncatechars:80 }}</td>
+                        <td>{{ s.date_upd }}</td>
+                        <td>
+                            <button type="button" class="btn btn-link">
+                                <a href="{% url 'set_update' s.id %}?{{ current_filter_params }}">
+                                    <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Модальное окно - ввод новых точек -->
         <div class="modal fade" id="modal-store-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

@@ -13,34 +13,47 @@
 <div class="container cont_store">
 
     <!-- Таблица с графиком -->
-    <div class="card shadow" style="width: 100%; min-width: 1000px">
+    <div class="card shadow" style="width: 100%;">
         <div class="card-header">
             <h4 class="card-title">
                 График работы сотрудников <br>
 
-                <div class="card card-body" id="cs_filter">
-                    <div class="schedule-controls">
-                        <button class="btn btn-primary" id="prev-week" style="margin-right: 20px">← Предыдущая неделя</button>
-                        <span id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>
-                        <button class="btn btn-primary" id="next-week" style="margin-left: 20px">Следующая неделя →</button>
+                <div class="card card-body mt-3" style="font-size: 15px; max-width: 530px;">
+<!--                    <div class="row schedule-controls gy-3">-->
+<!--                        <div class="col-md">-->
+<!--                            <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>-->
+<!--                        </div>-->
+<!--                        <div class="col-md mt-md-4" style="padding: 0px;">-->
+<!--                            <span id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>-->
+<!--                        </div>-->
+<!--                        <div class="col-md">-->
+<!--                            <button class="btn btn-sm btn-primary" id="next-week">Следующая неделя →</button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="d-grid gap-2 d-md-block">
+                            <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>
+                            <span class="px-2" id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>
+                            <button class="btn btn-sm btn-primary" id="next-week">Следующая неделя →</button>
                     </div>
                 </div>
             </h4>
         </div>
 
-        <table class="table table-hover table-bordered align-middle" id="schedule-table">
-            <thead>
-                <tr>
-                    <th>Сотрудник</th>
-                    {% for i in "0123456"|make_list %}
-                        <th class="date-header"></th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle" id="schedule-table" style="min-width: 900px;">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        {% for i in "0123456"|make_list %}
+                            <th class="date-header"></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
 
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
