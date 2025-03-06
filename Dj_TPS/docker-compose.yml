@@ -21,6 +21,7 @@ services:
     volumes:
       - static:/app/static
       - media:/app/media
+      - ./django_errors.log:/app/django_errors.log
     env_file:
       - .env
     depends_on:
@@ -40,6 +41,7 @@ services:
       - media:/app/media
       - ./docker/certbot/conf:/etc/letsencrypt:ro
       - ./docker/certbot/www:/var/www/certbot:ro
+      - ./docker/nginx/logs:/var/log/nginx:rw
     depends_on:
       - tps
     networks:
