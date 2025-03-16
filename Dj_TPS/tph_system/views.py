@@ -9,6 +9,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.generic import UpdateView, DeleteView, CreateView
 from django.core.paginator import Paginator
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
@@ -16,16 +18,22 @@ from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, Sale
 from .filters import *
 from .funcs import *
 
+# API
+from rest_framework import viewsets
+from .serializers import MonitoringSerializer
 
 # Для календаря
 # from schedule.views import CalendarByPeriodsView
 # from schedule.periods import Month
 
 
-# class StaffViewSet(LoginRequiredMixin, ModelViewSet):
-#     queryset = Staff.objects.all()
-#     serializer_class = StaffSerializer
-
+class MonitoringViewSet(viewsets.ModelViewSet):
+    queryset = ImplEvents.objects.filter(event_type__icontains='mon')
+    serializer_class = MonitoringSerializer
+    # permission_required = 'monitoring_rights'
+    # permission_denied_message = 'У вас нет разрешения на просмотр событий мониторинга'
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Staff
