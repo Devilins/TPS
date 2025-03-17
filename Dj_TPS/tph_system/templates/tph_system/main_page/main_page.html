@@ -137,6 +137,18 @@
                             </div>
                         </li>
                         {% endfor %}
+                        {% if cashbx_all != 0 %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <b>Итого за день</b>
+                                </div>
+                                <div class="col-auto">
+                                    <b>{{ cashbx_all }}</b>
+                                </div>
+                            </div>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>

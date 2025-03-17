@@ -1,4 +1,5 @@
 import os.path
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 from django.utils.log import RequireDebugFalse
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'axes',
     'debug_toolbar',
+    'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -128,6 +131,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'SIGNING_KEY': os.getenv('SECRET_KEY'),
+    'ALGORITHM': 'HS256',
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
 
 AUTHENTICATION_BACKENDS = [
     # AxesStandaloneBackend should be the first backend in the AUTHENTICATION_BACKENDS list.

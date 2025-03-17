@@ -28,12 +28,11 @@ from .serializers import MonitoringSerializer
 
 
 class MonitoringViewSet(viewsets.ModelViewSet):
-    queryset = ImplEvents.objects.filter(event_type__icontains='mon')
+    queryset = ImplEvents.objects.filter(event_type__icontains='Error', solved='Нет')
     serializer_class = MonitoringSerializer
-    # permission_required = 'monitoring_rights'
-    # permission_denied_message = 'У вас нет разрешения на просмотр событий мониторинга'
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Staff
@@ -1216,6 +1215,8 @@ def main_page(request):
     for i in sls:
         dic[st.get(id=i['store'])['name']] = i['store_sum']
 
+    cashbx_all = sum(dic.values())
+
     tips = RefsAndTips.objects.all()
     ll_tips = tips.filter(title='Лазерлэнд')
     bw_tips = tips.filter(title='Бигвол')
@@ -1236,6 +1237,7 @@ def main_page(request):
         'sch': sch,
         'now_date': selected_date,
         'dic': dic,
+        'cashbx_all': cashbx_all,
         'con_store': con_store,
         'll_tips': ll_tips,
         'bw_tips': bw_tips,
@@ -1361,7 +1363,7 @@ def salary_weekly(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
     f_week_begin = datetime.now() - timedelta(datetime.weekday(datetime.now()))  # Вычисляем начало недели
     if not request.GET:
-        return redirect(('{}?week_begin=' + str(dt_format(f_week_begin))).format(request.path))
+        return redirect(('{}?week_begin=' + str(dt_format(f_week_begin - timedelta(7)))).format(request.path))
 
     auth_user = User.objects.get(id=request.user.id)
 
