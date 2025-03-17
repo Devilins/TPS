@@ -1263,13 +1263,24 @@ def cash_withdrawn(request):
         staff_sch = None
         store_staff_working_obj = None
 
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
     # Сотрудник видит только свои списания, если нет права на просмотр всех списаний зарплаты
     if auth_user.has_perm('tph_system.view_all_cashwithdrawn'):
         cash = CashWithdrawn.objects.all().select_related('store', 'staff')
+
+        # Фильтр
+        c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
+        cash = c_filter.qs
     else:
         cash = CashWithdrawn.objects.filter(
             staff_id=auth_staff
         ).select_related('store', 'staff')
+
+        # Фильтр
+        c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
+        cash = c_filter.qs
 
         # Если сотрудник админ - то видит списание налички всех работников в этот день на этой точке
         if staff_sch is not None and staff_sch.position in ('Администратор', 'Универсальный фотограф'):
@@ -1277,13 +1288,6 @@ def cash_withdrawn(request):
                                           ).exclude(staff_id=auth_staff).values_list('staff', flat=True)
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
                                                            ).select_related('store', 'staff')).order_by('-date')
-
-    # Сохраняем текущие GET-параметры для возможности возврата
-    current_filter_params = request.GET.urlencode()
-
-    # Фильтр
-    c_filter = CashWithdrawnFilter(request.GET, queryset=cash)
-    cash = c_filter.qs
 
     if request.method == 'POST':
         form = CashWithdrawnForm(request.POST)
