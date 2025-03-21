@@ -71,8 +71,8 @@
                     <tr>
                         <td>{{ s.staff }}</td>
                         <td>{{ s.date }}</td>
-                        <td>{{ s.cash_box }}</td>
-                        <td>{{ s.salary_sum|floatformat }}</td>
+                        <td>{{ s.cash_box|floatformat:"g" }}</td>
+                        <td>{{ s.salary_sum|floatformat:"g" }}</td>
                         <td>{{ s.store }}</td>
                         <td>{{ s.date_upd }}</td>
                         <td>

@@ -80,7 +80,7 @@
                 } else {
                     sale_type_val = 'stcst_' + sale_type.value;
                 }
-                const photo_count_val = parseInt(photo_count.value) || 0;
+                const photo_count_val = parseFloat(photo_count.value) || 0;
                 const sum_val = SALE_TYPE_COST[sale_type_val] || 0;
                 sum.value = (sum_val * photo_count_val);
             }

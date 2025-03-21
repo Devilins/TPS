@@ -126,7 +126,7 @@ class Sales(models.Model):
     photographer = models.ForeignKey(Staff, on_delete=models.PROTECT, related_name='sale_photographer', default='',
                                      verbose_name=u"Фотограф")
     sale_type = models.CharField(max_length=40, default='', choices=SLCT_ST, verbose_name=u"Тип продажи")
-    photo_count = models.IntegerField(verbose_name=u"Кол-во фотографий")
+    photo_count = models.DecimalField(verbose_name=u"Кол-во фотографий", max_digits=9, decimal_places=2)
     payment_type = models.CharField(max_length=40, default='', choices=SLCT_PAYMENT, verbose_name=u"Способ оплаты")
     sum = models.IntegerField(verbose_name=u"Сумма")
     cl_email = models.CharField(max_length=40, blank=True, verbose_name=u"Email клиента")

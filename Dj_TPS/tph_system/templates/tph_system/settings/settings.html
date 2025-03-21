@@ -58,7 +58,7 @@
                     {% for s in page_obj %}
                     <tr>
                         <td>{{ s.param }}</td>
-                        <td>{{ s.value }}</td>
+                        <td>{{ s.value|floatformat:"g" }}</td>
                         <td>{{ s.param_f_name|truncatechars:80 }}</td>
                         <td>{{ s.date_upd }}</td>
                         <td>

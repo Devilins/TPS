@@ -132,7 +132,7 @@
                                     <i>{{ store }}</i>
                                 </div>
                                 <div class="col-auto">
-                                    {{ summ }}
+                                    {{ summ|floatformat:"g" }}
                                 </div>
                             </div>
                         </li>
@@ -144,7 +144,7 @@
                                     <b>Итого за день</b>
                                 </div>
                                 <div class="col-auto">
-                                    <b>{{ cashbx_all }}</b>
+                                    <b>{{ cashbx_all|floatformat:"g" }}</b>
                                 </div>
                             </div>
                         </li>
@@ -192,7 +192,7 @@
                         </div>
                         <div class="col">
                             {% for con in c.list %}
-                                <u><a href="{% url 'con_store_update' con.id %}">{{ con.consumable }}</a></u> - {{ con.count|floatformat }}
+                                <u><a href="{% url 'con_store_update' con.id %}">{{ con.consumable }}</a></u> - {{ con.count|floatformat:"g" }}
                                 <br>
                             {% endfor %}
                         </div>

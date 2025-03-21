@@ -103,8 +103,8 @@
                         <td>{{ sale.photographer }}</td>
                         <td>{{ sale.sale_type }}</td>
                         <td>{{ sale.payment_type }}</td>
-                        <td><u>{{ sale.sum }}</u></td>
-                        <td>{{ sale.photo_count }}</td>
+                        <td><u>{{ sale.sum|floatformat:"g" }}</u></td>
+                        <td>{{ sale.photo_count|floatformat:"-2g" }}</td>
                         <td>{{ sale.cl_email }}</td>
                         <td>{{ sale.cl_phone }}</td>
                         <td>{{ sale.comment }}</td>
@@ -128,11 +128,11 @@
                 <caption><b style="margin-left: 20px;"> Итоги по продажам: </b></caption>
                 <tbody>
                     <tr>
-                        <th>Общая касса: {{ cashbx_all }}</th>
-                        <th>Безнал: {{ cashbx_card }}</th>
-                        <th>Наличные: {{ cashbx_cash }}</th>
-                        <th>QR и перевод: {{ cashbx_qr_p }}</th>
-                        <th>Заказы: {{ cashbx_orders }}</th>
+                        <th>Общая касса: {{ cashbx_all|floatformat:"g" }}</th>
+                        <th>Безнал: {{ cashbx_card|floatformat:"g" }}</th>
+                        <th>Наличные: {{ cashbx_cash|floatformat:"g" }}</th>
+                        <th>QR и перевод: {{ cashbx_qr_p|floatformat:"g" }}</th>
+                        <th>Заказы: {{ cashbx_orders|floatformat:"g" }}</th>
                     </tr>
                 </tbody>
             </table>
