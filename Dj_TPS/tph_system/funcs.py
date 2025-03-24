@@ -229,7 +229,7 @@ def sal_calc(time_start, time_end):
                               f"salary_sum: {sal_staff}, cash_box: {cashbx_staff}. В БД {action}",
                 status='Успешно'
             )
-            print(f"ImplEvents - новая запись {rec}")
+            # print(f"ImplEvents - новая запись {rec}")
 
 
 def sal_weekly_update(time_start, time_end):
@@ -272,7 +272,7 @@ def sal_weekly_update(time_start, time_end):
                                   f"по сотруднику {staff} - salary_sum: {salary}, cash_box_week: {cashbx}, cash_withdrawn: {withdrawn}. В БД {action}",
                     status='Успешно'
                 )
-                print(f"ImplEvents - новая запись {rec}")
+                # print(f"ImplEvents - новая запись {rec}")
 
 
 def fin_stats_calc(time_start, time_end):
@@ -302,7 +302,7 @@ def fin_stats_calc(time_start, time_end):
                               f"В БД {action}",
                 status='Успешно'
             )
-            print(f"ImplEvents - новая запись {rec}")
+            # print(f"ImplEvents - новая запись {rec}")
 
 
 def fin_stats_staff_calc(time_start, time_end):
@@ -336,7 +336,7 @@ def fin_stats_staff_calc(time_start, time_end):
                                   f"Сотрудник - {staff}. В БД {action}",
                     status='Успешно'
                 )
-                print(f"ImplEvents - новая запись {rec}")
+                # print(f"ImplEvents - новая запись {rec}")
 
 
 def qr_generate_tech():
