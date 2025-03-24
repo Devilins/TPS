@@ -95,14 +95,14 @@ def sal_calc(time_start, time_end):
                     if sl.sale_type == 'Заказной фотосет':
                         # Проверка на выходные
                         if day_date.weekday() in (5, 6):
-                            sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
+                            sal_staff += float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
                         else:
-                            sal_staff += sl.photo_count * param_gets(str(sl.store.short_name) + '_order_ph_budn')
+                            sal_staff += float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_budn')
                     elif sl.sale_type == 'Заказ выездной':
                         if sch.position == 'Выездной фотограф':
-                            sal_staff += sl.photo_count * param_gets('order_ph_out')
+                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out')
                         elif sch.position == 'Видеограф':
-                            sal_staff += sl.photo_count * param_gets('video_order_ph_out')
+                            sal_staff += float(sl.photo_count) * param_gets('video_order_ph_out')
                         else:
                             error = ImplEvents.objects.create(
                                 event_type='Salary_PositionError',
