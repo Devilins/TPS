@@ -16,11 +16,12 @@ class FengyuanChenDatePickerInput(DateInput):
 class StoreForm(ModelForm):
     class Meta:
         model = Store
-        fields = ['name', 'short_name']
+        fields = ['name', 'short_name', 'store_status']
 
         labels = {
             'name': 'Полное наименование',
-            'short_name': 'Сокращение'
+            'short_name': 'Сокращение',
+            'store_status': 'Статус'
         }
 
         widgets = {
@@ -31,6 +32,10 @@ class StoreForm(ModelForm):
             "short_name": TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Сокращение'
+            }),
+            "store_status": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Статус'
             })
         }
 
@@ -90,6 +95,7 @@ class StaffForm(ModelForm):
 class ConsStoreForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:
@@ -132,6 +138,7 @@ class ConsStoreForm(ModelForm):
 class TechForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:
@@ -186,6 +193,7 @@ class ScheduleForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:
@@ -225,9 +233,10 @@ class SalesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
-        self.fields['photographer'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['photographer'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['photographer'].empty_label = "Выберите сотрудника"
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
         self.fields['payment_type'].empty_label = "Тип оплаты"
 
@@ -387,6 +396,7 @@ class CashWithdrawnForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:
@@ -476,6 +486,7 @@ class SalaryForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['staff'].queryset = Staff.objects.filter(dism_status="Работает")
         self.fields['staff'].empty_label = "Выберите сотрудника"
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:

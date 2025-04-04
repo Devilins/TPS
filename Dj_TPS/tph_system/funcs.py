@@ -356,7 +356,7 @@ def qr_generate_tech():
 
         img = qr.make_image(fill_color="black", back_color="white")
 
-        # Преобразуем изображение в режим RGB (для работы с текстом)
+        # RGB (для работы с текстом)
         img = img.convert("RGB")
 
         # Текст подписи (многострочный)
@@ -372,7 +372,7 @@ def qr_generate_tech():
             font = ImageFont.truetype(font_path, font_size)
         except IOError:
             print("Шрифт не найден, используется стандартный.")
-            font = ImageFont.load_default()  # Используем стандартный шрифт, если указанный недоступен
+            font = ImageFont.load_default()
 
         # Вычисляем размеры текста
         draw = ImageDraw.Draw(img)

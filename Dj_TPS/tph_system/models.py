@@ -33,8 +33,13 @@ class Staff(models.Model):
 
 
 class Store(models.Model):
+    SLCT_STORE_STATUS = (
+        ('Действующая', 'Действующая'),
+        ('Закрытая', 'Закрытая')
+    )
     name = models.CharField(max_length=30, verbose_name=u"Название")
     short_name = models.CharField(max_length=20, verbose_name=u"Функциональное название (не изменять)")
+    store_status = models.CharField(max_length=30, default="Действующая", verbose_name=u"Статус", choices=SLCT_STORE_STATUS)
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
                                     verbose_name=u"Кем было изменено")

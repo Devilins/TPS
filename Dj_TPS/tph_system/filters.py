@@ -11,6 +11,9 @@ from .models import *
 
 class ConsumablesStoreFilter(django_filters.FilterSet):
     consumable = CharFilter(field_name='consumable', lookup_expr='icontains')  # icontains означает "содержит"
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
+    )
 
     class Meta:
         model = ConsumablesStore
@@ -30,6 +33,9 @@ class StaffFilter(django_filters.FilterSet):
 class TechFilter(django_filters.FilterSet):
     name = CharFilter(field_name='name', lookup_expr='icontains')
     serial_num = CharFilter(field_name='serial_num', lookup_expr='icontains')
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
+    )
 
     class Meta:
         model = Tech
@@ -42,6 +48,9 @@ class SalesFilter(django_filters.FilterSet):
     )
     photographer = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
     )
     date_from = django_filters.DateFilter(
         label="Даты с",
@@ -64,6 +73,9 @@ class SalesFilter(django_filters.FilterSet):
 class CashWithdrawnFilter(django_filters.FilterSet):
     staff = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
     )
     date_from = django_filters.DateFilter(
         label="Даты с",
@@ -96,6 +108,9 @@ class SalaryFilter(django_filters.FilterSet):
     salary_sum = CharFilter(field_name='salary_sum', lookup_expr='icontains')
     staff = django_filters.ModelChoiceFilter(
         queryset=Staff.objects.filter(dism_status="Работает")
+    )
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
     )
     date_from = django_filters.DateFilter(
         label="Даты с",

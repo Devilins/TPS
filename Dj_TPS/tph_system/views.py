@@ -788,7 +788,7 @@ def index(request):
 @login_required
 @permission_required(perm='tph_system.view_store', raise_exception=True)
 def store(request):
-    stores = Store.objects.all()
+    stores = Store.objects.filter(store_status='Действующая')
 
     error = ''
     if request.method == 'POST':
@@ -968,7 +968,7 @@ def schedule_mtd(request):
     end_date = start_date + timedelta(days=6)
 
     staffs = Staff.objects.filter(dism_status="Работает").select_related('st_username')
-    stores = Store.objects.all()
+    stores = Store.objects.filter(store_status="Действующая")
     schedules = Schedule.objects.filter(date__range=[start_date, end_date])
 
     # Если запрос AJAX, возвращаем данные в формате JSON

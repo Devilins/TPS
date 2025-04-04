@@ -16,7 +16,9 @@ class StaffAdmin(admin.ModelAdmin):
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-
+    list_display = ('name', 'short_name', 'store_status', 'date_upd', 'user_edited')
+    list_filter = ('store_status', 'name')
+    list_per_page = 30
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
@@ -71,6 +73,8 @@ class TechAdmin(admin.ModelAdmin):
     readonly_fields = ('date_change', 'user_edited')
     list_display = ('store', 'name', 'serial_num', 'count', 'date_change', 'user_edited')
     list_filter = ('store', 'name')
+    search_fields = ['name', 'serial_num']
+    search_help_text = 'Поиск по наименованию и серийному номеру'
     list_per_page = 30
 
 
