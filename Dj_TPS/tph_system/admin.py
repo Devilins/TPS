@@ -13,6 +13,12 @@ class StaffAdmin(admin.ModelAdmin):
     list_per_page = 30
 
 
+@admin.register(TelegramUser)
+class TelegramUserAdmin(admin.ModelAdmin):
+    list_display = ('user', 'telegram_id', 'edited_at', 'access_token', 'refresh_token', 'created_at')
+    list_filter = ('user', 'telegram_id')
+    list_per_page = 30
+
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')

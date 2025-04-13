@@ -5,10 +5,11 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from tph_system.views import MonitoringViewSet
+from tph_system.views import MonitoringViewSet, TelegramUserViewSet
 
 router = DefaultRouter()
 router.register(r'mon', MonitoringViewSet)
+router.register(r'tuser', TelegramUserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

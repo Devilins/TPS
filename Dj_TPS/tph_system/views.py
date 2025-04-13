@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.generic import UpdateView, DeleteView, CreateView
 from django.core.paginator import Paginator
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -20,7 +21,8 @@ from .funcs import *
 
 # API
 from rest_framework import viewsets
-from .serializers import MonitoringSerializer
+from .serializers import MonitoringSerializer, TelegramUserSerializer
+
 
 # Для календаря
 # from schedule.views import CalendarByPeriodsView
@@ -32,6 +34,13 @@ class MonitoringViewSet(viewsets.ModelViewSet):
     serializer_class = MonitoringSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class TelegramUserViewSet(viewsets.ModelViewSet):
+    queryset = TelegramUser.objects.all()
+    serializer_class = TelegramUserSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['telegram_id']
 
 
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):

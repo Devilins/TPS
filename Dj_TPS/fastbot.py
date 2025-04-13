@@ -1,7 +1,19 @@
 import os
+import django
+from django.conf import settings
+from django.db.models import Sum
+
+# Инициализация настроек джанги
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Dj_TPS.settings")
+django.setup()
+
+import pytz
 from datetime import datetime, timedelta
 from typing import Optional
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from asgiref.sync import sync_to_async
 from dotenv import load_dotenv
 import logging
 from contextlib import asynccontextmanager
@@ -9,79 +21,28 @@ from contextlib import asynccontextmanager
 import asyncio
 from aiogram import Bot, Dispatcher, Router, F
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI, HTTPException, Depends, status
 import httpx
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+from tph_system.models import TelegramUser, Sales, Store
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+
 # Загрузка переменных окружения
 load_dotenv()
+
+# asyncio Lock (чтобы несколько корутин не изменяли данные одновременно)
+lock = asyncio.Lock()
+
+#Подтягиваем timezone из settings
+tz = pytz.timezone(settings.TIME_ZONE)
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-class TokenManager:
-    def __init__(self):
-        self.access_token: Optional[str] = None
-        self.refresh_token: Optional[str] = None
-        self.expires_at: Optional[datetime] = None
-        self.lock = asyncio.Lock()
-
-    async def login(self) -> bool:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    os.getenv("DJANGO_API_URL")+"token/",
-                    data={
-                        "username": os.getenv("TEL_BOT_USER"),
-                        "password": os.getenv("TEL_BOT_PWD"),
-                    }
-                )
-                response.raise_for_status()
-
-                tokens = response.json()
-                self.access_token = tokens["access"]
-                self.refresh_token = tokens["refresh"]
-                self.expires_at = datetime.now() + timedelta(seconds=290)  # 5 минут - 10 секунд
-                return True
-            except Exception as e:
-                logger.error(f"Bot login failed: {e}")
-                return False
-
-    async def ensure_valid_token(self) -> bool:
-        async with self.lock:
-            if self.expires_at and datetime.now() < self.expires_at:
-                return True
-
-            if not self.refresh_token:
-                return await self.login()
-
-            try:
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        os.getenv("DJANGO_API_URL")+"token/refresh/",
-                        json={"refresh": self.refresh_token}
-                    )
-                    response.raise_for_status()
-
-                    tokens = response.json()
-                    self.access_token = tokens["access"]
-                    self.expires_at = datetime.now() + timedelta(seconds=290)
-                    return True
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == 401:
-                    logger.warning("Refresh token expired, re-login required")
-                    return await self.login()
-                else:
-                    logger.error(f"Token refresh error: {e}")
-                    return False
-            except Exception as e:
-                logger.error(f"Token refresh failed: {e}")
-                return False
-
 
 # Инициализация объектов aiogram
 bot = Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
@@ -89,22 +50,107 @@ router = Router()
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-token_manager = TokenManager()
-
-
 # Защита эндпоинта с помощью JWT
 security = HTTPBearer()
 
 
-async def authenticate(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> None:
-    """Проверка JWT-токена."""
-    if credentials.credentials != os.getenv("DJANGO_JWT_TOKEN"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid or expired token",
-        )
+async def auth_check(tel_user_id):
+    url = f"{os.getenv('DJANGO_API_URL')}tuser/"
+    params = {"telegram_id": str(tel_user_id)}
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+
+            t_user = response.json()
+            erp_user = t_user[0]
+            logger.info(f"ERP_USER - {erp_user}")
+
+            return erp_user
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 401:
+            logger.warning("You are not auth to get tuser")
+            return None
+        else:
+            logger.error(f"Get tuser error: {e}")
+            return None
+    except Exception as e:
+        logger.error(f"Get telegram user failed: {e}")
+        return None
+
+
+async def update_telegram_user(t_user, data) -> bool:
+    url = os.getenv("DJANGO_API_URL") + "tuser/" + str(t_user["id"]) + "/"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.put(url, data=data)
+            response.raise_for_status()
+            logger.info(f"Дата для изменения - {data}")
+            logger.info(f"Пользак телеграма обновлен - {response.json()}")
+
+            return True
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 401:
+            logger.warning("Refresh token expired, re-login required")
+            return False
+        else:
+            logger.error(f"Telegram user update error: {e}. Тело ошибки: {e.response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Telegram user update FAILED: {e}")
+        return False
+
+
+async def ensure_valid_token(t_user) -> bool:
+    if datetime.fromisoformat(t_user["edited_at"]) > tz.localize(datetime.now())- timedelta(seconds=290):
+        return True
+
+    if datetime.fromisoformat(t_user["edited_at"]) < tz.localize(datetime.now()) - timedelta(days=1):
+        return False
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                os.getenv("DJANGO_API_URL")+"token/refresh/",
+                json={"refresh": t_user["refresh_token"]}
+            )
+            response.raise_for_status()
+
+            tokens = response.json()
+
+            url = os.getenv("DJANGO_API_URL") + "tuser/" + str(t_user["id"]) + "/"
+            data = {
+                    "access_token": tokens["access"],
+                    "telegram_id": t_user["telegram_id"]
+                }
+
+            put_response = await client.put(url, data=data)
+            put_response.raise_for_status()
+            logger.info(f"Дата для изменения - {data}")
+            logger.info(f"Пользак телеграма обновлен - {put_response.json()}")
+
+            # if await update_telegram_user(
+            #     t_user,
+            #     {
+            #         "access_token": tokens["access"],
+            #         "telegram_id": t_user["telegram_id"]
+            #     }
+            # ):
+            #     return True
+            # else:
+            #     return False
+
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 401:
+            logger.warning("Refresh token expired, re-login required")
+            return False
+        else:
+            logger.error(f"Token refresh error: {e}. Тело ошибки: {e.response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Token refresh failed: {e}")
+        return False
 
 
 @asynccontextmanager
@@ -112,24 +158,17 @@ async def lifespan(app: FastAPI):
     # Инициализация бота
     dp.include_router(router)
 
-    # Первоначальная аутентификация
-    if not await token_manager.login():
-        raise RuntimeError("Initial authentication failed")
-
     # Фоновые задачи
     polling_task = asyncio.create_task(dp.start_polling(bot))
-    refresh_task = asyncio.create_task(token_refresh_worker())
     logger.info("Bot started")
 
     yield
 
     # Очистка
     polling_task.cancel()
-    refresh_task.cancel()
 
     try:
         await polling_task
-        await refresh_task
     except asyncio.CancelledError:
         pass
 
@@ -137,32 +176,139 @@ async def lifespan(app: FastAPI):
     await bot.session.close()
 
 
-async def token_refresh_worker():
-    while True:
-        await asyncio.sleep(60)  # Проверка каждую минуту
-        await token_manager.ensure_valid_token()
-
 # Инициализация FastAPI
 app = FastAPI(lifespan=lifespan)
 
 
 # --- Обработчики Telegram ---
+class LoginState(StatesGroup):
+    waiting_for_username = State()
+    waiting_for_password = State()
+
+
+kb = [
+    [
+        KeyboardButton(text="Мой пользователь"),
+        KeyboardButton(text="Кассы за сегодня"),
+        KeyboardButton(text="Системные ошибки")
+    ],
+]
+
+keyboard_main = ReplyKeyboardMarkup(
+    keyboard=kb,
+    resize_keyboard=True,
+    input_field_placeholder="О чем вам рассказать?"
+)
+
 @router.message(Command('start'))
 async def handle_start(message: Message):
-    await message.answer("Привет! Я бот для мониторинга. Используй /mon_events")
+    await message.answer("👋 Привет! Я бот для мониторинга ERP системы. Чтобы со мной работать, тебе надо "
+                         "авторизоваться 🤌 (Команда /login)")
 
+@router.message(Command('stop'))
+async def handle_stop(message: Message):
+    t_user = await auth_check(message.from_user.id)
+    if t_user is not None:
+        async with lock:
+            await sync_to_async(t_user.delete)()
+            await message.answer("🤙 Вы успешно разлогинены. До новых встреч!")
+    else:
+        await message.answer("🤙 Вы не проходили авторизацию (/login)")
 
-@router.message(Command("mon_events"))
-async def handle_status(message: Message):
-    if not await token_manager.ensure_valid_token():
-        await message.answer("❌ Ошибка авторизации")
+@router.message(Command("login"))
+async def cmd_login(message: Message, state: FSMContext):
+    await message.answer("Введите ваш логин:")
+    await state.set_state(LoginState.waiting_for_username)
+
+@router.message(LoginState.waiting_for_username)
+async def process_username(message: Message, state: FSMContext):
+    await state.update_data(username=message.text)
+    await message.answer("Теперь введите пароль:")
+    await state.set_state(LoginState.waiting_for_password)
+
+@router.message(LoginState.waiting_for_password)
+async def process_password(message: Message, state: FSMContext):
+    user_data = await state.get_data()
+    username = user_data['username']
+    password = message.text
+
+    # Отправляем запрос к Django API
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                os.getenv("DJANGO_API_URL") + "token/",
+                data={"username": username, "password": password}
+            )
+            response.raise_for_status()
+
+            tokens = response.json()
+
+            # Сохраняем токены в базе
+            try:
+                user = await sync_to_async(User.objects.get)(username=username)
+            except ObjectDoesNotExist:
+                await message.answer(f"Пользователя {username} не существует!")
+
+            await sync_to_async(TelegramUser.objects.update_or_create)(
+                telegram_id=message.from_user.id,
+                defaults={
+                    'user': user,
+                    'access_token': tokens['access'],
+                    'refresh_token': tokens['refresh']
+                }
+            )
+
+            await message.answer("✅ Вы успешно авторизованы!", reply_markup=keyboard_main)
+
+        except httpx.HTTPStatusError as e:
+            await message.answer("❌ Неверный логин или пароль")
+        finally:
+            await state.clear()
+
+@router.message(F.text.lower() == "мой пользователь")
+async def my_user(message: Message):
+    log_user = await auth_check(message.from_user.id)
+    if log_user is not None:
+        log_user = log_user["user"]
+        await message.answer(f"🤌 Твой пользователь - {log_user["username"]} ({log_user["first_name"]} {log_user["last_name"]})",
+                             reply_markup=keyboard_main)
+    else:
+        await message.answer("🖐 Чтобы со мной работать, тебе надо авторизоваться 🤌 (Команда /login)")
+
+@router.message(F.text.lower() == "кассы за сегодня")
+async def cash_box(message: Message):
+    sls = await sync_to_async(
+        lambda: list(Sales.objects.filter(date=datetime.now()).values('store').annotate(store_sum=Sum('sum')))
+    )()
+    st = await sync_to_async(Store.objects.values)('id', 'name')
+    dic = {}
+    for i in sls:
+        dic[st.get(id=i['store'])['name']] = i['store_sum']
+    cashbx_all = sum(dic.values())
+
+    msg = "📊 Кассы точек за сегодня:\n\n"
+    for store, summ in dic.items():
+        msg += f"{store}: {summ} ₽\n"
+    msg += f"\nИтого за день: {cashbx_all}"
+    await message.answer(msg, reply_markup=keyboard_main)
+
+@router.message(F.text.lower() == "системные ошибки")
+async def sys_errors(message: Message):
+    log_user = await auth_check(message.from_user.id)
+
+    if log_user is None:
+        await message.answer("🖐 Чтобы со мной работать, тебе надо авторизоваться 🤌 (Команда /login)")
+        return
+
+    if not await ensure_valid_token(log_user):
+        await message.answer("🖐 Время авторизации истекло, авторизуйтесь еще раз 🤌 (Команда /login)")
         return
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
                 os.getenv("DJANGO_API_URL")+'mon/',
-                headers={"Authorization": f"Bearer {token_manager.access_token}"}
+                headers={"Authorization": f"Bearer {log_user["access_token"]}"}
             )
             response.raise_for_status()
             data = response.json()

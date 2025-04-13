@@ -24,6 +24,7 @@ aiogram = "^3.18.0"
 httpx = "^0.28.1"
 djangorestframework-simplejwt = "^5.5.0"
 django-extensions = "^3.2.3"
+pytz = "^2025.2"
 
 
 [build-system]

@@ -32,6 +32,15 @@ class Staff(models.Model):
         return f'{self.name} {self.f_name}'
 
 
+class TelegramUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name=u"Пользователь джанго")
+    telegram_id = models.BigIntegerField(unique=True, verbose_name=u"Telegram ID")
+    access_token = models.TextField(blank=True, verbose_name=u"Access Token")
+    refresh_token = models.TextField(blank=True, verbose_name=u"Refresh Token")
+    created_at = models.DateTimeField(auto_now_add=True, editable=False, verbose_name=u"Дата создания")
+    edited_at = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+
+
 class Store(models.Model):
     SLCT_STORE_STATUS = (
         ('Действующая', 'Действующая'),

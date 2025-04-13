@@ -166,13 +166,13 @@ def sal_calc(time_start, time_end):
                     sal_staff += param_gets('admin_min_payment')
                 elif day_date.weekday() in (5, 6):  # Выходные
                     if cashbx_sum < param_gets('admin_cashbx_perc_border_wknd'):  # 20000
-                        sal_staff += (800 + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
+                        sal_staff += (param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
                     else:
                         sal_staff += cashbx_sum * param_gets(
                             str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
                 else:
                     if cashbx_sum < param_gets('admin_cashbx_perc_border_budn'):  # 10000
-                        sal_staff += (800 + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
+                        sal_staff += (param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
                     else:
                         sal_staff += cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
 
