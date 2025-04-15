@@ -65,7 +65,7 @@ async def auth_check(tel_user_id):
 
             t_user = response.json()
             erp_user = t_user[0]
-            logger.info(f"ERP_USER - {erp_user}")
+            # logger.info(f"ERP_USER - {erp_user}")
 
             return erp_user
     except httpx.HTTPStatusError as e:
@@ -80,34 +80,14 @@ async def auth_check(tel_user_id):
         return None
 
 
-async def update_telegram_user(t_user, data) -> bool:
-    url = os.getenv("DJANGO_API_URL") + "tuser/" + str(t_user["id"]) + "/"
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.put(url, data=data)
-            response.raise_for_status()
-            logger.info(f"Дата для изменения - {data}")
-            logger.info(f"Пользак телеграма обновлен - {response.json()}")
-
-            return True
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 401:
-            logger.warning("Refresh token expired, re-login required")
-            return False
-        else:
-            logger.error(f"Telegram user update error: {e}. Тело ошибки: {e.response.text}")
-            return False
-    except Exception as e:
-        logger.error(f"Telegram user update FAILED: {e}")
-        return False
-
-
-async def ensure_valid_token(t_user) -> bool:
+async def ensure_valid_token(t_user):
     if datetime.fromisoformat(t_user["edited_at"]) > tz.localize(datetime.now())- timedelta(seconds=290):
-        return True
+        logger.info("Последний раз авторизовывались менее 5 минут назад.")
+        return t_user
 
     if datetime.fromisoformat(t_user["edited_at"]) < tz.localize(datetime.now()) - timedelta(days=1):
-        return False
+        logger.info("Последний раз авторизовывались больше чем 24 часа назад.")
+        return None
 
     try:
         async with httpx.AsyncClient() as client:
@@ -127,30 +107,21 @@ async def ensure_valid_token(t_user) -> bool:
 
             put_response = await client.put(url, data=data)
             put_response.raise_for_status()
-            logger.info(f"Дата для изменения - {data}")
-            logger.info(f"Пользак телеграма обновлен - {put_response.json()}")
 
-            # if await update_telegram_user(
-            #     t_user,
-            #     {
-            #         "access_token": tokens["access"],
-            #         "telegram_id": t_user["telegram_id"]
-            #     }
-            # ):
-            #     return True
-            # else:
-            #     return False
+            upd_t_user = await auth_check(t_user["telegram_id"])
+
+            return upd_t_user
 
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 401:
             logger.warning("Refresh token expired, re-login required")
-            return False
+            return None
         else:
             logger.error(f"Token refresh error: {e}. Тело ошибки: {e.response.text}")
-            return False
+            return None
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
-        return False
+        return None
 
 
 @asynccontextmanager
@@ -300,26 +271,27 @@ async def sys_errors(message: Message):
         await message.answer("🖐 Чтобы со мной работать, тебе надо авторизоваться 🤌 (Команда /login)")
         return
 
-    if not await ensure_valid_token(log_user):
-        await message.answer("🖐 Время авторизации истекло, авторизуйтесь еще раз 🤌 (Команда /login)")
-        return
+    checked_user = await ensure_valid_token(log_user)
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(
-                os.getenv("DJANGO_API_URL")+'mon/',
-                headers={"Authorization": f"Bearer {log_user["access_token"]}"}
-            )
-            response.raise_for_status()
-            data = response.json()
-            status_text = "\n".join([
-                                f"{item['date_updated']}\n{item['event_type']}: {item['event_message']}\n"
-                                f"Статус - {item['status']}, Решено - {item['solved']}"
-                                for item in data])
-            await message.answer(f"📊 События мониторинга:\n\n{status_text}")
-        except Exception as e:
-            logger.error(f"Django API error: {e}")
-            await message.answer("⚠️ Ошибка получения данных")
+    if checked_user is not None:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    os.getenv("DJANGO_API_URL")+'mon/',
+                    headers={"Authorization": f"Bearer {checked_user["access_token"]}"}
+                )
+                response.raise_for_status()
+                data = response.json()
+                status_text = "\n".join([
+                                    f"{item['date_updated']}\n{item['event_type']}: {item['event_message']}\n"
+                                    f"Статус - {item['status']}, Решено - {item['solved']}"
+                                    for item in data])
+                await message.answer(f"📊 События мониторинга:\n\n{status_text}")
+            except Exception as e:
+                logger.error(f"Django API error: {e}")
+                await message.answer("⚠️ Ошибка получения данных")
+    else:
+        await message.answer("🖐 Время авторизации истекло, авторизуйтесь еще раз 🤌 (Команда /login)")
 
 
 # --- Эндпоинт для триггеров из Django ---
