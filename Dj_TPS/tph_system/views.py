@@ -9,8 +9,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.views.generic import UpdateView, DeleteView, CreateView
 from django.core.paginator import Paginator
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
@@ -20,8 +20,8 @@ from .filters import *
 from .funcs import *
 
 # API
-from rest_framework import viewsets
-from .serializers import MonitoringSerializer, TelegramUserSerializer
+from rest_framework import viewsets, status
+from .serializers import MonitoringSerializer, TelegramUserSerializer, UserSerializer
 
 
 # Для календаря
@@ -39,8 +39,31 @@ class MonitoringViewSet(viewsets.ModelViewSet):
 class TelegramUserViewSet(viewsets.ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['telegram_id']
+    lookup_field = 'telegram_id'
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object_or_none()  # новый метод
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED if not instance else status.HTTP_200_OK
+        )
+
+    def get_object_or_none(self):
+        try:
+            return self.get_object()  # Пытаемся найти существующую запись
+        except Http404:
+            return None  # Если не найдено - создадим новую
+
+
+class SingleUserViewSet(viewsets.ViewSet):
+    def retrieve(self, request, username=None):
+        user = get_object_or_404(User, username=username)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
 
 class StaffUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):

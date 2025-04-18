@@ -40,6 +40,14 @@ class TelegramUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, verbose_name=u"Дата создания")
     edited_at = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
 
+    class Meta:
+        verbose_name = 'Пользователи телеграма'
+        verbose_name_plural = 'Пользователи телеграма'
+        ordering = ['user']
+
+    def __str__(self):
+        return self.name
+
 
 class Store(models.Model):
     SLCT_STORE_STATUS = (

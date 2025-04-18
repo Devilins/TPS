@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 
 from .middleware import *
-from .models import ImplEvents
+from .models import ImplEvents, TelegramUser
 
 
 @receiver(pre_save)
@@ -23,7 +23,7 @@ def log_deletion(sender, instance, **kwargs):
     Сигнал, который создает запись в ImplEvents перед удалением объекта
     """
     # Пропускаем логирование удаления самих логов
-    if sender == ImplEvents or sender == Session:
+    if sender == ImplEvents or sender == Session or sender == TelegramUser:
         return
 
     try:

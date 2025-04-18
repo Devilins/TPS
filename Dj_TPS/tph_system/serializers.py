@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 from django.contrib.auth.models import User
 from tph_system.models import ImplEvents, Sales, TelegramUser
@@ -20,11 +20,17 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name']
+        read_only_fields = ['username', 'first_name', 'last_name']
 
 
 class TelegramUserSerializer(ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = PrimaryKeyRelatedField(queryset=User.objects.all(), required=True)
 
     class Meta:
         model = TelegramUser
         fields = '__all__'
+
+    def to_representation(self, instance):
+        """Для вывода полных данных пользователя"""
+        self.fields['user'] = UserSerializer()
+        return super().to_representation(instance)

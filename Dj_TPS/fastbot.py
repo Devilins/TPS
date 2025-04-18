@@ -21,7 +21,7 @@ from contextlib import asynccontextmanager
 import asyncio
 from aiogram import Bot, Dispatcher, Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.fsm.storage.memory import MemoryStorage
 from fastapi import FastAPI, HTTPException, Depends, status
 import httpx
@@ -37,7 +37,7 @@ load_dotenv()
 # asyncio Lock (чтобы несколько корутин не изменяли данные одновременно)
 lock = asyncio.Lock()
 
-#Подтягиваем timezone из settings
+# Подтягиваем timezone из settings
 tz = pytz.timezone(settings.TIME_ZONE)
 
 # Настройка логирования
@@ -55,19 +55,17 @@ security = HTTPBearer()
 
 
 async def auth_check(tel_user_id):
-    url = f"{os.getenv('DJANGO_API_URL')}tuser/"
-    params = {"telegram_id": str(tel_user_id)}
+    url = f"{os.getenv('DJANGO_API_URL')}tuser/{str(tel_user_id)}/"
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params)
+            response = await client.get(url)
             response.raise_for_status()
 
             t_user = response.json()
-            erp_user = t_user[0]
             # logger.info(f"ERP_USER - {erp_user}")
 
-            return erp_user
+            return t_user
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 401:
             logger.warning("You are not auth to get tuser")
@@ -99,7 +97,7 @@ async def ensure_valid_token(t_user):
 
             tokens = response.json()
 
-            url = os.getenv("DJANGO_API_URL") + "tuser/" + str(t_user["id"]) + "/"
+            url = f"{os.getenv('DJANGO_API_URL')}tuser/{str(t_user["telegram_id"])}/"
             data = {
                     "access_token": tokens["access"],
                     "telegram_id": t_user["telegram_id"]
@@ -171,31 +169,42 @@ keyboard_main = ReplyKeyboardMarkup(
     input_field_placeholder="О чем вам рассказать?"
 )
 
+
 @router.message(Command('start'))
 async def handle_start(message: Message):
     await message.answer("👋 Привет! Я бот для мониторинга ERP системы. Чтобы со мной работать, тебе надо "
                          "авторизоваться 🤌 (Команда /login)")
 
+
 @router.message(Command('stop'))
 async def handle_stop(message: Message):
     t_user = await auth_check(message.from_user.id)
     if t_user is not None:
-        async with lock:
-            await sync_to_async(t_user.delete)()
-            await message.answer("🤙 Вы успешно разлогинены. До новых встреч!")
+        async with httpx.AsyncClient() as client:
+            url = f"{os.getenv('DJANGO_API_URL')}tuser/{str(message.from_user.id)}/"
+            try:
+                response = await client.delete(url)
+                response.raise_for_status()
+
+                await message.answer("🤙 Вы успешно разлогинены. До новых встреч!", reply_markup=ReplyKeyboardRemove())
+            except Exception as e:
+                logger.error(f"Delete telegram user failed: {e}")
     else:
         await message.answer("🤙 Вы не проходили авторизацию (/login)")
+
 
 @router.message(Command("login"))
 async def cmd_login(message: Message, state: FSMContext):
     await message.answer("Введите ваш логин:")
     await state.set_state(LoginState.waiting_for_username)
 
+
 @router.message(LoginState.waiting_for_username)
 async def process_username(message: Message, state: FSMContext):
     await state.update_data(username=message.text)
     await message.answer("Теперь введите пароль:")
     await state.set_state(LoginState.waiting_for_password)
+
 
 @router.message(LoginState.waiting_for_password)
 async def process_password(message: Message, state: FSMContext):
@@ -214,20 +223,27 @@ async def process_password(message: Message, state: FSMContext):
 
             tokens = response.json()
 
-            # Сохраняем токены в базе
-            try:
-                user = await sync_to_async(User.objects.get)(username=username)
-            except ObjectDoesNotExist:
-                await message.answer(f"Пользователя {username} не существует!")
+            # Получаем пользователя джанго
+            dj_response = await client.get(
+                os.getenv("DJANGO_API_URL") + "get_user/" + str(username) + "/"
+            )
+            dj_response.raise_for_status()
 
-            await sync_to_async(TelegramUser.objects.update_or_create)(
-                telegram_id=message.from_user.id,
-                defaults={
-                    'user': user,
+            user = dj_response.json()
+
+            if user.get('username') is not None:
+                url = f"{os.getenv('DJANGO_API_URL')}tuser/{str(message.from_user.id)}/"
+                data = {
+                    'user': user['id'],
+                    'telegram_id': message.from_user.id,
                     'access_token': tokens['access'],
                     'refresh_token': tokens['refresh']
                 }
-            )
+                # Обновление TelegramUser - актуальный токен
+                tus_response = await client.put(url, data=data)
+                tus_response.raise_for_status()
+            else:
+                await message.answer(f"Пользователя {username} не существует!")
 
             await message.answer("✅ Вы успешно авторизованы!", reply_markup=keyboard_main)
 
@@ -235,6 +251,7 @@ async def process_password(message: Message, state: FSMContext):
             await message.answer("❌ Неверный логин или пароль")
         finally:
             await state.clear()
+
 
 @router.message(F.text.lower() == "мой пользователь")
 async def my_user(message: Message):
@@ -245,6 +262,7 @@ async def my_user(message: Message):
                              reply_markup=keyboard_main)
     else:
         await message.answer("🖐 Чтобы со мной работать, тебе надо авторизоваться 🤌 (Команда /login)")
+
 
 @router.message(F.text.lower() == "кассы за сегодня")
 async def cash_box(message: Message):
@@ -262,6 +280,7 @@ async def cash_box(message: Message):
         msg += f"{store}: {summ} ₽\n"
     msg += f"\nИтого за день: {cashbx_all}"
     await message.answer(msg, reply_markup=keyboard_main)
+
 
 @router.message(F.text.lower() == "системные ошибки")
 async def sys_errors(message: Message):
@@ -286,7 +305,7 @@ async def sys_errors(message: Message):
                                     f"{item['date_updated']}\n{item['event_type']}: {item['event_message']}\n"
                                     f"Статус - {item['status']}, Решено - {item['solved']}"
                                     for item in data])
-                await message.answer(f"📊 События мониторинга:\n\n{status_text}")
+                await message.answer(f"📊 События мониторинга:\n\n{status_text}", reply_markup=keyboard_main)
             except Exception as e:
                 logger.error(f"Django API error: {e}")
                 await message.answer("⚠️ Ошибка получения данных")
