@@ -236,6 +236,23 @@ def sal_weekly_update(time_start, time_end):
     for start_week in start_week_generator(time_start, time_end):
         # Вычисляем конец недели (воскресенье)
         end_week = start_week + timedelta(days=6)
+
+        # Проверка на правильное заполнение CashWithdrawn всеми сотрудниками за нужный период +- 2 недели
+        per_withdrawn = CashWithdrawn.objects.filter(
+            date__in=date_generator(start_week - timedelta(days=14), end_week + timedelta(days=14)),
+            week_beg_rec=None
+        )
+        if per_withdrawn.exists():
+            error = ImplEvents.objects.create(
+                event_type='Week_Beg_Rec_Empty',
+                event_message=f"В Зарплатах Наличными сотрудники не указали неделю, за которую забрали ЗП. "
+                              f"Влияет на начисление зарплаты. Кол-во неправильных записей - {per_withdrawn.count()}. "
+                              f"Список записей - {per_withdrawn}",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+            print(f"ImplEvents - новая запись {error}")
+
         salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
         if salary_week.exists():
             # Группируем по сотрудникам и суммируем зп
@@ -247,7 +264,8 @@ def sal_weekly_update(time_start, time_end):
                 cashbx = dic.get('cashbx_sum', 0)
                 withdrawn = CashWithdrawn.objects.filter(
                     staff=staff,
-                    date__in=date_generator(start_week + timedelta(days=7), end_week + timedelta(days=7))
+                    week_beg_rec=start_week
+                    # date__in=date_generator(start_week + timedelta(days=7), end_week + timedelta(days=7))
                 )
                 if withdrawn.exists():
                     withdrawn = withdrawn.aggregate(sum_cash=Sum('withdrawn'))['sum_cash']

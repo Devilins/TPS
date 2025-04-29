@@ -237,6 +237,7 @@ class CashWithdrawn(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")
     date = models.DateField(verbose_name=u"Дата")
     withdrawn = models.IntegerField(verbose_name=u"Сколько забрали наличными")
+    week_beg_rec = models.DateField(verbose_name=u"Дата начала недели за которую забрали зп", blank=True, null=True)
     comment = models.TextField(null=True, blank=True, verbose_name=u"Комментарий")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,

@@ -92,7 +92,7 @@ class CashWithdrawnFilter(django_filters.FilterSet):
 
     class Meta:
         model = CashWithdrawn
-        fields = ['store', 'staff', 'date', 'withdrawn']
+        fields = ['store', 'staff', 'date', 'withdrawn', 'week_beg_rec']
 
 
 class SettingsFilter(django_filters.FilterSet):

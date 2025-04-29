@@ -1412,6 +1412,10 @@ def salary_weekly(request):
 
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
+    sal_withdrawn_err = CashWithdrawn.objects.filter(
+        date__in=date_generator(datetime.today() - timedelta(days=21), datetime.today() + timedelta(days=1)),
+        week_beg_rec=None
+    ).count()
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1430,6 +1434,7 @@ def salary_weekly(request):
         'sw_filter': sw_filter,
         'err_events_count': err_events_count,
         'sys_errors_count': sys_errors_count,
+        'sal_withdrawn_err': sal_withdrawn_err,
         'page_obj': page_obj,
         'paginator': paginator,
         'sal_week_count': paginator.count,

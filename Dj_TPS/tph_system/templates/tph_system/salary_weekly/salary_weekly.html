@@ -26,6 +26,18 @@
             </a>
         {% endif %}
         </li>
+        <!-- Кол-во записей в зарплатах наличными, где не указана неделя за которую забрали ЗП -->
+        <li class="nav-item">
+        {% if sal_withdrawn_err == 0 %}
+            <a class="nav-link" href="{% url 'cash_withdrawn' %}">
+                <button type="button" class="btn btn-sm btn-outline-success">Ошибки в зарплате наличными ({{ sal_withdrawn_err }})</button>
+            </a>
+        {% else %}
+            <a class="nav-link" href="{% url 'cash_withdrawn' %}">
+                <button type="button" class="btn btn-sm btn-danger">Ошибки в зарплате наличными ({{ sal_withdrawn_err }})</button>
+            </a>
+        {% endif %}
+        </li>
         <!-- Сообщения о системных ошибках -->
         <li class="nav-item" >
         {% if sys_errors_count == 0 %}

@@ -401,13 +401,14 @@ class CashWithdrawnForm(ModelForm):
 
     class Meta:
         model = CashWithdrawn
-        fields = ['store', 'staff', 'date', 'withdrawn', 'comment']
+        fields = ['store', 'staff', 'date', 'withdrawn', 'week_beg_rec', 'comment']
 
         labels = {
             'store': 'Точка',
             'staff': 'Сотрудник',
             'date': 'Дата',
             'withdrawn': 'Забрали наличными',
+            'week_beg_rec': 'Первый день недели, за которую забрали ЗП',
             'comment': 'Комментарий'
         }
 
@@ -430,9 +431,13 @@ class CashWithdrawnForm(ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Сколько забрали наличными'
             }),
+            "week_beg_rec": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Первый день недели, за которую забрали ЗП!'
+            }),
             "comment": Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Комментарий (Укажите за какую неделю забрали зп)',
+                'placeholder': 'Комментарий',
                 'rows': '2'
             })
         }
@@ -442,6 +447,12 @@ class CashWithdrawnForm(ModelForm):
         if withdrawn <= 0:
             raise ValidationError('Сумма должна быть положительной')
         return withdrawn
+
+    def clean_week_beg_rec(self):
+        week_beg_rec = self.cleaned_data["week_beg_rec"]
+        if week_beg_rec is not None and week_beg_rec.weekday() != 0:
+            raise ValidationError('Укажите первый день недели, за которую забираете ЗП (понедельник)')
+        return week_beg_rec
 
     def clean(self):
         cleaned_data = super().clean()

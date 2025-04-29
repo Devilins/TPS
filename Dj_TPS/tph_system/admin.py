@@ -69,8 +69,8 @@ class SalaryAdmin(admin.ModelAdmin):
 @admin.register(CashWithdrawn)
 class CashWithdrawnAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_display = ('date', 'store', 'staff', 'withdrawn', 'date_upd', 'user_edited')
-    list_filter = ('store', 'staff')
+    list_display = ('date', 'store', 'staff', 'withdrawn', 'week_beg_rec', 'date_upd', 'user_edited')
+    list_filter = ('store', 'staff', 'week_beg_rec')
     list_per_page = 30
 
 
