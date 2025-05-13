@@ -265,7 +265,6 @@ def sal_weekly_update(time_start, time_end):
                 withdrawn = CashWithdrawn.objects.filter(
                     staff=staff,
                     week_beg_rec=start_week
-                    # date__in=date_generator(start_week + timedelta(days=7), end_week + timedelta(days=7))
                 )
                 if withdrawn.exists():
                     withdrawn = withdrawn.aggregate(sum_cash=Sum('withdrawn'))['sum_cash']
@@ -290,7 +289,15 @@ def sal_weekly_update(time_start, time_end):
                                   f"по сотруднику {staff} - salary_sum: {salary}, cash_box_week: {cashbx}, cash_withdrawn: {withdrawn}. В БД {action}",
                     status='Успешно'
                 )
-                # print(f"ImplEvents - новая запись {rec}")
+        else:
+            error = ImplEvents.objects.create(
+                event_type='Salary_Weekly_Update_Empty',
+                event_message=f"В зарплаты за неделю данные НЕ занесены, потому что за период {dt_format(start_week)} - {dt_format(end_week)} "
+                              f"нет записей с зарплатами по дням.",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+            print(f"ImplEvents - новая запись {error}")
 
 
 def fin_stats_calc(time_start, time_end):
@@ -320,7 +327,15 @@ def fin_stats_calc(time_start, time_end):
                               f"В БД {action}",
                 status='Успешно'
             )
-            # print(f"ImplEvents - новая запись {rec}")
+        else:
+            error = ImplEvents.objects.create(
+                event_type='FinStatsMonth_Update_Empty',
+                event_message=f"В финансовые отчеты по кампании данные НЕ занесены, потому что за период {dt_format(start_month)} - {dt_format(end_month)} "
+                              f"нет записей с зарплатами по дням и продажами.",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+            print(f"ImplEvents - новая запись {error}")
 
 
 def fin_stats_staff_calc(time_start, time_end):
@@ -354,7 +369,15 @@ def fin_stats_staff_calc(time_start, time_end):
                                   f"Сотрудник - {staff}. В БД {action}",
                     status='Успешно'
                 )
-                # print(f"ImplEvents - новая запись {rec}")
+        else:
+            error = ImplEvents.objects.create(
+                event_type='FinStatsStaff_Update_Empty',
+                event_message=f"В финансовые отчеты по сотрудникам данные НЕ занесены, потому что за период {dt_format(start_month)} - {dt_format(end_month)} "
+                              f"нет записей с зарплатами по дням.",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+            print(f"ImplEvents - новая запись {error}")
 
 
 def qr_generate_tech():
@@ -394,7 +417,7 @@ def qr_generate_tech():
 
         # Вычисляем размеры текста
         draw = ImageDraw.Draw(img)
-        text_width = max(draw.textlength(line, font=font) for line in text.split("\n"))
+        text_width = max(draw.textlength(line, font=font) for line in text.split("\n")) + 20
         text_height = sum(font.getbbox(line)[3] - font.getbbox(line)[1] for line in text.split("\n"))
 
         # Отступы

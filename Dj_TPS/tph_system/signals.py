@@ -1,12 +1,14 @@
 import json
+from datetime import timedelta
 
 from django.contrib.sessions.models import Session
-from django.db.models.signals import pre_save, pre_delete
+from django.db.models.signals import pre_save, pre_delete, post_save
 from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 
 from .middleware import *
-from .models import ImplEvents, TelegramUser
+from .models import ImplEvents, TelegramUser, CashWithdrawn
+from .funcs import sal_weekly_update
 
 
 @receiver(pre_save)
@@ -15,6 +17,14 @@ def set_user_edited(sender, instance, **kwargs):
         current_user = get_current_user()
         if current_user and current_user.is_authenticated:
             instance.user_edited = current_user
+
+
+@receiver(post_save)
+def run_cw_sal_sync(sender, instance, **kwargs):
+    if sender == CashWithdrawn and hasattr(sender, 'week_beg_rec'):
+        if instance.week_beg_rec is not None:
+            end_week = instance.week_beg_rec + timedelta(days=6)
+            sal_weekly_update(instance.week_beg_rec, end_week)
 
 
 @receiver(pre_delete)
