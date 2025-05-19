@@ -347,6 +347,10 @@ class SalesForm(ModelForm):
         store = cleaned_data.get("store")
         photo_count = cleaned_data.get("photo_count")
         sale_type = cleaned_data.get("sale_type")
+        payment_type = cleaned_data.get("payment_type")
+
+        if payment_type == 'Предоплаченный заказ' and photo_count > 8:
+            raise ValidationError(f'Для заказного фотосета нужно указывать кол-во часов, а не кол-во фото. Вряд-ли вы снимали заказ {photo_count} часов.')
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
