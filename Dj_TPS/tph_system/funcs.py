@@ -205,7 +205,7 @@ def sal_calc(time_start, time_end):
             if sch.position == 'Администратор':
                 # Заказы, где сотрудник является только админом. Работает только для роли администратор
                 sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
-                                                               sale_type='Заказной фотосет'
+                                                               sale_type__in=['Заказной фотосет', 'Заказ выездной']
                                                                ).exclude(photographer=sch.staff)
                 if sales_zak_admin_service.exists():
                     # Кол-во заказов. Для начисления админу за сопровождения заказа.
