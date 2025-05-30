@@ -103,7 +103,7 @@
                                 <div class="col">
                                     <i>{{ s.grouper }}</i>
                                 </div>
-                                <div class="col-5">
+                                <div class="col-6">
                                     {% for stf in s.list %}
                                         {{ stf.staff }} <br>
                                     {% endfor %}
@@ -158,6 +158,95 @@
         </div>
     </div>
 
+    <div class="row align-items-start gy-3" style="margin-top: 4px;">
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6" >
+            <div class="card shadow" id="withdrawn_card">
+                <div class="card-header">
+                    <h4 class="card-title">Забрали зарплату наличными {{ now_date|date:"d.m.Y" }}: </h4>
+                </div>
+
+                <!-- Карточка с информацией о том, кто забрал зарплату наличными -->
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% regroup wdr by store as wdr_list %}
+                        {% for s in wdr_list %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <i>{{ s.grouper }}</i>
+                                </div>
+                                <div class="col-7">
+                                    {% for stf in s.list %}
+                                    <div class="row justify-content-md-center">
+                                        <div class="col">
+                                            {{ stf.staff }}
+                                        </div>
+                                        <div class="col-4">
+                                            {{ stf.withdrawn }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow" id="zak_card">
+                <div class="card-header">
+                    <h4 class="card-title">Количество заказов {{ now_date|date:"d.m.Y" }}: </h4>
+                </div>
+
+                <!-- Карточка с количеством заказов за день -->
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for store, zak in zak_cnt.items %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <i>{{ store }}</i>
+                                </div>
+                                <div class="col-6">
+                                    {% for item in zak %}
+                                    <div class="row justify-content-md-center">
+                                        <div class="col">
+                                            {{ item.sale_type }}
+                                        </div>
+                                        <div class="col-2">
+                                            {{ item.zak_count }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% if zak_all != 0 %}
+                        <li class="list-group-item">
+                            <div class="row justify-content-md-center">
+                                <div class="col">
+                                    <b>Заказов за день</b>
+                                </div>
+                                <div class="col-1">
+                                    <b>{{ zak_all }}</b>
+                                </div>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+
+        </div>
+    </div>
+
     <div class="card shadow col-xxl-8 col-xl-10" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
         <div class="card-header">
             <h4 class="card-title">Изменение фототехники на точках за {{ now_date|date:"d.m.Y" }}: </h4>
@@ -175,7 +264,7 @@
         </div>
     </div>
 
-    <div class="card shadow col-xxl-8 col-xl-10" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
+    <div class="card shadow col-xxl-6 col-xl-8 col-lg-10" id="main_view_card2" style="margin-top: 20px; margin-bottom: 20px;">
         <div class="card-header">
             <h4 class="card-title">Заканчивающиеся расходники: </h4>
         </div>

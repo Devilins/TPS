@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
@@ -1223,10 +1224,11 @@ def main_page(request):
     if date_filter.form.is_valid():
         selected_date = date_filter.form.cleaned_data.get('selected_date')
 
-    sch = Schedule.objects.filter(date=selected_date).select_related('staff', 'store').order_by('store')
+    sch = Schedule.objects.filter(date=selected_date).select_related('staff', 'store').order_by('store', 'staff')
     sys_errors_count = ImplEvents.objects.filter(status='Системная ошибка', solved='Нет').count()
     err_events_count = ImplEvents.objects.filter(status='Бизнес ошибка', solved='Нет').count()
     tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=selected_date)
+    wdr = CashWithdrawn.objects.filter(date=selected_date).select_related('staff', 'store').order_by('store', 'staff')
 
     # Заканчивающиеся расходники
     con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).select_related('store')
@@ -1241,13 +1243,32 @@ def main_page(request):
         'store'))
     con_store = con_store.order_by('store')
 
-    sls = list(Sales.objects.filter(date=selected_date).values('store').annotate(store_sum=Sum('sum')))
+    # Кассы за день
+    sls = list(Sales.objects.filter(date=selected_date).values('store').annotate(store_sum=Sum('sum')).order_by('store'))
     st = Store.objects.values('id', 'name')
     dic = {}
     for i in sls:
         dic[st.get(id=i['store'])['name']] = i['store_sum']
 
     cashbx_all = sum(dic.values())
+
+    # Кол-во заказов за день
+    zak = list(Sales.objects.filter(date=selected_date,
+                                    sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                    ).values('store', 'sale_type').annotate(zak_count=Count('sale_type')).order_by('store'))
+    zak_cnt = defaultdict(list)
+    for i in zak:
+        sale_info = {
+            'sale_type': i['sale_type'],
+            'zak_count': i['zak_count']
+        }
+        zak_cnt[st.get(id=i['store'])['name']].append(sale_info)
+    zak_cnt = dict(zak_cnt)
+
+    zak_all = 0
+    for s in zak_cnt.values():
+        for k in s:
+            zak_all += int(k['zak_count'])
 
     tips = RefsAndTips.objects.all()
     ll_tips = tips.filter(title='Лазерлэнд')
@@ -1278,7 +1299,10 @@ def main_page(request):
         'sys_errors_count': sys_errors_count,
         'err_events_count': err_events_count,
         'tech_upd_info': tech_upd_info,
-        'date_filter': date_filter
+        'date_filter': date_filter,
+        'wdr': wdr,
+        'zak_cnt': zak_cnt,
+        'zak_all': zak_all
     })
 
 
