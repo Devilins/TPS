@@ -179,3 +179,27 @@ class MainPageFilter(django_filters.FilterSet):
     class Meta:
         model = Schedule
         fields = []
+
+
+class ReportsFilter(django_filters.FilterSet):
+    selected_date = django_filters.DateFilter(
+        label="Дата",
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control'
+        }),
+        initial=datetime.today()
+    )
+    selected_store = django_filters.ModelChoiceFilter(
+        label="Точка",
+        widget=Select(attrs={
+            'class': 'form-select',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        }),
+        initial=Store.objects.filter(store_status="Действующая").first(),
+        queryset=Store.objects.filter(store_status="Действующая")
+    )
+
+    class Meta:
+        model = Schedule
+        fields = ['store']

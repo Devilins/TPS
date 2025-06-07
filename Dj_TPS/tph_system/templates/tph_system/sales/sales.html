@@ -4,22 +4,47 @@
 {% block func_buttons %}
 <!-- Кнопка модального окна для ввода продажи -->
 {% if perms.tph_system.add_sales %}
-    <li class="nav-item">
     {% if flag == 1 %}
+    <li class="nav-item">
         <a class="nav-link" href="{% url 'position_select' %}">
             <button type="button" class="btn btn-sm btn-warning">Выбрать роли на сегодня</button>
         </a>
-    {% else %}
-        <a class="nav-link" href="{% url 'position_select' %}">
-            <button type="button" class="btn btn-sm btn-outline-warning">Выбрать роли на сегодня</button>
-        </a>
-    {% endif %}
     </li>
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'position_select' %}">
+            <button type="button" class="btn btn-sm btn-outline-success">Выбрать роли на сегодня</button>
+        </a>
+    </li>
+    {% endif %}
+
+    {% if flag_cash == 1 %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'cash_add' %}">
+            <button type="button" class="btn btn-sm btn-danger">Наличные с утра</button>
+        </a>
+    </li>
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'cash_add' %}">
+            <button type="button" class="btn btn-sm btn-outline-success">Наличные с утра <b>{{ cash_on_store.0.cash_mrn }}</b></button>
+        </a>
+    </li>
+    {% endif %}
+    {% if flag == 1 or flag_cash == 1 %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" disabled>Добавить Продажу</button>
+            <p class="text-danger">Кнопка не доступна - внесите наличные с утра и роли на сегодня</p>
+        </a>
+    </li>
+    {% else %}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'sales_create' %}?{{ current_filter_params }}">
             <button type="button" class="btn btn-sm btn-outline-primary">Добавить Продажу</button>
         </a>
     </li>
+    {% endif %}
 {% endif %}
 {% endblock func_buttons %}
 

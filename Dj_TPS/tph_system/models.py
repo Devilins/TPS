@@ -385,6 +385,30 @@ class FinStatsStaff(models.Model):
         return f'{self.date} - {self.staff}'
 
 
+class CashStore(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.PROTECT, verbose_name=u"Точка")
+    date = models.DateField(verbose_name=u"Дата")
+    cash_mrn = models.IntegerField(default=0, verbose_name=u"Наличные в начале дня")
+    cash_evn = models.IntegerField(default=0, verbose_name=u"Наличные в конце дня")
+    date_created = models.DateTimeField(auto_now_add=True, editable=False, blank=True, verbose_name=u"Дата создания")
+    date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено")
+
+    class Meta:
+        verbose_name = 'Наличные на точке'
+        verbose_name_plural = 'Наличные на точке'
+        ordering = ['-date', 'store']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['store', 'date'],
+                name='unique_store_daily'
+            )
+        ]
+
+    def __str__(self):
+        return f'Нал {self.date} - {self.store}'
+
 # --------------------------------------Календарь отпусков не используемый--------------------------------
 # class CalendarEvent(models.Model):
 #     EVENT_TYPES = [

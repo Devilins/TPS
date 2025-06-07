@@ -2,8 +2,10 @@ from datetime import datetime
 import math
 import re
 
-from django.core.exceptions import ValidationError
-from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory, CheckboxInput
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.db.models import Sum
+from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, Textarea, Form, modelformset_factory, \
+    CheckboxInput
 from django import forms
 
 from .models import *
@@ -350,7 +352,8 @@ class SalesForm(ModelForm):
         payment_type = cleaned_data.get("payment_type")
 
         if payment_type == 'Предоплаченный заказ' and photo_count > 8:
-            raise ValidationError(f'Для заказного фотосета нужно указывать кол-во часов, а не кол-во фото. Вряд-ли вы снимали заказ {photo_count} часов.')
+            raise ValidationError(
+                f'Для заказного фотосета нужно указывать кол-во часов, а не кол-во фото. Вряд-ли вы снимали заказ {photo_count} часов.')
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
@@ -362,7 +365,8 @@ class SalesForm(ModelForm):
             if sale_type in ('Вин. магн.', 'Ср. магн.', 'Бол. магн.'):
                 cons = ConsumablesStore.objects.get(cons_short=sale_type, store=store)
                 if photo_count > cons.count:
-                    raise ValidationError(f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {cons.consumable}")
+                    raise ValidationError(
+                        f"Расходников не хватит, чтобы продать {photo_count} фотографий. На точке {cons.count} расходников для {cons.consumable}")
         except ConsumablesStore.DoesNotExist:
             pass
 
@@ -448,8 +452,25 @@ class CashWithdrawnForm(ModelForm):
 
     def clean_withdrawn(self):
         withdrawn = self.cleaned_data["withdrawn"]
+        store = self.cleaned_data["store"]
+        date = self.cleaned_data["date"]
+
         if withdrawn <= 0:
             raise ValidationError('Сумма должна быть положительной')
+
+        # Чтобы сравнивать всегда общую сумму нала (которая на точке и которую взяли как зп)
+        withdrawns_on_store = CashWithdrawn.objects.filter(date=date, store=store).aggregate(wdr_sum=Sum('withdrawn'))['wdr_sum']
+        if withdrawns_on_store is None:
+            withdrawns_on_store = 0
+
+        try:
+            cash_on_store = CashStore.objects.get(date=date, store=store).cash_evn + withdrawns_on_store
+        except ObjectDoesNotExist:
+            cash_on_store = 0
+
+        if withdrawn > cash_on_store:
+            raise ValidationError(f'Нельзя забрать наличных больше, чем есть на точке ({cash_on_store})')
+
         return withdrawn
 
     def clean_week_beg_rec(self):
@@ -589,6 +610,51 @@ PositionSelectFormSet = modelformset_factory(
 )
 
 
+class CashStoreForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
+        self.fields['store'].empty_label = "Выберите точку"
+
+    class Meta:
+        model = CashStore
+        fields = ['store', 'date', 'cash_mrn']
+
+        labels = {
+            'store': 'Точка',
+            'date': 'Дата',
+            'cash_mrn': 'Наличные в начале дня'
+        }
+
+        widgets = {
+            "store": Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Точка',
+                'label': 'Точка'
+            }),
+            "date": FengyuanChenDatePickerInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Дата'
+            }),
+            "cash_mrn": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Наличные в начале дня'
+            })
+        }
+
+    def clean_cash_mrn(self):
+        cash = self.cleaned_data['cash_mrn']
+        if cash < 0:
+            raise ValidationError('Сумма наличных не может быть отрицательной!')
+        return cash
+
+    def clean_date(self):
+        date = self.cleaned_data["date"]
+        if date > datetime.today().date():
+            raise ValidationError('Дата не может быть в будущем')
+        return date
+
+
 class TimeSelectForm(Form):
     beg_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
         'class': 'form-control',
@@ -638,13 +704,13 @@ class TimeAndTypeSelectForm(Form):
         'role': 'switch',
         'placeholder': 'Считаем зарплату по дням'
     }),
-        label='Считаем зарплату по дням')
+                                       label='Считаем зарплату по дням')
     sal_weekly_flag = forms.BooleanField(required=False, widget=CheckboxInput(attrs={
         'class': 'form-check-input',
         'role': 'switch',
         'placeholder': 'Заполняем зарплаты понедельно на основе дневных зарплат'
     }),
-        label='Заполняем зарплаты понедельно на основе дневных зарплат')
+                                         label='Заполняем зарплаты понедельно на основе дневных зарплат')
 
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]
@@ -722,7 +788,6 @@ class SalaryWeeklyForm(ModelForm):
 
 
 class ImplEventsForm(ModelForm):
-
     class Meta:
         model = ImplEvents
         fields = ['event_type', 'event_message', 'status', 'solved']

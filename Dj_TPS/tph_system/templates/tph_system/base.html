@@ -262,6 +262,10 @@
           <li class="nav-item"><a{% if request.path|startswith:'/tech/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'tech' %}">
               <img src="{% static 'tph_system/images/i_tech.png' %}"> Фототехника </a></li>
           {% endif %}
+          {% if perms.tph_system.reports_view %}
+          <li class="nav-item"><a{% if request.path|startswith:'/reports/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'reports' %}">
+              <img src="{% static 'tph_system/images/i_reports.png' %}"> Сверка отчетов </a></li>
+          {% endif %}
           {% if perms.tph_system.view_settings %}
           <li class="nav-item"><a{% if request.path|startswith:'/settings/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'settings' %}">
               <img src="{% static 'tph_system/images/i_settings.png' %}"> Настройки </a></li>

@@ -142,6 +142,13 @@ class FinStatsStaffAdmin(admin.ModelAdmin):
     list_per_page = 30
 
 
+@admin.register(CashStore)
+class CashStoreAdmin(admin.ModelAdmin):
+    list_display = ['date', 'store', 'cash_mrn', 'cash_evn', 'date_created', 'date_upd', 'user_edited']
+    readonly_fields = ('date_created', 'date_upd', 'user_edited')
+    list_filter = ['store', 'date']
+    list_per_page = 30
+
 # @admin.register(CalendarEvent)
 # class CalendarEventAdmin(admin.ModelAdmin):
 #     list_display = ('title', 'event_type', 'start_date', 'end_date', 'employee')

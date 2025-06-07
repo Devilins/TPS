@@ -1,0 +1,33 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container sale_add_cont">
+    <div class="card shadow col-auto" id="sale_add_form">
+        <div class="card-header">
+            <h4 class="card-title">{{ card_title }}</h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма добавления продажи -->
+            <div class="container-fluid text-center">
+                <form method="post" class="form-control">
+                    {% csrf_token %}
+                    <div class="error_style" style="margin-bottom: 10px;">
+                        {% for error in form.non_field_errors %}
+                            <i>{{error}}</i>
+                        {% endfor %}
+                    </div>
+                    {% for f in form %}
+                    <p style="text-align: left;"><label class="form-label" for="{{ f.id_for_label }}"><b>{{ f.label }}:</b></label>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
+                    {% endfor %}
+                    <button class="btn btn-success" type="submit">Сохранить</button>
+                    <a class="btn btn-warning" href="{% url url_cancel %}?{{ current_filter_params }}" role="button">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

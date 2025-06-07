@@ -8,11 +8,19 @@
 
     <li class="nav-item">
         <a class="nav-link">
+            {% if flag_cash == 1 %}
+            <button type="button" class="btn btn-sm btn-outline-primary" disabled data-bs-toggle="modal" data-bs-target="#modal-tech-form">
+                Забрать наличные
+            </button>
+            <p class="text-danger">Кнопка не доступна - внесите наличные с утра в продажах</p>
+            {% else %}
             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
                 Забрать наличные
             </button>
+            {% endif %}
         </a>
     </li>
+
 {% endif %}
 {% endblock func_buttons %}
 
@@ -109,6 +117,9 @@
                             <div class="form-error">{{ form.store.errors }}</div>
                             {{ form.staff }}<br>
                             {{ form.date }}<br>
+                            {% if cash_on_store.0.cash_evn != None %}
+                                <p class="text-primary">На точке сейчас <b>{{ cash_on_store.0.cash_evn }}</b> наличных</p>
+                            {% endif %}
                             {{ form.withdrawn }}<br>
                             <div class="form-error">{{ form.withdrawn.errors }}</div>
                             {{ form.week_beg_rec }}<br>

@@ -1,0 +1,336 @@
+{% extends 'tph_system/base.html' %}
+{% load static %}
+{% load tags_extras %}
+
+{% block func_buttons %}
+<li class="nav-item">
+    <a class="nav-link">
+        <div class="card text-dark border-success" style="max-width: 250px;">
+            <div class="card-header">
+                Параметры отчета:
+            </div>
+            <!-- Форма для выбора даты -->
+            <div class="card-body">
+                <form method="get" id="store-filter-form">
+                    Дата: <br>
+                    {{ date_filter.form.selected_date }}<br>
+                    Точка: <br>
+                    {{ date_filter.form.selected_store }}
+                </form>
+            </div>
+        </div>
+    </a>
+</li>
+{% endblock func_buttons %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <h4 class="text-center">Отчет по точке {{ selected_store }} за {{ selected_date }}</h4><br>
+    <div class="row align-items-start gy-3">
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow" id="store_card">
+                <div class="card-header">
+                    <h5 class="card-title">Сотрудники </h5>
+                </div>
+
+                <!-- Карточка с информацией о том, кто работает на точках -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Сотрудник</th>
+                                <th scope="col">Роль</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in staffs_data %}
+                            <tr>
+                                <td style="text-align: left;"><i>{{ s.staff }}</i></td>
+                                <td style="text-align: left;">{{ s.position }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6" >
+            <div class="card shadow" id="withdrawn_card">
+                <div class="card-header">
+                    <h5 class="card-title">Вычеты ЗП наличными</h5>
+                </div>
+
+                <!-- Карточка с информацией о том, кто забрал зарплату наличными -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Сотрудник</th>
+                                <th scope="col">Сумма</th>
+                                <th scope="col">Неделя учета</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in wdr %}
+                            <tr>
+                                <td style="text-align: left;"><i>{{ s.staff }}</i></td>
+                                <td>{{ s.withdrawn|floatformat }}</td>
+                                <td>{{ s.week_beg_rec|date:"d.m" }} - {{ s.week_beg_rec|add_days:6|date:"d.m" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row align-items-start gy-3 mt-2">
+
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="card-title">Техника на точке</h5>
+                </div>
+
+                <!-- Карточка с информацией о технике -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered">
+                        <caption> Количество техники: {{ tech_count }} </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Техника</th>
+                                <th scope="col">Кол-во</th>
+                                <th scope="col">Изменено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tech_data %}
+                            <tr>
+                                <td style="text-align: left;">
+                                    <i>{{ t.name }}</i>
+                                    {% if t.serial_num != '' %}
+                                        ({{ t.serial_num }})
+                                    {% endif %}
+                                </td>
+                                <td>{{ t.count }}</td>
+                                <td>{{ t.date_change|date:"d.m" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Изменение фототехники за день</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ti in tech_upd_info %}
+                            <tr>
+                                <td style="text-align: left;">{{ ti.event_message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="card-title">Расходники на точке</h5>
+                </div>
+
+                <!-- Карточка с информацией о расходниках -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered">
+                        <caption> Количество расходников: {{ cons_count }} </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Расходник</th>
+                                <th scope="col">Кол-во</th>
+                                <th scope="col">Изменено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for с in cons_data %}
+                            <tr>
+                                <td style="text-align: left;"><i>{{ с.consumable }}</i></td>
+                                <td>{{ с.count|floatformat }}</td>
+                                <td>{{ с.change_data|date:"d.m" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Изменение расходников за день</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for сi in cons_upd_info %}
+                            <tr>
+                                <td style="text-align: left;">{{ сi.event_message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="card-title">Касса</h5>
+                </div>
+
+                <!-- Карточка с информацией о кассе -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered">
+                        <thead>
+
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th style="text-align: left;">Общая касса</th>
+                                <th>{{ summary.cashbx_all|floatformat:"g" }}</th>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>Терминал (Карта)</i></td>
+                                <td>{{ summary.cashbx_card|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>Терминал (QR)</i></td>
+                                <td>{{ summary.cashbx_qr|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>Переводы</i></td>
+                                <td>{{ summary.cashbx_trans|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>Наличные</i></td>
+                                <td>{{ summary.cashbx_cash|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>Заказы</i></td>
+                                <td>{{ summary.cashbx_orders|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>- Наличные в начале дня</i></td>
+                                <td>{{ cash_s.0.cash_mrn|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;"><i>- Наличные в конце дня</i></td>
+                                <td>{{ cash_s.0.cash_evn|floatformat:"g" }}</td>
+                            </tr>
+                            <tr>
+                            {% if td_color == -1 %}
+                                <td class="table-secondary" colspan="2" style="text-align: left;"><b>Сверка наличных</b> {{ check_cash }}</td>
+                            {% elif td_color == 1 %}
+                                <td class="table-success" colspan="2" style="text-align: left;"><b>Сверка наличных</b> {{ check_cash }}</td>
+                            {% elif td_color == 2 %}
+                                <td class="table-warning" colspan="2" style="text-align: left;"><b>Сверка наличных</b> {{ check_cash }}</td>
+                            {% elif td_color == 0 %}
+                                <td class="table-danger" colspan="2" style="text-align: left;"><b>Сверка наличных</b> {{ check_cash }}</td>
+                            {% endif %}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Количество заказов</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for сi in zak_count %}
+                            <tr>
+                                <td style="text-align: left;"><i>{{ сi.sale_type }}</i> - {{ сi.zak_cnt }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row align-items-start gy-3 mt-2">
+
+        <div class="col-auto">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="card-title">Продажи за день</h5>
+                </div>
+
+                <!-- Карточка с информацией о продажах за день -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered align-middle mb-0">
+                        <caption>Количество продаж: {{ sales_count }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Администратор</th>
+                                <th scope="col">Фотограф</th>
+                                <th scope="col">Что продали</th>
+                                <th scope="col">Тип оплаты</th>
+                                <th scope="col">Сумма</th>
+                                <th scope="col">Количество фото/часов</th>
+<!--                                <th scope="col">Email клиента</th>-->
+<!--                                <th scope="col">Телефон</th>-->
+                                <th scope="col">Комментарий</th>
+                                <th scope="col">Создано</th>
+                                <th scope="col">Изменено</th>
+                                <th scope="col">Кем изменено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in sales_data %}
+                            <tr>
+                                <td>{{ sale.staff }}</td>
+                                <td>{{ sale.photographer }}</td>
+                                <td>{{ sale.sale_type }}</td>
+                                <td>{{ sale.payment_type }}</td>
+                                <td><u>{{ sale.sum|floatformat:"g" }}</u></td>
+                                <td>{{ sale.photo_count|floatformat:"-2g" }}</td>
+<!--                                <td>{{ sale.cl_email }}</td>-->
+<!--                                <td>{{ sale.cl_phone }}</td>-->
+                                <td>{{ sale.comment }}</td>
+                                <td>{{ sale.date_created }}</td>
+                                <td>{{ sale.date_upd }}</td>
+                                <td>{{ sale.user_edited.first_name }} {{ sale.user_edited.last_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка выбора даты
+    $('#id_selected_date').on('change', function() {
+        document.getElementById('store-filter-form').submit(); // Отправка формы
+    });
+    // Обработка выбора точки
+    $('#id_selected_store').on('change', function() {
+        document.getElementById('store-filter-form').submit(); // Отправка формы
+    });
+});
+</script>
+
+{% endblock %}

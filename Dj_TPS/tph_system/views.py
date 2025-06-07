@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 
+from django.db.models import F
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy, reverse
@@ -16,7 +17,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
-    FinStatsMonthForm, TimeAndTypeSelectForm
+    FinStatsMonthForm, TimeAndTypeSelectForm, CashStoreForm
 from .filters import *
 from .funcs import *
 
@@ -335,8 +336,9 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
     @atomic
     def form_valid(self, form):
-        # Фиксируем текущее количество фото
+        # Фиксируем текущее количество фото и суммы
         photo_c_old = self.get_object().photo_count
+        sum_old = self.get_object().sum
 
         # Сохраняем экземпляр продажи
         self.object = form.save()
@@ -345,6 +347,9 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         store = form.cleaned_data['store']
         sale_type = form.cleaned_data['sale_type']
         photo_count = form.cleaned_data['photo_count']
+        payment_type = form.cleaned_data['payment_type']
+        sum = form.cleaned_data['sum']
+        date_pay = form.cleaned_data['date']
 
         try:
             # Корректировка кол-ва магнитов consumable.count в зависимости от разницы photo_count - photo_c_old
@@ -379,6 +384,26 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                 solved='Нет'
             )
 
+        # Уменьшаем нал на конец дня из-за изменения продажи за наличку
+        if payment_type == 'Наличные':
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") + sum - sum_old)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate",
+                    event_message=f"Наличные на {store.name} за {date_pay} увеличены на {sum - sum_old} из-за "
+                                  f"изменения продажи за наличные (новая сумма продажи {sum})",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при изменении новой продажи "
+                                  f"за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
+
         return super().form_valid(form)
 
 
@@ -405,6 +430,9 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
         store = self.get_object().store
         sale_type = self.get_object().sale_type
         photo_count = self.get_object().photo_count
+        payment_type = self.get_object().payment_type
+        sum = self.get_object().sum
+        date_pay = self.get_object().date
 
         try:
             # Корректировка кол-ва магнитов при удалении продажи
@@ -430,6 +458,25 @@ class SalesDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
                 status='Системная ошибка',
                 solved='Нет'
             )
+
+        # Уменьшаем нал на конец дня из-за удаления продажи за наличку
+        if payment_type == 'Наличные':
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") - sum)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleDelete",
+                    event_message=f"Наличные на {store.name} за {date_pay} уменьшены на {sum} из-за удаления продажи за наличные",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleDelete_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при создании новой продажи "
+                                  f"за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
 
         success_url = self.get_success_url()
         self.object.delete()
@@ -499,6 +546,9 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         store = form.cleaned_data['store']
         sale_type = form.cleaned_data['sale_type']
         photo_count = form.cleaned_data['photo_count']
+        payment_type = form.cleaned_data['payment_type']
+        sum = form.cleaned_data['sum']
+        date_pay = form.cleaned_data['date']
 
         # Меняем расходники только для магнитов
         try:
@@ -525,6 +575,25 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
                 solved='Нет'
             )
 
+        # Увеличиваем нал на конец дня из-за продажи за наличку
+        if payment_type == 'Наличные':
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") + sum)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleCreate",
+                    event_message=f"Наличные на {store.name} за {date_pay} увеличены на {sum} из-за новой продажи за наличные",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleCreate_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при создании новой продажи "
+                                  f"за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
+
         return super().form_valid(form)
 
 
@@ -548,6 +617,41 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
         context['current_filter_params'] = self.request.GET.urlencode()
         return context
 
+    @atomic
+    def form_valid(self, form):
+        # Фиксируем текущее withdrawn
+        withdrawn_old = self.get_object().withdrawn
+
+        # Сохраняем экземпляр продажи
+        self.object = form.save()
+
+        # Данные из формы
+        withdrawn = form.cleaned_data["withdrawn"]
+        store = form.cleaned_data["store"]
+        date = form.cleaned_data["date"]
+        staff = form.cleaned_data["staff"]
+
+        # Изменяем кол-во нала на точке в этот день
+        num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") + withdrawn_old - withdrawn)
+        if num_chars == 1:
+            # Логируем изменение наличных
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnUpdate",
+                event_message=f"Наличные на {store.name} за {date} изменены на {withdrawn_old - withdrawn} из-за "
+                              f"изменения записи о выдаче ЗП сотруднику {staff} за наличные ",
+                status='Успешно'
+            )
+        else:
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnUpdate_Failed",
+                event_message=f"Ошибка при изменении наличных на {store.name} за {date} при изменении записи о "
+                              f"выдаче ЗП сотруднику {staff} за наличные. Отсутствует запись о наличных за начало дня!",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+
+        return super().form_valid(form)
+
 
 class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = CashWithdrawn
@@ -566,6 +670,37 @@ class CashWithdrawnDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delet
         context['url_cancel'] = 'c_w_update'
         context['current_filter_params'] = self.request.GET.urlencode()
         return context
+
+    @atomic
+    def form_valid(self, form):
+        # Данные из объекта формы
+        store = self.get_object().store
+        date = self.get_object().date
+        withdrawn = self.get_object().withdrawn
+        staff = self.get_object().staff
+
+        # Увеличиваем кол-во нала на точке в этот день
+        num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") + withdrawn)
+        if num_chars == 1:
+            # Логируем изменение наличных
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnDelete",
+                event_message=f"Наличные на {store.name} за {date} увеличены на {withdrawn} из-за "
+                              f"удалении записи о выдаче ЗП сотруднику {staff} за наличные ",
+                status='Успешно'
+            )
+        else:
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnDelete_Failed",
+                event_message=f"Ошибка при изменении наличных на {store.name} за {date} при изменении записи о "
+                              f"выдаче ЗП сотруднику {staff} за наличные. Отсутствует запись о наличных за начало дня!",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
+
+        success_url = self.get_success_url()
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
 
 
 class RefsAndTipsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -898,6 +1033,10 @@ def cons_store(request):
     except ObjectDoesNotExist:
         store_staff_working_obj = None
 
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET and store_staff_working_obj is not None:
+        return redirect(('{}?store=' + str(store_staff_working_obj.id)).format(request.path))
+
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.consumables_view_all_stores'):
         con_store = ConsumablesStore.objects.all().select_related('store')
@@ -947,6 +1086,10 @@ def tech_mtd(request):
                                       staff_id=Staff.objects.get(st_username=auth_user)).store)
     except ObjectDoesNotExist:
         store_staff_working_obj = None
+
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET and store_staff_working_obj is not None:
+        return redirect(('{}?store=' + str(store_staff_working_obj.id)).format(request.path))
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.tech_view_all_stores'):
@@ -1114,6 +1257,39 @@ def m_position_select(request):
 
 
 @login_required
+@permission_required(perm='tph_system.add_sales', raise_exception=True)
+def m_cash_add(request):
+    auth_user = User.objects.get(id=request.user.id)
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
+
+    if request.method == 'POST':
+        form = CashStoreForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.cash_evn = form.cleaned_data['cash_mrn']
+            instance.save()
+            return redirect('sales')
+    else:
+        form = CashStoreForm(initial={
+                                    'store': store_staff_working_obj,
+                                    'date': datetime.now()
+                                })
+
+    return render(request, 'tph_system/sales/cash_add.html', {
+        'card_title': 'Наличные на точке на начало дня',
+        'url_cancel': 'sales',
+        'form': form,
+        'store': store_staff_working_obj,
+        'date': datetime.now().date()
+    })
+
+
+@login_required
 @permission_required(perm='tph_system.view_sales', raise_exception=True)
 def sales(request):
     # Если нет параметров в URL, редиректим с установленным фильтром
@@ -1137,11 +1313,18 @@ def sales(request):
         sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now()
                                          ).select_related('store', 'staff', 'photographer', 'user_edited')
 
+    # Флаг для кнопки выбора роли на сегодня
     flag = 0
     today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=auth_staff)
     positions = [i.position for i in today_staff]
     if 'Роль не указана' in positions:
         flag = 1
+
+    # Флаг для кнопки наличных на начало дня
+    flag_cash = 0
+    cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+    if not cash_on_store.exists() and store_staff_working_obj is not None:
+        flag_cash = 1
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1196,6 +1379,7 @@ def sales(request):
         'error': error,
         'sale_filter': sale_filter,
         'flag': flag,
+        'flag_cash': flag_cash,
         'page_obj': page_obj,
         'paginator': paginator,
         'count_sales': paginator.count,
@@ -1205,14 +1389,14 @@ def sales(request):
         'cashbx_qr_p': cashbx_qr_p,
         'cashbx_orders': cashbx_orders,
         'current_filter_params': current_filter_params,
-        'staff_without_role': staff_without_role
+        'staff_without_role': staff_without_role,
+        'cash_on_store': cash_on_store
     })
 
 
 @login_required
 @permission_required(perm='tph_system.view_main_page', raise_exception=True)
 def main_page(request):
-
     # Фильтр даты
     date_filter = MainPageFilter(
         request.GET or {'selected_date': datetime.today()},
@@ -1244,7 +1428,8 @@ def main_page(request):
     con_store = con_store.order_by('store')
 
     # Кассы за день
-    sls = list(Sales.objects.filter(date=selected_date).values('store').annotate(store_sum=Sum('sum')).order_by('store'))
+    sls = list(
+        Sales.objects.filter(date=selected_date).values('store').annotate(store_sum=Sum('sum')).order_by('store'))
     st = Store.objects.values('id', 'name')
     dic = {}
     for i in sls:
@@ -1274,6 +1459,32 @@ def main_page(request):
     ll_tips = tips.filter(title='Лазерлэнд')
     bw_tips = tips.filter(title='Бигвол')
 
+    # Сверка наличных с утра с прошлым вечером
+    cash_yesterday = {}
+    for store in Store.objects.filter(store_status="Действующая"):
+        try:
+            cash_yesterday[store.name] = CashStore.objects.filter(store=store, date__lte=selected_date)[1:2][0].cash_evn
+        except IndexError:
+            cash_yesterday[store.name] = -1
+
+    check_cash = {}
+    for csh in CashStore.objects.filter(date=selected_date):
+        if csh.cash_mrn == cash_yesterday[csh.store.name]:
+            check_cash[csh.store.name] = {
+                'check': f'{csh.cash_evn} | Сверка ОК',
+                'color': 1
+            }
+        elif cash_yesterday[csh.store.name] == -1:
+            check_cash[csh.store.name] = {
+                'check': f'{csh.cash_evn} | Нет данных для сверки',
+                'color': 2
+            }
+        else:
+            check_cash[csh.store.name] = {
+                'check': f'{csh.cash_evn} | Расхождение ({cash_yesterday[csh.store.name]})',
+                'color': 0
+            }
+
     error = ''
     if request.method == 'POST':
         form_p = RefsAndTipsForm(request.POST)
@@ -1302,7 +1513,8 @@ def main_page(request):
         'date_filter': date_filter,
         'wdr': wdr,
         'zak_cnt': zak_cnt,
-        'zak_all': zak_all
+        'zak_all': zak_all,
+        'check_cash': check_cash
     })
 
 
@@ -1348,7 +1560,31 @@ def cash_withdrawn(request):
     if request.method == 'POST':
         form = CashWithdrawnForm(request.POST)
         if form.is_valid():
+            withdrawn = form.cleaned_data["withdrawn"]
+            store = form.cleaned_data["store"]
+            date = form.cleaned_data["date"]
+            staff = form.cleaned_data["staff"]
             form.save()
+
+            # Уменьшаем кол-во нала на точке в этот день
+            num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") - withdrawn)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_WithdrawnCreate",
+                    event_message=f"Наличные на {store.name} за {date} уменьшены на {withdrawn} из-за "
+                                  f"создания записи о выдаче ЗП сотруднику {staff} за наличные ",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_WithdrawnCreate_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date} при изменении записи о "
+                                  f"выдаче ЗП сотруднику {staff} за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
+
             # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
             return redirect(f'/cash_withdrawn/?{current_filter_params}')
             # return redirect('cash_withdrawn')
@@ -1358,6 +1594,12 @@ def cash_withdrawn(request):
             'date': datetime.now(),
             'staff': auth_staff
         })
+
+    # Флаг для кнопки наличных на начало дня
+    flag_cash = 0
+    cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+    if not cash_on_store.exists() and store_staff_working_obj is not None:
+        flag_cash = 1
 
     # Пагинатор
     paginator = Paginator(cash, 25)
@@ -1371,7 +1613,9 @@ def cash_withdrawn(request):
         'page_obj': page_obj,
         'paginator': paginator,
         'with_count': paginator.count,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        'flag_cash': flag_cash,
+        'cash_on_store': cash_on_store
     })
 
 
@@ -1612,6 +1856,109 @@ def fin_stats_calc_view(request):
     return render(request, 'tph_system/fin_stats/fin_stats_calc.html', {
         'title': 'Расчет финансов',
         'form': form
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.reports_view', raise_exception=True)
+def reports(request):
+    # Значения по умолчанию
+    selected_date = datetime.today()
+    selected_store = Store.objects.filter(store_status="Действующая").first()
+
+    # Фильтр даты
+    date_filter = ReportsFilter(
+        request.GET or {'selected_date': selected_date, 'selected_store': selected_store},
+        queryset=Schedule.objects.filter(date=selected_date, store=selected_store)
+    )
+
+    # Извлекаем валидную дату из фильтра
+    if date_filter.form.is_valid():
+        selected_date = date_filter.form.cleaned_data.get('selected_date')
+        selected_store = date_filter.form.cleaned_data.get('selected_store')
+
+    # Данные сотрудников и ролей
+    staffs_data = Schedule.objects.filter(store=selected_store, date=selected_date).select_related('staff').order_by(
+        'staff')
+    # Техника
+    tech_data = Tech.objects.filter(store=selected_store)
+    tech_count = tech_data.count()
+    tech_upd_info = ImplEvents.objects.filter(event_type='Tech_Update', date_created__date=selected_date,
+                                              event_message__icontains=selected_store)
+    # Расходники
+    cons_data = ConsumablesStore.objects.filter(store=selected_store)
+    cons_count = cons_data.count()
+    cons_upd_info = ImplEvents.objects.filter(event_type='Consumables_Update', date_created__date=selected_date,
+                                              event_message__icontains=selected_store)
+    # Выччеты ЗП наличными
+    wdr = CashWithdrawn.objects.filter(date=selected_date, store=selected_store).select_related('staff')
+    # Касса
+    sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer').order_by('date')
+    summary = {'cashbx_all': sales_data.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_card': sales_data.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_cash': sales_data.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_qr': sales_data.filter(payment_type='Оплата по QR коду').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_trans': sales_data.filter(payment_type='Перевод по номеру телефона').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_orders': sales_data.filter(payment_type='Предоплаченный заказ',
+                                                 sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                                 ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+               }
+    sales_count = sales_data.count()
+    zak_count = sales_data.filter(payment_type='Предоплаченный заказ',
+                                  sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                  ).values('sale_type').annotate(zak_cnt=Count('sale_type'))
+
+    if summary['cashbx_all'] is None: summary['cashbx_all'] = 0
+    if summary['cashbx_card'] is None: summary['cashbx_card'] = 0
+    if summary['cashbx_cash'] is None: summary['cashbx_cash'] = 0
+    if summary['cashbx_qr'] is None: summary['cashbx_qr'] = 0
+    if summary['cashbx_trans'] is None: summary['cashbx_trans'] = 0
+    if summary['cashbx_orders'] is None: summary['cashbx_orders'] = 0
+
+    # Наличка на точке
+    cash_s = CashStore.objects.filter(date=selected_date, store=selected_store)
+
+    # Сверка наличных с утра с прошлым вечером
+    cash_date = ''
+    try:
+        cash_yesterday = CashStore.objects.filter(store=selected_store, date__lte=selected_date)[1:2][0].cash_evn
+        cash_date = CashStore.objects.filter(store=selected_store, date__lte=selected_date)[1:2][0].date.strftime("%d.%m")
+    except IndexError:
+        cash_yesterday = -1
+
+    check_cash = ''
+    td_color = -1
+    for csh in cash_s:
+        if csh.cash_mrn == cash_yesterday:
+            check_cash = '-> Сверка ОК'
+            td_color = 1
+        elif cash_yesterday == -1:
+            check_cash = '-> Нет данных для сверки'
+            td_color = 2
+        else:
+            check_cash = f'-> Расхождение! Нал на вечер {cash_date} - {cash_yesterday}'
+            td_color = 0
+
+    return render(request, 'tph_system/fin_stats/reports.html', {
+        'title': 'Сверка отчетов',
+        'staffs_data': staffs_data,
+        'date_filter': date_filter,
+        'selected_date': selected_date,
+        'selected_store': selected_store,
+        'tech_data': tech_data,
+        'tech_count': tech_count,
+        'tech_upd_info': tech_upd_info,
+        'cons_data': cons_data,
+        'cons_count': cons_count,
+        'cons_upd_info': cons_upd_info,
+        'wdr': wdr,
+        'sales_data': sales_data,
+        'summary': summary,
+        'sales_count': sales_count,
+        'zak_count': zak_count,
+        'cash_s': cash_s,
+        'check_cash': check_cash,
+        'td_color': td_color
     })
 
 

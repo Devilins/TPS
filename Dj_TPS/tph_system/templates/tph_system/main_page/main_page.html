@@ -181,7 +181,7 @@
                                         <div class="col">
                                             {{ stf.staff }}
                                         </div>
-                                        <div class="col-4">
+                                        <div class="col-auto">
                                             {{ stf.withdrawn }}
                                         </div>
                                     </div>
@@ -216,7 +216,7 @@
                                         <div class="col">
                                             {{ item.sale_type }}
                                         </div>
-                                        <div class="col-2">
+                                        <div class="col-auto">
                                             {{ item.zak_count }}
                                         </div>
                                     </div>
@@ -231,7 +231,7 @@
                                 <div class="col">
                                     <b>Заказов за день</b>
                                 </div>
-                                <div class="col-1">
+                                <div class="col-auto">
                                     <b>{{ zak_all }}</b>
                                 </div>
                             </div>
@@ -242,9 +242,36 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
+            <div class="card shadow" id="cash_card">
+                <div class="card-header">
+                    <h4 class="card-title">Наличные на точках за {{ now_date|date:"d.m.Y" }}: </h4>
+                </div>
 
+                <!-- Карточка с наличными -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <tbody>
+                            {% for store, cash in check_cash.items %}
+                            <tr>
+                            {% if cash.color == 1 %}
+                                <td style="text-align: left;"><i>{{ store }}</i></td>
+                                <td style="text-align: right;">{{ cash.check }}</td>
+                            {% elif cash.color == 2 %}
+                                <td class="table-warning" style="text-align: left;"><i>{{ store }}</i></td>
+                                <td class="table-warning" style="text-align: right;">{{ cash.check }}</td>
+                            {% elif cash.color == 0 %}
+                                <td class="table-danger" style="text-align: left;"><i>{{ store }}</i></td>
+                                <td class="table-danger" style="text-align: right;">{{ cash.check }}</td>
+                            {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
     </div>
 
     <div class="card shadow col-xxl-8 col-xl-10" id="main_view_card3" style="margin-top: 20px; margin-bottom: 20px">
