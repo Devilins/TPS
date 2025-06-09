@@ -35,7 +35,7 @@ select  * from auth_user;
 
 select * from auth_permission p 
 inner join django_content_type c on c.id = p.content_type_id
-where codename like '%sale%';
+where codename like '%add_cashwithdrawn%';
 
 select * from auth_permission p 
 inner join django_content_type c on c.id = p.content_type_id

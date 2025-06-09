@@ -34,7 +34,7 @@ class TechFilter(django_filters.FilterSet):
     name = CharFilter(field_name='name', lookup_expr='icontains')
     serial_num = CharFilter(field_name='serial_num', lookup_expr='icontains')
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.exclude(store_status="Закрытая")
     )
 
     class Meta:

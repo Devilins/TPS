@@ -140,7 +140,7 @@ class ConsStoreForm(ModelForm):
 class TechForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
+        self.fields['store'].queryset = Store.objects.exclude(store_status="Закрытая")
         self.fields['store'].empty_label = "Выберите точку"
 
     class Meta:
@@ -459,12 +459,12 @@ class CashWithdrawnForm(ModelForm):
             raise ValidationError('Сумма должна быть положительной')
 
         # Чтобы сравнивать всегда общую сумму нала (которая на точке и которую взяли как зп)
-        withdrawns_on_store = CashWithdrawn.objects.filter(date=date, store=store).aggregate(wdr_sum=Sum('withdrawn'))['wdr_sum']
-        if withdrawns_on_store is None:
-            withdrawns_on_store = 0
+        # withdrawns_on_store = CashWithdrawn.objects.filter(date=date, store=store).aggregate(wdr_sum=Sum('withdrawn'))['wdr_sum']
+        # if withdrawns_on_store is None:
+        #     withdrawns_on_store = 0
 
         try:
-            cash_on_store = CashStore.objects.get(date=date, store=store).cash_evn + withdrawns_on_store
+            cash_on_store = CashStore.objects.get(date=date, store=store).cash_evn # + withdrawns_on_store
         except ObjectDoesNotExist:
             cash_on_store = 0
 

@@ -339,6 +339,7 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
         # Фиксируем текущее количество фото и суммы
         photo_c_old = self.get_object().photo_count
         sum_old = self.get_object().sum
+        payment_type_old = self.get_object().payment_type
 
         # Сохраняем экземпляр продажи
         self.object = form.save()
@@ -385,7 +386,7 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
             )
 
         # Уменьшаем нал на конец дня из-за изменения продажи за наличку
-        if payment_type == 'Наличные':
+        if payment_type_old == 'Наличные' and payment_type == 'Наличные' and sum_old != sum:
             num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") + sum - sum_old)
             if num_chars == 1:
                 # Логируем изменение наличных
@@ -400,6 +401,42 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                     event_type=f"UpdCash_SaleUpdate_Failed",
                     event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при изменении новой продажи "
                                   f"за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
+        elif payment_type_old != 'Наличные' and payment_type == 'Наличные':
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") + sum)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate",
+                    event_message=f"Наличные на {store.name} за {date_pay} увеличены на {sum} из-за "
+                                  f"изменения способа оплаты продажи c {payment_type_old} на наличные.",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при изменении новой "
+                                  f"продажи за наличные. Отсутствует запись о наличных за начало дня!",
+                    status='Бизнес ошибка',
+                    solved='Нет'
+                )
+        elif payment_type_old == 'Наличные' and payment_type != 'Наличные':
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") - sum)
+            if num_chars == 1:
+                # Логируем изменение наличных
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate",
+                    event_message=f"Наличные на {store.name} за {date_pay} уменьшены на {sum} из-за "
+                                  f"изменения способа оплаты продажи с наличных на {payment_type}.",
+                    status='Успешно'
+                )
+            else:
+                ImplEvents.objects.create(
+                    event_type=f"UpdCash_SaleUpdate_Failed",
+                    event_message=f"Ошибка при изменении наличных на {store.name} за {date_pay} при изменении новой "
+                                  f"продажи за наличные. Отсутствует запись о наличных за начало дня!",
                     status='Бизнес ошибка',
                     solved='Нет'
                 )
@@ -593,6 +630,88 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
                     status='Бизнес ошибка',
                     solved='Нет'
                 )
+
+        return super().form_valid(form)
+
+
+class CashWithdrawnCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    model = CashWithdrawn
+    form_class = CashWithdrawnForm
+    template_name = 'tph_system/cash_withdrawn/c_w_add.html'
+    permission_required = 'tph_system.add_cashwithdrawn'
+    permission_denied_message = 'У вас нет прав на добавление записи о выдаче зп наличными'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('cash_withdrawn') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        auth_staff = Staff.objects.get(st_username=self.request.user)
+
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=auth_staff).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+
+        cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Выдача ЗП наличными'
+        context['card_title'] = 'Забрать наличные'
+        context['url_cancel'] = 'cash_withdrawn'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        context['cash_on_store'] = cash_on_store
+        return context
+
+    def get_initial(self):
+        initial = super().get_initial()
+        auth_staff = Staff.objects.get(st_username=self.request.user)
+
+        try:
+            store_staff_working_obj = Store.objects.get(
+                name=Schedule.objects.get(date=datetime.now(),
+                                          staff_id=auth_staff).store)
+        except ObjectDoesNotExist:
+            store_staff_working_obj = None
+
+        initial.update({
+            'store': store_staff_working_obj,
+            'date': datetime.now(),
+            'staff': auth_staff
+        })
+        return initial
+
+    @atomic
+    def form_valid(self, form):
+        # Сохраняем экземпляр формы
+        self.object = form.save()
+
+        # Данные из формы
+        withdrawn = form.cleaned_data["withdrawn"]
+        store = form.cleaned_data["store"]
+        date = form.cleaned_data["date"]
+        staff = form.cleaned_data["staff"]
+
+        # Уменьшаем кол-во нала на точке в этот день
+        num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") - withdrawn)
+        if num_chars == 1:
+            # Логируем изменение наличных
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnCreate",
+                event_message=f"Наличные на {store.name} за {date} уменьшены на {withdrawn} из-за "
+                              f"создания записи о выдаче ЗП сотруднику {staff} за наличные ",
+                status='Успешно'
+            )
+        else:
+            ImplEvents.objects.create(
+                event_type=f"UpdCash_WithdrawnCreate_Failed",
+                event_message=f"Ошибка при изменении наличных на {store.name} за {date} при изменении записи о "
+                              f"выдаче ЗП сотруднику {staff} за наличные. Отсутствует запись о наличных за начало дня!",
+                status='Бизнес ошибка',
+                solved='Нет'
+            )
 
         return super().form_valid(form)
 
@@ -956,7 +1075,7 @@ def index(request):
 @login_required
 @permission_required(perm='tph_system.view_store', raise_exception=True)
 def store(request):
-    stores = Store.objects.filter(store_status='Действующая')
+    stores = Store.objects.exclude(store_status='Закрытая')
 
     error = ''
     if request.method == 'POST':
@@ -1557,44 +1676,6 @@ def cash_withdrawn(request):
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
                                                            ).select_related('store', 'staff')).order_by('-date')
 
-    if request.method == 'POST':
-        form = CashWithdrawnForm(request.POST)
-        if form.is_valid():
-            withdrawn = form.cleaned_data["withdrawn"]
-            store = form.cleaned_data["store"]
-            date = form.cleaned_data["date"]
-            staff = form.cleaned_data["staff"]
-            form.save()
-
-            # Уменьшаем кол-во нала на точке в этот день
-            num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") - withdrawn)
-            if num_chars == 1:
-                # Логируем изменение наличных
-                ImplEvents.objects.create(
-                    event_type=f"UpdCash_WithdrawnCreate",
-                    event_message=f"Наличные на {store.name} за {date} уменьшены на {withdrawn} из-за "
-                                  f"создания записи о выдаче ЗП сотруднику {staff} за наличные ",
-                    status='Успешно'
-                )
-            else:
-                ImplEvents.objects.create(
-                    event_type=f"UpdCash_WithdrawnCreate_Failed",
-                    event_message=f"Ошибка при изменении наличных на {store.name} за {date} при изменении записи о "
-                                  f"выдаче ЗП сотруднику {staff} за наличные. Отсутствует запись о наличных за начало дня!",
-                    status='Бизнес ошибка',
-                    solved='Нет'
-                )
-
-            # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
-            return redirect(f'/cash_withdrawn/?{current_filter_params}')
-            # return redirect('cash_withdrawn')
-    else:
-        form = CashWithdrawnForm(initial={
-            'store': store_staff_working_obj,
-            'date': datetime.now(),
-            'staff': auth_staff
-        })
-
     # Флаг для кнопки наличных на начало дня
     flag_cash = 0
     cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
@@ -1608,14 +1689,12 @@ def cash_withdrawn(request):
 
     return render(request, 'tph_system/cash_withdrawn/cash_withdrawn.html', {
         'title': 'Зарплата наличными',
-        'form': form,
         'c_filter': c_filter,
         'page_obj': page_obj,
         'paginator': paginator,
         'with_count': paginator.count,
         'current_filter_params': current_filter_params,
-        'flag_cash': flag_cash,
-        'cash_on_store': cash_on_store
+        'flag_cash': flag_cash
     })
 
 

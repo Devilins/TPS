@@ -7,18 +7,17 @@
 {% if perms.tph_system.add_cashwithdrawn %}
 
     <li class="nav-item">
+        {% if flag_cash == 1 %}
         <a class="nav-link">
-            {% if flag_cash == 1 %}
-            <button type="button" class="btn btn-sm btn-outline-primary" disabled data-bs-toggle="modal" data-bs-target="#modal-tech-form">
-                Забрать наличные
-            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary" disabled>Забрать наличные</button>
             <p class="text-danger">Кнопка не доступна - внесите наличные с утра в продажах</p>
-            {% else %}
-            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-tech-form">
-                Забрать наличные
-            </button>
-            {% endif %}
         </a>
+
+        {% else %}
+        <a class="nav-link" href="{% url 'c_w_add' %}?{{ current_filter_params }}">
+            <button type="button" class="btn btn-sm btn-outline-primary">Забрать наличные</button>
+        </a>
+        {% endif %}
     </li>
 
 {% endif %}
@@ -95,45 +94,6 @@
             </table>
         </div>
 
-        <!-- Модальное окно - ввод новых списаний -->
-        <div class="modal fade" id="modal-tech-form" data-bs-backdrop="static" data-bs-keyboard="false"
-             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Забрать наличные</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <!-- Форма ввода данных -->
-                    <form method="post">
-                        <div class="modal-body">
-                            {% csrf_token %}
-                            <div class="error_style">
-                                {% for error in form.non_field_errors %}
-                                    <i>{{error}}</i>
-                                {% endfor %}
-                            </div>
-                            {{ form.store }}<br>
-                            <div class="form-error">{{ form.store.errors }}</div>
-                            {{ form.staff }}<br>
-                            {{ form.date }}<br>
-                            {% if cash_on_store.0.cash_evn != None %}
-                                <p class="text-primary">На точке сейчас <b>{{ cash_on_store.0.cash_evn }}</b> наличных</p>
-                            {% endif %}
-                            {{ form.withdrawn }}<br>
-                            <div class="form-error">{{ form.withdrawn.errors }}</div>
-                            {{ form.week_beg_rec }}<br>
-                            <div class="form-error">{{ form.week_beg_rec.errors }}</div>
-                            {{ form.comment }}
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-primary" type="submit">Сохранить</button>
-                            <button  class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Пагинация -->

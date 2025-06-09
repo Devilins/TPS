@@ -52,7 +52,8 @@ class TelegramUser(models.Model):
 class Store(models.Model):
     SLCT_STORE_STATUS = (
         ('Действующая', 'Действующая'),
-        ('Закрытая', 'Закрытая')
+        ('Закрытая', 'Закрытая'),
+        ('Техническая', 'Техническая')
     )
     name = models.CharField(max_length=30, verbose_name=u"Название")
     short_name = models.CharField(max_length=20, verbose_name=u"Функциональное название (не изменять)")

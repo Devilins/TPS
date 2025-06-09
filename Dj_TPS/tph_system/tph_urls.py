@@ -33,6 +33,7 @@ urlpatterns = [
     path('sales/add', SalesCreateView.as_view(), name='sales_create'),
     path('sales/position', m_position_select, name='position_select'),
     path('sales/cash', m_cash_add, name='cash_add'),
+    path('cash_withdrawn/add', CashWithdrawnCreateView.as_view(), name='c_w_add'),
     path('cash_withdrawn/<int:pk>/update', CashWithdrawnUpdateView.as_view(), name='c_w_update'),
     path('cash_withdrawn/<int:pk>/delete', CashWithdrawnDeleteView.as_view(), name='c_w_delete'),
     path('main_page/tips/<int:pk>/update', RefsAndTipsUpdateView.as_view(), name='tips_update'),

@@ -54,7 +54,8 @@
                             <div class="modal-body">
                                 {% csrf_token %}
                                 {{ form.name }}<br>
-                                {{ form.short_name }}
+                                {{ form.short_name }}<br>
+                                {{ form.store_status }}
                                 <span>{{ error }}</span>
                             </div>
                             <div class="modal-footer">
