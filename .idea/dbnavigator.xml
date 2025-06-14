@@ -80,7 +80,14 @@ select * from tph_system_store;
 
 SELECT SUM("tph_system_sales"."sum") AS "sum__sum"
   FROM "tph_system_sales"
- WHERE ("tph_system_sales"."date" = '2025-04-02'::date);]]></console>
+ WHERE ("tph_system_sales"."date" = '2025-04-02'::date);
+
+select * from tph_system_consumablesstore;
+
+select * from tph_system_settings where param like '%phot_few_incr_perc_pay%';
+
+insert into tph_system_settings (param_f_name, param, value, date_upd) select param_f_name, param, value, date_upd from tph_system_settings where param like '%phot_few_incr_perc_pay%';
+commit;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">

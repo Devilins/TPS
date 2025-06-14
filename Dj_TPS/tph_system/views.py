@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+import urllib.parse
 
 from django.db.models import F
 from django.contrib.auth.decorators import login_required, permission_required
@@ -1941,9 +1942,24 @@ def fin_stats_calc_view(request):
 @login_required
 @permission_required(perm='tph_system.reports_view', raise_exception=True)
 def reports(request):
+    auth_user = User.objects.get(id=request.user.id)
+    auth_staff = Staff.objects.get(st_username=auth_user)
+    try:
+        store_staff_working_obj = Store.objects.get(
+            name=Schedule.objects.get(date=datetime.now(),
+                                      staff_id=auth_staff).store)
+    except ObjectDoesNotExist:
+        store_staff_working_obj = None
+
     # Значения по умолчанию
     selected_date = datetime.today()
-    selected_store = Store.objects.filter(store_status="Действующая").first()
+
+    if auth_user.has_perm('tph_system.reports_boss_view'):
+        selected_store = Store.objects.filter(store_status="Действующая").first()
+    elif store_staff_working_obj is not None:
+        selected_store = store_staff_working_obj
+    else:
+        return redirect('main_page')
 
     # Фильтр даты
     date_filter = ReportsFilter(
@@ -1955,6 +1971,9 @@ def reports(request):
     if date_filter.form.is_valid():
         selected_date = date_filter.form.cleaned_data.get('selected_date')
         selected_store = date_filter.form.cleaned_data.get('selected_store')
+
+    cfp_q = {'store': selected_store.id}
+    current_filter_params = urllib.parse.urlencode(cfp_q)
 
     # Данные сотрудников и ролей
     staffs_data = Schedule.objects.filter(store=selected_store, date=selected_date).select_related('staff').order_by(
@@ -2037,7 +2056,8 @@ def reports(request):
         'zak_count': zak_count,
         'cash_s': cash_s,
         'check_cash': check_cash,
-        'td_color': td_color
+        'td_color': td_color,
+        'current_filter_params': current_filter_params
     })
 
 

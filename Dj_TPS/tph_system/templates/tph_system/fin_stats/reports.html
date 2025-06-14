@@ -3,6 +3,7 @@
 {% load tags_extras %}
 
 {% block func_buttons %}
+{% if perms.tph_system.reports_boss_view %}
 <li class="nav-item">
     <a class="nav-link">
         <div class="card text-dark border-success" style="max-width: 250px;">
@@ -21,6 +22,7 @@
         </div>
     </a>
 </li>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}
@@ -111,10 +113,12 @@
                             {% for t in tech_data %}
                             <tr>
                                 <td style="text-align: left;">
-                                    <i>{{ t.name }}</i>
-                                    {% if t.serial_num != '' %}
-                                        ({{ t.serial_num }})
-                                    {% endif %}
+                                    <a href="{% url 'tech_update' t.id %}?{{current_filter_params}}">
+                                        <i>{{ t.name }}</i>
+                                        {% if t.serial_num != '' %}
+                                            ({{ t.serial_num }})
+                                        {% endif %}
+                                    </a>
                                 </td>
                                 <td>{{ t.count }}</td>
                                 <td>{{ t.date_change|date:"d.m" }}</td>
@@ -159,11 +163,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for с in cons_data %}
+                            {% for c in cons_data %}
                             <tr>
-                                <td style="text-align: left;"><i>{{ с.consumable }}</i></td>
-                                <td>{{ с.count|floatformat }}</td>
-                                <td>{{ с.change_data|date:"d.m" }}</td>
+                                <td style="text-align: left;"><a href="{% url 'con_store_update' c.id %}?{{current_filter_params}}"><i>{{ c.consumable }}</i></a></td>
+                                <td>{{ c.count|floatformat }}</td>
+                                <td>{{ c.change_data|date:"d.m" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -297,7 +301,7 @@
                         <tbody>
                             {% for sale in sales_data %}
                             <tr>
-                                <td>{{ sale.staff }}</td>
+                                <td><a href="{% url 'sales_update' sale.id %}?{{current_filter_params}}">{{ sale.staff }}</a></td>
                                 <td>{{ sale.photographer }}</td>
                                 <td>{{ sale.sale_type }}</td>
                                 <td>{{ sale.payment_type }}</td>

@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q, Count
-from django.http.response import Http404
 
 from .models import *
 
@@ -88,21 +87,31 @@ def sal_calc(time_start, time_end):
 
             phot_in_store_cnt = len(Schedule.objects.filter(date=day_date, store=sch.store, position='Фотограф'))
 
+            c_log = ''
             if sales_zak.exists():
                 # Касса заказов
                 cashbx_staff += int(sales_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                 for sl in sales_zak:
+                    c_log = c_log + 'Заказы: '
                     if sl.sale_type == 'Заказной фотосет':
                         # Проверка на выходные
                         if day_date.weekday() in (5, 6):
-                            sal_staff += float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
+                            delta = float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets(str(sl.store.short_name) + '_order_ph_wknd')}) + '
                         else:
-                            sal_staff += float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_budn')
+                            delta = float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_budn')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets(str(sl.store.short_name) + '_order_ph_budn')}) + '
                     elif sl.sale_type == 'Заказ выездной':
                         if sch.position == 'Выездной фотограф':
-                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out')
+                            delta = float(sl.photo_count) * param_gets('order_ph_out')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
                         elif sch.position == 'Видеограф':
-                            sal_staff += float(sl.photo_count) * param_gets('video_order_ph_out')
+                            delta = float(sl.photo_count) * param_gets('video_order_ph_out')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('video_order_ph_out')}) + '
                         else:
                             error = ImplEvents.objects.create(
                                 event_type='Salary_PositionError',
@@ -116,7 +125,7 @@ def sal_calc(time_start, time_end):
                         error = ImplEvents.objects.create(
                             event_type='Salary_SaleTypeError',
                             event_message=f"В заказных продажах ошибка - sale_type ({sl.sale_type}) не соответствует "
-                                          f"заданным типам"
+                                          f"заданным типам "
                                           f"(Заказной фотосет или Заказ выездной), sale.id = {sl.id}; sale = {sl}",
                             status='Бизнес ошибка',
                             solved='Нет'
@@ -124,70 +133,102 @@ def sal_calc(time_start, time_end):
                         print(f"ImplEvents - новая запись {error}")
 
             if sales_univ.exists():
+                c_log = c_log + 'Универсал: '
                 # Касса универсала
                 cashbx_sum = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                 cashbx_staff += cashbx_sum
 
                 if cashbx_sum <= param_gets('univ_cashbx_min_bord'):
-                    sal_staff += param_gets('univ_min_payment')
+                    delta = param_gets('univ_min_payment')
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + ' + '
                 else:
-                    sal_staff += cashbx_sum * param_gets('univ_perc_payment') / 100
+                    delta = cashbx_sum * param_gets('univ_perc_payment') / 100
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('univ_perc_payment') / 100}) + '
 
             if sales_ph.exists():
+                c_log = c_log + 'Фотограф: '
                 # Касса фотографа
                 cashbx_sum = int(sales_ph.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                 cashbx_staff += cashbx_sum
 
                 if cashbx_sum <= param_gets('phot_cashbx_min_border'):
-                    sal_staff += param_gets('phot_min_payment')
+                    delta = param_gets('phot_min_payment')
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + ' + '
                 elif day_date.weekday() in (5, 6):  # Выходные
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_wknd'):  # 15000
-                        sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
+                        delta = cashbx_sum * param_gets('phot_stand_perc_pay_wknd') / 100  # 0.2
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_wknd') / 100}) + '
                     elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
-                        sal_staff += cashbx_sum * param_gets(
-                            str(sch.store.short_name) + '_phot_few_incr_perc_pay') / 100  # 0.22 / 0.23
+                        delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_wknd') / 100  # 0.23
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_wknd') / 100}) + '
                     else:
-                        sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
+                        delta = cashbx_sum * param_gets('phot_many_incr_perc_pay_wknd') / 100  # 0.25
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_wknd') / 100}) + '
                 else:
                     if cashbx_sum <= param_gets('phot_cashbx_perc_border_budn'):  # 10000
-                        sal_staff += cashbx_sum * param_gets('phot_stand_perc_pay') / 100  # 0.2
+                        delta = cashbx_sum * param_gets('phot_stand_perc_pay_budn') / 100  # 0.2
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_budn') / 100}) + '
                     elif phot_in_store_cnt < param_gets('phot_count_incr_pay_if'):
-                        sal_staff += cashbx_sum * param_gets(
-                            str(sch.store.short_name) + '_phot_few_incr_perc_pay') / 100  # 0.22 / 0.23
+                        delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_budn') / 100  # 0.25
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_budn') / 100}) + '
                     else:
-                        sal_staff += cashbx_sum * param_gets('phot_many_incr_perc_pay') / 100  # 0.25
+                        delta = cashbx_sum * param_gets('phot_many_incr_perc_pay_budn') / 100  # 0.25
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_budn') / 100}) + '
 
             if sales_adm.exists():
+                c_log = c_log + 'Администратор: '
                 # Касса администратора
                 cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                 cashbx_staff += cashbx_sum
 
                 if cashbx_sum <= param_gets('admin_cashbx_min_border'):
-                    sal_staff += param_gets('admin_min_payment')
+                    delta = param_gets('admin_min_payment')
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + ' + '
                 elif day_date.weekday() in (5, 6):  # Выходные
                     if cashbx_sum < param_gets('admin_cashbx_perc_border_wknd'):  # 20000
-                        sal_staff += (param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
+                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_wknd') / 100  # 0.1
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_wknd') / 100}) + '
                     else:
-                        sal_staff += cashbx_sum * param_gets(
-                            str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
+                        delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100}) + '
                 else:
                     if cashbx_sum < param_gets('admin_cashbx_perc_border_budn'):  # 10000
-                        sal_staff += (param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay') / 100)  # 0.1
+                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_budn') / 100  # 0.1
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_budn') / 100}) + '
                     else:
-                        sal_staff += cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
+                        delta = cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('admin_incr_perc_pay_budn') / 100}) + '
 
             if (not Sales.objects.filter(date=day_date,
                                          photographer=sch.staff,
                                          sale_type='Заказ выездной').exists()
                     and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists()):
+                c_log = c_log + 'Кассы 0, мин зп: '
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
                 match sch.position:
                     case 'Администратор':
                         sal_staff = param_gets('admin_min_payment')
+                        c_log = c_log + str(sal_staff)
                     case 'Фотограф':
                         sal_staff = param_gets('phot_min_payment')
+                        c_log = c_log + str(sal_staff)
                     case 'Универсальный фотограф':
                         sal_staff += param_gets('univ_min_payment')
+                        c_log = c_log + str(sal_staff)
                     case 'Видеограф':
                         pass
                     case 'Выездной фотограф':
@@ -208,9 +249,16 @@ def sal_calc(time_start, time_end):
                                                                sale_type__in=['Заказной фотосет', 'Заказ выездной']
                                                                ).exclude(photographer=sch.staff)
                 if sales_zak_admin_service.exists():
+                    c_log = c_log + 'Админу за сопровождение заказов: '
                     # Кол-во заказов. Для начисления админу за сопровождения заказа.
                     zak_count = sales_zak_admin_service.count()
-                    sal_staff += zak_count * param_gets('admin_order_service')
+                    delta = zak_count * param_gets('admin_order_service')
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + f' ({zak_count} * {param_gets('admin_order_service')}) + '
+
+            # Оформление логов расчета
+            if c_log[-2] == '+':
+                c_log = c_log[:len(c_log)-3:]
 
             # Update в БД
             salary, created = Salary.objects.update_or_create(
@@ -223,13 +271,12 @@ def sal_calc(time_start, time_end):
             print(f"sal_calc => {salary}; {action}")
 
             # Новая запись в системных событиях
-            rec = ImplEvents.objects.create(
+            ImplEvents.objects.create(
                 event_type='Salary_Calculation',
-                event_message=f"Произведен расчет зарплаты за {dt_format(day_date)} по сотруднику {sch.staff} - "
-                              f"salary_sum: {sal_staff}, cash_box: {cashbx_staff}. В БД {action}",
+                event_message=f"Произведен расчет зарплаты за {dt_format(day_date)} по сотруднику {sch.staff} ({sch.position}).\n"
+                              f"Зарплата: {sal_staff}, Касса: {cashbx_staff}.\nВ БД {action}.\nЛог расчета -> {c_log}",
                 status='Успешно'
             )
-            # print(f"ImplEvents - новая запись {rec}")
 
 
 def sal_weekly_update(time_start, time_end):
@@ -286,7 +333,7 @@ def sal_weekly_update(time_start, time_end):
                 rec = ImplEvents.objects.create(
                     event_type='Salary_Weekly_Update',
                     event_message=f"В зарплаты за неделю занесены данные за период {dt_format(start_week)} - {dt_format(end_week)} "
-                                  f"по сотруднику {staff} - salary_sum: {salary}, cash_box_week: {cashbx}, cash_withdrawn: {withdrawn}. В БД {action}",
+                                  f"по сотруднику {staff}.\nЗарплата за неделю: {salary}, Вычеты ЗП наличными: {withdrawn}, Касса за неделю: {cashbx}.\nВ БД {action}",
                     status='Успешно'
                 )
         else:
@@ -323,14 +370,14 @@ def fin_stats_calc(time_start, time_end):
             # Новая запись в системных событиях
             rec = ImplEvents.objects.create(
                 event_type='FinStatsMonth_Update',
-                event_message=f"В финансовые отчеты по кампании занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}. "
+                event_message=f"В финансовые отчеты по компании занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}.\n"
                               f"В БД {action}",
                 status='Успешно'
             )
         else:
             error = ImplEvents.objects.create(
                 event_type='FinStatsMonth_Update_Empty',
-                event_message=f"В финансовые отчеты по кампании данные НЕ занесены, потому что за период {dt_format(start_month)} - {dt_format(end_month)} "
+                event_message=f"В финансовые отчеты по компании данные НЕ занесены, потому что за период {dt_format(start_month)} - {dt_format(end_month)} "
                               f"нет записей с зарплатами по дням и продажами.",
                 status='Бизнес ошибка',
                 solved='Нет'
@@ -365,8 +412,8 @@ def fin_stats_staff_calc(time_start, time_end):
                 # Новая запись в системных событиях
                 rec = ImplEvents.objects.create(
                     event_type='FinStatsStaff_Update',
-                    event_message=f"В финансовые отчеты по сотрудникам занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}. "
-                                  f"Сотрудник - {staff}. В БД {action}",
+                    event_message=f"В финансовые отчеты по сотрудникам занесены данные за период {dt_format(start_month)} - {dt_format(end_month)}.\n"
+                                  f"Сотрудник - {staff}.\nВ БД {action}",
                     status='Успешно'
                 )
         else:
