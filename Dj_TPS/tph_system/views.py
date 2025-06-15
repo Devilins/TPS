@@ -424,12 +424,12 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
                     solved='Нет'
                 )
         elif payment_type_old == 'Наличные' and payment_type != 'Наличные':
-            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") - sum)
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") - sum_old)
             if num_chars == 1:
                 # Логируем изменение наличных
                 ImplEvents.objects.create(
                     event_type=f"UpdCash_SaleUpdate",
-                    event_message=f"Наличные на {store.name} за {date_pay} уменьшены на {sum} из-за "
+                    event_message=f"Наличные на {store.name} за {date_pay} уменьшены на {sum_old} из-за "
                                   f"изменения способа оплаты продажи с наличных на {payment_type}.",
                     status='Успешно'
                 )
