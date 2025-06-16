@@ -5,6 +5,7 @@ import urllib.parse
 from django.db.models import F
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.db.models.functions import TruncDay, TruncWeek
 from django.urls import reverse_lazy, reverse
 from django.db.transaction import atomic
 from django.http import JsonResponse, HttpResponseRedirect
@@ -1881,6 +1882,13 @@ def sal_err_events(request):
     })
 
 
+def get_default_dates():
+    today = datetime.now().date()
+    start_date = today.replace(day=1)  # Первый день текущего месяца
+    end_date = today
+    return start_date, end_date
+
+
 @login_required
 @permission_required(perm='tph_system.view_finstatsmonth', raise_exception=True)
 def fin_stats(request):
@@ -1898,15 +1906,97 @@ def fin_stats(request):
     stats_staff_filter = FinStatsStaffFilter(request.GET, queryset=stats_staff)
     stats_staff = stats_staff_filter.qs
 
-    # Пагинатор stats
-    # paginator = Paginator(stats, 24)
-    # page_number = request.GET.get('page')
-    # page_obj = paginator.get_page(page_number)
-
     # Пагинатор stats_staff
     paginator_st = Paginator(stats_staff, 10)
     page_number_st = request.GET.get('page')
     page_obj_st = paginator_st.get_page(page_number_st)
+
+    # Код для статистического графика по продажам #
+    # ---------------------------------------------------------------------
+    # Получение дат из GET-параметров или установка значений по умолчанию
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else None
+    except ValueError:
+        start_date = None
+
+    try:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+    except ValueError:
+        end_date = None
+
+    # Установка значений по умолчанию при необходимости
+    default_start, default_end = get_default_dates()
+    start_date = start_date or default_start
+    end_date = end_date or default_end
+
+    # Корректировка дат (если end_date раньше start_date)
+    if end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    # Фильтрация данных по выбранному периоду
+    sales_in_period = Sales.objects.filter(
+        date__gte=start_date,
+        date__lte=end_date
+    )
+
+    # Статистика по дням
+    daily = (
+        sales_in_period
+        .annotate(day=TruncDay('date'))
+        .values('day')
+        .annotate(total=Sum('sum'))
+        .order_by('day')
+    )
+
+    # Подготовка данных для дневного графика с цветами
+    daily_labels = []
+    daily_data = []
+    daily_colors = []  # Список цветов для каждого столбца
+
+    # Цветовые коды
+    BLUE = 'rgba(54, 162, 235, 0.7)'
+    ORANGE = 'rgba(255, 159, 64, 0.7)'
+    RED = 'rgba(255, 99, 132, 0.7)'
+
+    for entry in daily:
+        day = entry['day']
+        weekday = day.weekday()  # 0-понедельник, 6-воскресенье
+
+        daily_labels.append(day.strftime("%Y-%m-%d"))
+        daily_data.append(float(entry['total']))
+
+        if weekday == 4:  # Пятница
+            daily_colors.append(ORANGE)
+        elif weekday >= 5:  # Суббота (5) и воскресенье (6)
+            daily_colors.append(RED)
+        else:
+            daily_colors.append(BLUE)
+
+    # Статистика по неделям
+    weekly = (
+        sales_in_period
+        .annotate(week=TruncWeek('date'))
+        .values('week')
+        .annotate(total=Sum('sum'))
+        .order_by('week')
+    )
+
+    # Подготовка данных для графиков
+    weekly_labels = []
+    weekly_data = []
+    week_numbers = []  # Добавляем список номеров недель
+
+    for entry in weekly:
+        week_start = entry['week']
+        week_num = week_start.isocalendar()[1]  # Получаем номер недели ISO
+        year = week_start.year
+
+        weekly_labels.append(week_start.strftime("%Y-%m-%d"))
+        weekly_data.append(float(entry['total']))
+        week_numbers.append(f"{year}-W{week_num:02d}")  # Формат "2023-W43"
 
     return render(request, 'tph_system/fin_stats/fin_stats.html', {
         'title': 'Финансы - кампания',
@@ -1915,7 +2005,15 @@ def fin_stats(request):
         'page_obj_st': page_obj_st,
         'stats_filter': stats_filter,
         'stats_staff_filter': stats_staff_filter,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        'daily_labels': daily_labels,
+        'daily_data': daily_data,
+        'daily_colors': daily_colors,
+        'weekly_labels': weekly_labels,
+        'weekly_data': weekly_data,
+        'week_numbers': week_numbers,
+        'start_date': start_date,
+        'end_date': end_date
     })
 
 

@@ -165,4 +165,229 @@
     </nav>
 </div>
 
+
+<!-- Графики -->
+<div class="charts-container">
+    <div class="card shadow" style="max-width: 800px;">
+        <div class="card-header">
+            <h5>Период графиков:</h5>
+        </div>
+        <!-- Форма для выбора даты -->
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Дата начала</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date"
+                           value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">Дата окончания</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date"
+                           value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Применить фильтр</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="chart card shadow">
+        <div class="card-header">
+            <h4 class="card-title">Продажи по дням</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="dailyChart" height="90vh"></canvas>
+        </div>
+    </div>
+
+    <!-- Легенда для дневного графика -->
+    <div class="chart-legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(54, 162, 235, 0.7);"></div>
+            <span>Будни</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(255, 159, 64, 0.7);"></div>
+            <span>Пятницы</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(255, 99, 132, 0.7);"></div>
+            <span>Выходные</span>
+        </div>
+    </div>
+
+    <div class="chart card shadow">
+        <div class="card-header">
+            <h4 class="card-title">Продажи по неделям</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="weeklyChart" height="90vh"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function formatDateToDMY(isoDate) {
+        const date = new Date(isoDate);
+
+        // Получаем компоненты даты
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы 0-11
+        const year = date.getFullYear();
+
+        return `${day}.${month}.${year}`;
+    }
+
+    function dmyToISO(dateString) {
+        // Разбиваем строку на компоненты
+        const [day, month, year] = dateString.split('.');
+        // Создаем дату в UTC (без учета часового пояса)
+        return new Date(Date.UTC(
+            parseInt(year, 10),
+            parseInt(month, 10) - 1, // Месяцы 0-11
+            parseInt(day, 10)
+        )).toISOString().split('T')[0];
+    }
+
+    // Конфигурация для дневного графика
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ daily_labels|safe }}.map(formatDateToDMY),
+            datasets: [{
+                label: 'Продажи за день',
+                data: {{ daily_data|safe }},
+                backgroundColor: {{ daily_colors|safe }},  // Используем массив цветов
+                borderColor: {{ daily_colors|safe }},
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const isoDate = dmyToISO(context[0].label);
+                            const date = new Date(isoDate);
+                            return date.toLocaleDateString('ru-RU', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Сумма продаж' }
+                },
+                x: {
+                    title: { display: true, text: 'Дни' }
+                }
+            }
+        }
+    });
+
+    // Конфигурация для недельного графика
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ weekly_labels|safe }}.map(formatDateToDMY),
+            datasets: [{
+                label: 'Продажи за неделю',
+                data: {{ weekly_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',  // Синий для всех
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const isoDate = dmyToISO(context[0].label);
+                            const date = new Date(isoDate);
+                            return `Неделя ${date.getWeek()} (${date.toLocaleDateString('ru-RU', {
+                                day: 'numeric',
+                                month: 'short'
+                            })})`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Сумма продаж' }
+                },
+                x: {
+                    title: { display: true, text: 'Недели' }
+                }
+            }
+        }
+    });
+
+    // Расширение Date для получения номера недели
+    Date.prototype.getWeek = function() {
+        const date = new Date(this.getTime());
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+        const week1 = new Date(date.getFullYear(), 0, 4);
+        return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 +
+               (week1.getDay() + 6) % 7) / 7);
+    };
+});
+</script>
+
+<style>
+.charts-container {
+    display: flex;
+    padding: 1%;
+    flex-direction: column;
+    gap: 20px;
+}
+.chart {
+    width: 100%;
+}
+.date-filter {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Добавим легенду для цветов */
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 12px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+}
+</style>
+
 {% endblock %}
