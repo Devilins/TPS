@@ -221,14 +221,14 @@ def sal_calc(time_start, time_end):
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
                 match sch.position:
                     case 'Администратор':
-                        sal_staff = param_gets('admin_min_payment')
-                        c_log = c_log + str(sal_staff)
+                        sal_staff += param_gets('admin_min_payment')
+                        c_log = c_log + str(param_gets('admin_min_payment'))
                     case 'Фотограф':
-                        sal_staff = param_gets('phot_min_payment')
-                        c_log = c_log + str(sal_staff)
+                        sal_staff += param_gets('phot_min_payment')
+                        c_log = c_log + str(param_gets('phot_min_payment'))
                     case 'Универсальный фотограф':
                         sal_staff += param_gets('univ_min_payment')
-                        c_log = c_log + str(sal_staff)
+                        c_log = c_log + str(param_gets('univ_min_payment'))
                     case 'Видеограф':
                         pass
                     case 'Выездной фотограф':
@@ -255,6 +255,60 @@ def sal_calc(time_start, time_end):
                     delta = zak_count * param_gets('admin_order_service')
                     sal_staff += delta
                     c_log = c_log + str(delta) + f' ({zak_count} * {param_gets('admin_order_service')}) + '
+
+            if sch.position == 'Выездной фотограф':
+                # Отдельно считается ЗП для выездных фотографов.
+                sales_order_zak = Sales.objects.filter(date=day_date, photographer=sch.staff, sale_type='Заказ выездной')
+                sales_ph_order = sales_ph.exclude(sale_type='Исходники заказа')
+                sales_univ_order = sales_univ.exclude(sale_type='Исходники заказа')
+                cashbx_staff = 0
+                sal_staff = 0
+
+                c_log = 'Выездной фотограф: '
+                if sales_order_zak.exists():
+                    cashbx_staff += int(sales_order_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                    for sl in sales_order_zak:
+                        if sl.photo_count >= 2:
+                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out_less')
+                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_less')}) + '
+                        else:
+                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out')
+                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
+
+                if sales_ph_order.exists():
+                    c_log = c_log + 'Фотограф(В): '
+                    # Касса фотографа выездного
+                    cashbx_sum = int(sales_ph_order.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                    cashbx_staff += cashbx_sum
+
+                    if day_date.weekday() in (5, 6):  # Выходные
+                        if cashbx_sum <= param_gets('phot_cashbx_perc_border_wknd'):  # 15000
+                            delta = cashbx_sum * param_gets('phot_stand_perc_pay_wknd') / 100  # 0.2
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_wknd') / 100}) + '
+                        else:
+                            delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_wknd') / 100  # 0.23
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_wknd') / 100}) + '
+                    else:
+                        if cashbx_sum <= param_gets('phot_cashbx_perc_border_budn'):  # 10000
+                            delta = cashbx_sum * param_gets('phot_stand_perc_pay_budn') / 100  # 0.2
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_budn') / 100}) + '
+                        else:
+                            delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_budn') / 100  # 0.25
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_phot_few_incr_perc_pay_budn') / 100}) + '
+
+                if sales_univ_order.exists():
+                    c_log = c_log + 'Универсал(В): '
+                    # Касса универсала выездного
+                    cashbx_sum = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                    cashbx_staff += cashbx_sum
+                    # Расчет
+                    delta = cashbx_sum * param_gets('univ_perc_payment') / 100
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('univ_perc_payment') / 100}) + '
 
             # Оформление логов расчета
             if c_log[-2] == '+':
