@@ -58,10 +58,13 @@
                 <thead>
                     <tr>
                         <th scope="col">Сотрудник</th>
+                        <th scope="col">Точка</th>
                         <th scope="col">Дата</th>
                         <th scope="col">Касса сотрудника</th>
                         <th scope="col">Зарплата</th>
-                        <th scope="col">Точка</th>
+                        {% if perms.tph_system.view_all_salary %}
+                            <th scope="col">Лог расчета</th>
+                        {% endif %}
                         <th scope="col">Дата изменения</th>
                         <th scope="col"></th>
                     </tr>
@@ -70,10 +73,17 @@
                     {% for s in page_obj %}
                     <tr>
                         <td>{{ s.staff }}</td>
+                        <td>{{ s.store }}</td>
                         <td>{{ s.date }}</td>
                         <td>{{ s.cash_box|floatformat:"g" }}</td>
                         <td>{{ s.salary_sum|floatformat:"g" }}</td>
-                        <td>{{ s.store }}</td>
+                        {% if perms.tph_system.view_all_salary %}
+                            <td>
+                            {% if s.cnt_logs != None %}
+                                {{ s.cnt_logs }}
+                            {% endif %}
+                            </td>
+                        {% endif %}
                         <td>{{ s.date_upd }}</td>
                         <td>
                             <button type="button" class="btn btn-link">

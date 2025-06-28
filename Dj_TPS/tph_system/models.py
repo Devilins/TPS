@@ -193,6 +193,7 @@ class Salary(models.Model):
     date = models.DateField(verbose_name=u"Дата")
     salary_sum = models.DecimalField(max_digits=8, decimal_places=2, verbose_name=u"Зарплата за день")
     cash_box = models.IntegerField(default=0, verbose_name=u"Касса за день")
+    cnt_logs = models.TextField(blank=True, null=True, verbose_name=u"Лог расчета")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
                                     verbose_name=u"Кем было изменено")

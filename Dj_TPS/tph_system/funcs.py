@@ -319,7 +319,7 @@ def sal_calc(time_start, time_end):
                 store=sch.store,
                 staff=sch.staff,
                 date=day_date,
-                defaults={'salary_sum': sal_staff, 'cash_box': cashbx_staff}
+                defaults={'salary_sum': sal_staff, 'cash_box': cashbx_staff, 'cnt_logs': c_log}
             )
             action = 'Добавлено' if created else 'Обновлено'
             print(f"sal_calc => {salary}; {action}")

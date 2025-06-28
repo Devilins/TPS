@@ -82,7 +82,17 @@ SELECT SUM("tph_system_sales"."sum") AS "sum__sum"
   FROM "tph_system_sales"
  WHERE ("tph_system_sales"."date" = '2025-04-02'::date);
 
-select * from tph_system_consumablesstore;
+select distinct sl."date", s.name, st."name", st.f_name, sl.sum, sl.sale_type, sl.* from tph_system_sales sl
+inner join tph_system_schedule sch on sch.staff_id = sl.photographer_id and sch.store_id = sl.store_id and sch."date" = sl."date"
+inner join tph_system_staff st on st."id" = sl.photographer_id
+inner join tph_system_store s on s."id" = sl.store_id
+where sch."position" = 'Выездной фотограф'
+--and sl.sale_type <> 'Заказ выездной'
+order by sl."date" desc;
+
+select * from tph_system_schedule sch
+where sch."position" = 'Выездной фотограф';
+select * from tph_system_sales;
 
 select * from tph_system_settings where param like '%phot_few_incr_perc_pay%';
 

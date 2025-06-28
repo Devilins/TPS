@@ -299,4 +299,60 @@ class Migration(migrations.Migration):
                 'unique_together': {('staff', 'date')},
             },
         ),
+        migrations.AddField(
+            model_name='cashwithdrawn',
+            name='week_beg_rec',
+            field=models.DateField(blank=True, null=True, verbose_name='Дата начала недели за которую забрали зп'),
+        ),
+        migrations.AddField(
+            model_name='store',
+            name='store_status',
+            field=models.CharField(
+                choices=[('Действующая', 'Действующая'), ('Закрытая', 'Закрытая'), ('Техническая', 'Техническая')],
+                default='Действующая', max_length=30, verbose_name='Статус'),
+        ),
+        migrations.AlterField(
+            model_name='sales',
+            name='photo_count',
+            field=models.DecimalField(decimal_places=2, max_digits=9, verbose_name='Кол-во фотографий'),
+        ),
+        migrations.CreateModel(
+            name='TelegramUser',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('telegram_id', models.BigIntegerField(unique=True, verbose_name='Telegram ID')),
+                ('access_token', models.TextField(blank=True, verbose_name='Access Token')),
+                ('refresh_token', models.TextField(blank=True, verbose_name='Refresh Token')),
+                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
+                ('edited_at', models.DateTimeField(auto_now=True, verbose_name='Дата изменения')),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL,
+                                              verbose_name='Пользователь джанго')),
+            ],
+            options={
+                'verbose_name': 'Пользователи телеграма',
+                'verbose_name_plural': 'Пользователи телеграма',
+                'ordering': ['user'],
+            },
+        ),
+        migrations.CreateModel(
+            name='CashStore',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('date', models.DateField(verbose_name='Дата')),
+                ('cash_mrn', models.IntegerField(default=0, verbose_name='Наличные в начале дня')),
+                ('cash_evn', models.IntegerField(default=0, verbose_name='Наличные в конце дня')),
+                ('date_created', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
+                ('date_upd', models.DateTimeField(auto_now=True, verbose_name='Дата изменения')),
+                ('store', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='tph_system.store',
+                                            verbose_name='Точка')),
+                ('user_edited', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT,
+                                                  to=settings.AUTH_USER_MODEL, verbose_name='Кем было изменено')),
+            ],
+            options={
+                'verbose_name': 'Наличные на точке',
+                'verbose_name_plural': 'Наличные на точке',
+                'ordering': ['-date', 'store'],
+                'constraints': [models.UniqueConstraint(fields=('store', 'date'), name='unique_store_daily')],
+            },
+        ),
     ]
