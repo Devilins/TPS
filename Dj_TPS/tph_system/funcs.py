@@ -158,7 +158,7 @@ def sal_calc(time_start, time_end):
                     sal_staff += delta
                     c_log = c_log + str(delta) + ' + '
                 elif day_date.weekday() in (5, 6):  # Выходные
-                    if cashbx_sum <= param_gets('phot_cashbx_perc_border_wknd'):  # 15000
+                    if cashbx_sum < param_gets('phot_cashbx_perc_border_wknd'):  # 15000
                         delta = cashbx_sum * param_gets('phot_stand_perc_pay_wknd') / 100  # 0.2
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_wknd') / 100}) + '
@@ -171,7 +171,7 @@ def sal_calc(time_start, time_end):
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_wknd') / 100}) + '
                 else:
-                    if cashbx_sum <= param_gets('phot_cashbx_perc_border_budn'):  # 10000
+                    if cashbx_sum < param_gets('phot_cashbx_perc_border_budn'):  # 10000
                         delta = cashbx_sum * param_gets('phot_stand_perc_pay_budn') / 100  # 0.2
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_stand_perc_pay_budn') / 100}) + '
