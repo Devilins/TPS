@@ -121,6 +121,7 @@ class ConsumablesStore(models.Model):
 class Sales(models.Model):
     # селектор для payment_type
     SLCT_PAYMENT = (
+        ('Оплата через парк', 'Оплата через парк'),
         ('Наличные', 'Наличные'),
         ('Карта', 'Карта'),
         ('Оплата по QR коду', 'Оплата по QR коду'),
