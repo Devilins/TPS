@@ -1456,6 +1456,7 @@ def sales(request):
 
     # Итоги продаж
     cashbx_all = sales_all.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_park = sales_all.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_card = sales_all.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
@@ -1465,6 +1466,7 @@ def sales(request):
                                      ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
 
     if cashbx_all is None: cashbx_all = 0
+    if cashbx_park is None: cashbx_park = 0
     if cashbx_card is None: cashbx_card = 0
     if cashbx_cash is None: cashbx_cash = 0
     if cashbx_qr_p is None: cashbx_qr_p = 0
@@ -1505,6 +1507,7 @@ def sales(request):
         'paginator': paginator,
         'count_sales': paginator.count,
         'cashbx_all': cashbx_all,
+        'cashbx_park': cashbx_park,
         'cashbx_card': cashbx_card,
         'cashbx_cash': cashbx_cash,
         'cashbx_qr_p': cashbx_qr_p,
@@ -2091,6 +2094,7 @@ def reports(request):
     # Касса
     sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer').order_by('date')
     summary = {'cashbx_all': sales_data.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_park': sales_data.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_card': sales_data.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_cash': sales_data.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_qr': sales_data.filter(payment_type='Оплата по QR коду').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
@@ -2105,6 +2109,7 @@ def reports(request):
                                   ).values('sale_type').annotate(zak_cnt=Count('sale_type'))
 
     if summary['cashbx_all'] is None: summary['cashbx_all'] = 0
+    if summary['cashbx_park'] is None: summary['cashbx_park'] = 0
     if summary['cashbx_card'] is None: summary['cashbx_card'] = 0
     if summary['cashbx_cash'] is None: summary['cashbx_cash'] = 0
     if summary['cashbx_qr'] is None: summary['cashbx_qr'] = 0
