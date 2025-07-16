@@ -18,3 +18,10 @@ def add_days(date, days):
         return ''
     else:
         return date + timedelta(days=int(days))
+
+
+@register.filter('first_letter')
+def first_letter(text):
+    if isinstance(text, str):
+        return text[0] + '.'
+    return False

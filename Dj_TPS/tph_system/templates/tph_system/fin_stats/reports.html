@@ -130,13 +130,14 @@
                     <table class="table table-sm table-hover table-bordered mb-0">
                         <thead>
                             <tr>
-                                <th scope="col">Изменение фототехники за день</th>
+                                <th colspan="2" scope="col">Изменение фототехники за день</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for ti in tech_upd_info %}
                             <tr>
                                 <td style="text-align: left;">{{ ti.event_message }}</td>
+                                <td style="text-align: left;">{{ ti.user_edited.first_name|first_letter }} {{ ti.user_edited.last_name }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -176,13 +177,14 @@
                     <table class="table table-sm table-hover table-bordered mb-0">
                         <thead>
                             <tr>
-                                <th scope="col">Изменение расходников за день</th>
+                                <th colspan="2" scope="col">Изменение расходников за день</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for сi in cons_upd_info %}
                             <tr>
                                 <td style="text-align: left;">{{ сi.event_message }}</td>
+                                <td style="text-align: left;">{{ сi.user_edited.first_name|first_letter }} {{ сi.user_edited.last_name }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -316,7 +318,7 @@
                                 <td>{{ sale.comment }}</td>
                                 <td>{{ sale.date_created }}</td>
                                 <td>{{ sale.date_upd }}</td>
-                                <td>{{ sale.user_edited.first_name }} {{ sale.user_edited.last_name }}</td>
+                                <td>{{ sale.user_edited.first_name|first_letter }} {{ sale.user_edited.last_name }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
