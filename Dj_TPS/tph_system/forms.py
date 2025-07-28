@@ -8,6 +8,7 @@ from django.forms import ModelForm, TextInput, DateInput, NumberInput, Select, T
     CheckboxInput
 from django import forms
 
+from .funcs import *
 from .models import *
 
 
@@ -348,12 +349,26 @@ class SalesForm(ModelForm):
         date = cleaned_data.get("date")
         store = cleaned_data.get("store")
         photo_count = cleaned_data.get("photo_count")
+        sum = cleaned_data.get("sum")
         sale_type = cleaned_data.get("sale_type")
         payment_type = cleaned_data.get("payment_type")
 
         if payment_type == 'Предоплаченный заказ' and photo_count > 8:
             raise ValidationError(
                 f'Для заказного фотосета нужно указывать кол-во часов, а не кол-во фото. Вряд-ли вы снимали заказ {photo_count} часов.')
+
+        if sale_type in ('Заказной фотосет', 'Заказ выездной'):
+            if payment_type != 'Предоплаченный заказ':
+                raise ValidationError('Тип оплаты у Заказов должен быть "Предоплаченный заказ"')
+
+            if date.weekday() in (5, 6):  # Выходные
+                wkn_cost = param_gets('stcst_' + str(sale_type))
+                if sum / photo_count != wkn_cost:
+                    raise ValidationError(f'Стоимость одного часа "{sale_type}" - {wkn_cost}, а у вас {sum // photo_count}')
+            else:  # Будни
+                bdn_cost = param_gets('stcst_' + str(sale_type) + '_будни')
+                if sum / photo_count != bdn_cost:
+                    raise ValidationError(f'Стоимость одного часа "{sale_type}" - {bdn_cost}, а у вас {sum // photo_count}')
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
@@ -479,14 +494,14 @@ class CashWithdrawnForm(ModelForm):
             raise ValidationError('Укажите первый день недели, за которую забираете ЗП (понедельник)')
         return week_beg_rec
 
-    def clean(self):
-        cleaned_data = super().clean()
-        staff = cleaned_data.get("staff")
-        store = cleaned_data.get("store")
-        date = cleaned_data.get("date")
-
-        if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
-            raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     staff = cleaned_data.get("staff")
+    #     store = cleaned_data.get("store")
+    #     date = cleaned_data.get("date")
+    #
+    #     if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
+    #         raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
 
 
 class SettingsForm(ModelForm):
@@ -579,7 +594,6 @@ class SalaryForm(ModelForm):
         staff = cleaned_data.get("staff")
         store = cleaned_data.get("store")
         date = cleaned_data.get("date")
-        print(staff, store, date)
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Сотрудник не работает на выбранной точке в указанную дату')
