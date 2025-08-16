@@ -22,6 +22,6 @@ def add_days(date, days):
 
 @register.filter('first_letter')
 def first_letter(text):
-    if isinstance(text, str):
+    if isinstance(text, str) and text != '':
         return text[0] + '.'
-    return False
+    return 'Empty Data (User)'

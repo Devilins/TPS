@@ -270,6 +270,22 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% if cash_staffs is not None %}
+                    <table class="table table-sm table-hover table-bordered mb-0 mt-3">
+                        <thead>
+                            <tr>
+                                <th scope="col">Личные кассы фотографов</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cas in cash_staffs %}
+                            <tr>
+                                <td style="text-align: left;"><i>{{ cas.photographer__name }} {{cas.photographer__f_name}}</i> - {{ cas.cash_staff }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
                 </div>
             </div>
         </div>

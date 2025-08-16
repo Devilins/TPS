@@ -2140,6 +2140,12 @@ def reports(request):
             check_cash = f'-> Расхождение! Нал на вечер {cash_date} - {cash_yesterday}'
             td_color = 0
 
+    # Личные кассы фотографов
+    if staffs_data.filter(position__in=['Фотограф', 'Видеограф', 'Универсальный фотограф', 'Выездной фотограф']).count() > 1:
+        cash_staffs = sales_data.values('photographer__name', 'photographer__f_name').annotate(cash_staff=Sum('sum'))
+    else:
+        cash_staffs = None
+
     return render(request, 'tph_system/fin_stats/reports.html', {
         'title': 'Сверка отчетов',
         'staffs_data': staffs_data,
@@ -2160,6 +2166,7 @@ def reports(request):
         'cash_s': cash_s,
         'check_cash': check_cash,
         'td_color': td_color,
+        'cash_staffs': cash_staffs,
         'current_filter_params': current_filter_params
     })
 
