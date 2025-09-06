@@ -1539,7 +1539,7 @@ def main_page(request):
     wdr = CashWithdrawn.objects.filter(date=selected_date).select_related('staff', 'store').order_by('store', 'staff')
 
     # Заканчивающиеся расходники
-    con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).select_related('store')
+    con_store = ConsumablesStore.objects.filter(count__lt=param_gets('cons_others')).exclude(consumable__icontains="Краска").select_related('store')
     con_store = con_store.union(
         ConsumablesStore.objects.filter(cons_short__in=['Бол. магн.', 'Вин. магн.', 'Ср. магн.'],
                                         count__lt=param_gets('cons_mgn')).select_related('store'))
@@ -1549,6 +1549,19 @@ def main_page(request):
     con_store = con_store.union(ConsumablesStore.objects.filter(cons_short='Визитки',
                                                                 count__lt=param_gets('cons_cards')).select_related(
         'store'))
+    try:
+        paints_cnt_less = Settings.objects.get(param="cons_paints").value
+    except ObjectDoesNotExist:
+        paints_cnt_less = 0
+        error = ImplEvents.objects.create(
+            event_type='Param_Gets_Error',
+            event_message=f"Нет такого параметра в Настройках => cons_paints. Для дальнейшей работы операции "
+                          f"добавьте в Настройки новый параметр cons_paints с нужным вам значением.",
+            status='Системная ошибка',
+            solved='Нет'
+        )
+        print(f"ImplEvents - новая запись {error}")
+    con_store = con_store.union(ConsumablesStore.objects.filter(consumable__icontains="Краска", count__lt=paints_cnt_less).select_related('store'))
     con_store = con_store.order_by('store')
 
     # Кассы за день
