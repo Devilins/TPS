@@ -1462,7 +1462,7 @@ def sales(request):
     cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
                                    ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
     cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ',
-                                     sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                     sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                      ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
 
     if cashbx_all is None: cashbx_all = 0
@@ -1576,7 +1576,7 @@ def main_page(request):
 
     # Кол-во заказов за день
     zak = list(Sales.objects.filter(date=selected_date,
-                                    sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                    sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                     ).values('store', 'sale_type').annotate(zak_count=Count('sale_type')).order_by('store'))
     zak_cnt = defaultdict(list)
     for i in zak:
@@ -2113,12 +2113,12 @@ def reports(request):
                'cashbx_qr': sales_data.filter(payment_type='Оплата по QR коду').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_trans': sales_data.filter(payment_type='Перевод по номеру телефона').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_orders': sales_data.filter(payment_type='Предоплаченный заказ',
-                                                 sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                                 sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                                  ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
                }
     sales_count = sales_data.count()
     zak_count = sales_data.filter(payment_type='Предоплаченный заказ',
-                                  sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                  sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                   ).values('sale_type').annotate(zak_cnt=Count('sale_type'))
 
     if summary['cashbx_all'] is None: summary['cashbx_all'] = 0

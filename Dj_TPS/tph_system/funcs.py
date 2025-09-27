@@ -73,7 +73,7 @@ def dt_format(date):
 def sal_calc(time_start, time_end):
     for day_date in date_generator(time_start, time_end):
         # Продажи за день без заказов
-        sales_today = Sales.objects.filter(date=day_date).exclude(sale_type__in=['Заказной фотосет', 'Заказ выездной'])
+        sales_today = Sales.objects.filter(date=day_date).exclude(sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка'])
         for sch in Schedule.objects.filter(date=day_date):
             cashbx_staff = 0  # Касса сотрудника за день
             sal_staff = 0  # Зарплата сотрудника за день
@@ -83,7 +83,7 @@ def sal_calc(time_start, time_end):
             sales_adm = sales_today.filter(staff=sch.staff).exclude(photographer=sch.staff)
             sales_univ = sales_today.filter(staff=sch.staff, photographer=sch.staff)
             sales_zak = Sales.objects.filter(date=day_date, photographer=sch.staff,
-                                             sale_type__in=['Заказной фотосет', 'Заказ выездной'])
+                                             sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка'])
 
             phot_in_store_cnt = len(Schedule.objects.filter(date=day_date, store=sch.store, position='Фотограф'))
 
@@ -103,34 +103,33 @@ def sal_calc(time_start, time_end):
                             delta = float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_budn')
                             sal_staff += delta
                             c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets(str(sl.store.short_name) + '_order_ph_budn')}) + '
-                    elif sl.sale_type == 'Заказ выездной':
-                        if sch.position == 'Выездной фотограф':
-                            delta = float(sl.photo_count) * param_gets('order_ph_out')
-                            sal_staff += delta
-                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
-                        elif sch.position == 'Видеограф':
-                            delta = float(sl.photo_count) * param_gets('video_order_ph_out')
-                            sal_staff += delta
-                            c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('video_order_ph_out')}) + '
-                        else:
-                            error = ImplEvents.objects.create(
-                                event_type='Salary_PositionError',
-                                event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position}. "
-                                              f"Влияет на расчет ЗП по выездному заказу",
-                                status='Бизнес ошибка',
-                                solved='Нет'
-                            )
-                            print(f"ImplEvents - новая запись {error}")
+                    elif sl.sale_type == 'Заказ выездной' and sch.position == 'Выездной фотограф':
+                        delta = float(sl.photo_count) * param_gets('order_ph_out')
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
+                    elif sl.sale_type == 'Заказная видеосъемка' and sch.position == 'Видеограф':
+                        delta = float(sl.photo_count) * param_gets('video_order_ph_out')
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('video_order_ph_out')}) + '
                     else:
                         error = ImplEvents.objects.create(
-                            event_type='Salary_SaleTypeError',
-                            event_message=f"В заказных продажах ошибка - sale_type ({sl.sale_type}) не соответствует "
-                                          f"заданным типам "
-                                          f"(Заказной фотосет или Заказ выездной), sale.id = {sl.id}; sale = {sl}",
+                            event_type='Salary_PositionError',
+                            event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position}. "
+                                          f"Влияет на расчет ЗП по {sl.sale_type}",
                             status='Бизнес ошибка',
                             solved='Нет'
                         )
                         print(f"ImplEvents - новая запись {error}")
+                    # else:
+                    #     error = ImplEvents.objects.create(
+                    #         event_type='Salary_SaleTypeError',
+                    #         event_message=f"В заказных продажах ошибка - sale_type ({sl.sale_type}) не соответствует "
+                    #                       f"заданным типам "
+                    #                       f"(Заказной фотосет или Заказ выездной), sale.id = {sl.id}; sale = {sl}",
+                    #         status='Бизнес ошибка',
+                    #         solved='Нет'
+                    #     )
+                    #     print(f"ImplEvents - новая запись {error}")
 
             if sales_univ.exists():
                 c_log = c_log + 'Универсал: '
@@ -246,7 +245,7 @@ def sal_calc(time_start, time_end):
             if sch.position == 'Администратор':
                 # Заказы, где сотрудник является только админом. Работает только для роли администратор
                 sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
-                                                               sale_type__in=['Заказной фотосет', 'Заказ выездной']
+                                                               sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                                                ).exclude(photographer=sch.staff)
                 if sales_zak_admin_service.exists():
                     c_log = c_log + 'Админу за сопровождение заказов: '
