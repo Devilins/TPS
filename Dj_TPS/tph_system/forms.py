@@ -361,14 +361,16 @@ class SalesForm(ModelForm):
             if payment_type != 'Предоплаченный заказ':
                 raise ValidationError('Тип оплаты у Заказов должен быть "Предоплаченный заказ"')
 
-            if date.weekday() in (5, 6):  # Выходные
-                wkn_cost = param_gets('stcst_' + str(sale_type))
-                if sum / photo_count != wkn_cost:
-                    raise ValidationError(f'Стоимость одного часа "{sale_type}" - {wkn_cost}, а у вас {sum // photo_count}')
-            else:  # Будни
-                bdn_cost = param_gets('stcst_' + str(sale_type) + '_будни')
-                if sum / photo_count != bdn_cost:
-                    raise ValidationError(f'Стоимость одного часа "{sale_type}" - {bdn_cost}, а у вас {sum // photo_count}')
+            # Проверки закомментированы по нужде сотрудников 30.09.2025
+            #
+            # if date.weekday() in (5, 6):  # Выходные
+            #     wkn_cost = param_gets('stcst_' + str(sale_type))
+            #     if sum / photo_count != wkn_cost:
+            #         raise ValidationError(f'Стоимость одного часа "{sale_type}" - {wkn_cost}, а у вас {sum // photo_count}')
+            # else:  # Будни
+            #     bdn_cost = param_gets('stcst_' + str(sale_type) + '_будни')
+            #     if sum / photo_count != bdn_cost:
+            #         raise ValidationError(f'Стоимость одного часа "{sale_type}" - {bdn_cost}, а у вас {sum // photo_count}')
 
         if not Schedule.objects.filter(staff=staff, date=date, store=store).exists():
             raise ValidationError('Администратор не работает на выбранной точке в указанную дату')
