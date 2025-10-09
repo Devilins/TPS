@@ -472,21 +472,21 @@ class CashWithdrawnForm(ModelForm):
         store = self.cleaned_data["store"]
         date = self.cleaned_data["date"]
 
+        if self.instance and self.instance.pk:
+            withdrawn_old = self.instance.withdrawn
+        else:
+            withdrawn_old = 0
+
         if withdrawn <= 0:
             raise ValidationError('Сумма должна быть положительной')
 
-        # Чтобы сравнивать всегда общую сумму нала (которая на точке и которую взяли как зп)
-        # withdrawns_on_store = CashWithdrawn.objects.filter(date=date, store=store).aggregate(wdr_sum=Sum('withdrawn'))['wdr_sum']
-        # if withdrawns_on_store is None:
-        #     withdrawns_on_store = 0
-
         try:
-            cash_on_store = CashStore.objects.get(date=date, store=store).cash_evn # + withdrawns_on_store
+            cash_on_store = CashStore.objects.get(date=date, store=store).cash_evn
         except ObjectDoesNotExist:
             cash_on_store = 0
 
-        if withdrawn > cash_on_store:
-            raise ValidationError(f'Нельзя забрать наличных больше, чем есть на точке ({cash_on_store})')
+        if withdrawn - withdrawn_old > cash_on_store:
+            raise ValidationError(f'Нельзя забрать наличных больше, чем есть на точке ({cash_on_store + withdrawn_old})')
 
         return withdrawn
 
