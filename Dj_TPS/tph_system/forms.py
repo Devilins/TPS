@@ -728,6 +728,16 @@ class TimeAndTypeSelectForm(Form):
     }),
                                          label='Заполняем зарплаты понедельно на основе дневных зарплат')
 
+    one_staff_calc = forms.ModelChoiceField(required=False,
+                                            queryset=Staff.objects.filter(dism_status="Работает"),
+                                            empty_label="Все сотрудники",
+                                            label='Выберите сотрудника для расчета зарплаты',
+                                            widget=Select(attrs={
+                                                'class': 'form-select',
+                                                'aria-label': 'Точка',
+                                                'label': 'Точка'
+                                            }))
+
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]
         if end_date > datetime.today().date():

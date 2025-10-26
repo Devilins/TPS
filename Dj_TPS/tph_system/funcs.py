@@ -70,11 +70,18 @@ def dt_format(date):
     return date.strftime("%d.%m.%Y")
 
 
-def sal_calc(time_start, time_end):
+def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добавляем переменную с объектом сотрудник, или с его 'id'
     for day_date in date_generator(time_start, time_end):
         # Продажи за день без заказов
         sales_today = Sales.objects.filter(date=day_date).exclude(sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка'])
-        for sch in Schedule.objects.filter(date=day_date):
+
+        if one_staff_calc:
+            staff_sch = Schedule.objects.filter(date=day_date, staff=one_staff_calc)
+        else:
+            staff_sch = Schedule.objects.filter(date=day_date)
+            # Если подсчет не по одному сотруднику, то оставляем фильтр без staff и загоняем все потом в for.
+
+        for sch in staff_sch:
             cashbx_staff = 0  # Касса сотрудника за день
             sal_staff = 0  # Зарплата сотрудника за день
 
@@ -131,7 +138,71 @@ def sal_calc(time_start, time_end):
                     #     )
                     #     print(f"ImplEvents - новая запись {error}")
 
-            if sales_univ.exists():
+            if sales_univ.exists() and sales_adm.exists():
+                # 1) Считаем общую кассу (sales_univ + sales_adm)
+                # 2) Мин оплата добавляется в зависимости от порога от общей кассы
+                # 3) ЗП Универсала от кассы универсала (без univ_min_payment)
+                # 4) ЗП Админа от кассы админа (без admin_min_payment - если роль не Админ)
+                #       Повышенный процент надо считать от общей кассы!
+                cashbx_univ = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                cashbx_adm = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                cashbx_sum = cashbx_univ + cashbx_adm
+                cashbx_staff += cashbx_sum
+                counting_flag = False
+                adm_pre_pay = None
+                if sch.position == 'Универсальный фотограф':
+                    c_log = c_log + 'Универсал + Админ: '
+                    if cashbx_sum <= param_gets('univ_cashbx_min_bord'):
+                        delta = param_gets('univ_min_payment')
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + '(У) + '
+                    else:
+                        counting_flag = True
+                elif sch.position == 'Администратор':
+                    c_log = c_log + 'Админ + Универсал: '
+                    adm_pre_pay = param_gets('admin_min_payment')
+                    if cashbx_sum <= param_gets('admin_cashbx_min_border'):
+                        delta = adm_pre_pay
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + '(А) + '
+                    else:
+                        counting_flag = True
+
+                if counting_flag:
+                    # ЗП Универсала
+                    delta = cashbx_univ * param_gets('univ_perc_payment') / 100
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + f' ({str(cashbx_univ)} * {param_gets('univ_perc_payment') / 100})(У) + '
+
+                    # ЗП Админа
+                    if day_date.weekday() in (5, 6):  # Выходные
+                        if cashbx_sum < param_gets('admin_cashbx_perc_border_wknd'):  # 20000
+                            if not adm_pre_pay:
+                                delta = cashbx_adm * param_gets('admin_stand_perc_pay_wknd') / 100  # 0.1
+                                c_log = c_log + str(delta) + f' ({cashbx_adm} * {param_gets('admin_stand_perc_pay_wknd') / 100})(А) + '
+                            else:
+                                delta = adm_pre_pay + cashbx_adm * param_gets('admin_stand_perc_pay_wknd') / 100  # 0.1
+                                c_log = c_log + str(delta) + f' ({adm_pre_pay} + {cashbx_adm} * {param_gets('admin_stand_perc_pay_wknd') / 100})(А) + '
+                            sal_staff += delta
+                        else:
+                            delta = cashbx_adm * param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_adm)} * {param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100})(А) + '
+                    else:
+                        if cashbx_sum < param_gets('admin_cashbx_perc_border_budn'):  # 10000
+                            if not adm_pre_pay:
+                                delta = cashbx_adm * param_gets('admin_stand_perc_pay_budn') / 100  # 0.1
+                                c_log = c_log + str(delta) + f' ({cashbx_adm} * {param_gets('admin_stand_perc_pay_budn') / 100})(А) + '
+                            else:
+                                delta = adm_pre_pay + cashbx_adm * param_gets('admin_stand_perc_pay_budn') / 100  # 0.1
+                                c_log = c_log + str(delta) + f' ({adm_pre_pay} + {cashbx_adm} * {param_gets('admin_stand_perc_pay_budn') / 100})(А) + '
+                            sal_staff += delta
+                        else:
+                            delta = cashbx_adm * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_adm)} * {param_gets('admin_incr_perc_pay_budn') / 100})(А) + '
+
+            elif sales_univ.exists():
                 c_log = c_log + 'Универсал: '
                 # Касса универсала
                 cashbx_sum = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
@@ -146,7 +217,7 @@ def sal_calc(time_start, time_end):
                     sal_staff += delta
                     c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('univ_perc_payment') / 100}) + '
 
-            if sales_ph.exists():
+            elif sales_ph.exists():
                 c_log = c_log + 'Фотограф: '
                 # Касса фотографа
                 cashbx_sum = int(sales_ph.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
@@ -183,7 +254,7 @@ def sal_calc(time_start, time_end):
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_budn') / 100}) + '
 
-            if sales_adm.exists():
+            elif sales_adm.exists():
                 c_log = c_log + 'Администратор: '
                 # Касса администратора
                 cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
@@ -332,7 +403,7 @@ def sal_calc(time_start, time_end):
             )
 
 
-def sal_weekly_update(time_start, time_end):
+def sal_weekly_update(time_start, time_end, one_staff_calc: Staff | None):
     for start_week in start_week_generator(time_start, time_end):
         # Вычисляем конец недели (воскресенье)
         end_week = start_week + timedelta(days=6)
@@ -353,7 +424,11 @@ def sal_weekly_update(time_start, time_end):
             )
             print(f"ImplEvents - новая запись {error}")
 
-        salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
+        if one_staff_calc:
+            salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week), staff=one_staff_calc)
+        else:
+            salary_week = Salary.objects.filter(date__in=date_generator(start_week, end_week))
+
         if salary_week.exists():
             # Группируем по сотрудникам и суммируем зп
             sal_group = salary_week.values('staff').annotate(sal_sum=Sum('salary_sum')).annotate(

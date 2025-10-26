@@ -1817,8 +1817,10 @@ def salary_calculation(request):
             end = form.cleaned_data['end_date']
             calc_flag = form.cleaned_data['sal_calc_flag']
             weekly_flag = form.cleaned_data['sal_weekly_flag']
-            if calc_flag is True: sal_calc(beg, end)
-            if weekly_flag is True: sal_weekly_update(beg, end)
+            one_staff_calc = form.cleaned_data['one_staff_calc']
+
+            if calc_flag is True: sal_calc(beg, end, one_staff_calc)
+            if weekly_flag is True: sal_weekly_update(beg, end, one_staff_calc)
             return redirect('salary_weekly')
     else:
         form = TimeAndTypeSelectForm()

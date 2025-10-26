@@ -27,6 +27,8 @@
                     <div class="form-error">{{ form.sal_weekly_flag.errors }}</div>
                 </div>
                 <br>
+                <p><label class="form-label" for="{{ form.end_date.id_for_label }}"><i>{{ form.one_staff_calc.label }}:</i></label><br>{{ form.one_staff_calc }}</p>
+                <div class="form-error">{{ form.one_staff_calc.errors }}</div>
                 <button class="btn btn-success" type="submit">Начать расчет</button>
                 <a class="btn btn-warning" href="{% url 'salary_weekly' %}" role="button">Отмена</a>
             </form>
