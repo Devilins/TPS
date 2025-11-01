@@ -13,6 +13,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ts = datetime.strptime(kwargs['time_start'], "%Y-%m-%d")
         te = datetime.strptime(kwargs['time_end'], "%Y-%m-%d")
-        sal_weekly_update(ts, te)
+        sal_weekly_update(ts, te, None)
 
         self.stdout.write(self.style.SUCCESS(f'Зарплаты понедельно внесены c {ts} по {te}'))

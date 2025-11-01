@@ -13,6 +13,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ts = datetime.strptime(kwargs['time_start'], "%Y-%m-%d")
         te = datetime.strptime(kwargs['time_end'], "%Y-%m-%d")
-        sal_calc(ts, te)
+        sal_calc(ts, te, None)
 
         self.stdout.write(self.style.SUCCESS(f'Зарплата подсчитана по дням c {ts} по {te}'))
