@@ -26,7 +26,7 @@
                                     Отчетный месяц: {{ stats_filter.form.date }}
                                 </div>
                                 <div class="col-md-auto">
-                                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 10px;">Применить</button>
                                 </div>
                             </div>
                     </form>
@@ -58,7 +58,7 @@
                         <td>{{ s.profit|floatformat:"g" }}</td>
                         <td>{{ s.date_updated }}</td>
                         <td>
-                            <button type="button" class="btn btn-link">
+                            <button type="button" class="btn btn-link py-0">
                                 <a href="{% url 'fin_stats_update' s.id %}?{{ current_filter_params }}">
                                     <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
@@ -88,7 +88,7 @@
                                 Сотрудник: {{ stats_staff_filter.form.staff}}
                             </div>
                             <div class="col-md-auto">
-                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                                <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 10px;">Применить</button>
                             </div>
                         </div>
                     </form>
@@ -125,7 +125,7 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination justify-content-center" style="margin-top: 25px;">
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
             {% if page_obj_st.has_previous %}
                 <li class="page-item">
                     {% if '?date' in request.get_full_path %}
@@ -177,16 +177,16 @@
             <form method="get" class="row g-3">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Дата начала</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date"
+                    <input type="date" class="form-control form-control-sm" id="start_date" name="start_date"
                            value="{{ start_date|date:'Y-m-d' }}">
                 </div>
                 <div class="col-md-4">
                     <label for="end_date" class="form-label">Дата окончания</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date"
+                    <input type="date" class="form-control form-control-sm" id="end_date" name="end_date"
                            value="{{ end_date|date:'Y-m-d' }}">
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary">Применить фильтр</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Применить фильтр</button>
                 </div>
             </form>
         </div>

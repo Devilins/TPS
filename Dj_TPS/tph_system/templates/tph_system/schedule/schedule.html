@@ -19,17 +19,6 @@
                 График работы сотрудников <br>
 
                 <div class="card card-body mt-3" style="font-size: 15px; max-width: 550px;">
-<!--                    <div class="row schedule-controls gy-3">-->
-<!--                        <div class="col-md">-->
-<!--                            <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>-->
-<!--                        </div>-->
-<!--                        <div class="col-md mt-md-4" style="padding: 0px;">-->
-<!--                            <span id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>-->
-<!--                        </div>-->
-<!--                        <div class="col-md">-->
-<!--                            <button class="btn btn-sm btn-primary" id="next-week">Следующая неделя →</button>-->
-<!--                        </div>-->
-<!--                    </div>-->
                     <div class="d-grid gap-2 d-md-block">
                             <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>
                             <span class="px-2" id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>
@@ -39,9 +28,9 @@
             </h4>
         </div>
 
-        <div class="table-responsive">
+        <div class="table-responsive" style="max-height: 78vh; overflow-y: auto;">
             <table class="table table-hover table-bordered align-middle" id="schedule-table" style="min-width: 900px;">
-                <thead>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
                     <tr>
                         <th>Сотрудник</th>
                         {% for i in "0123456"|make_list %}
@@ -110,7 +99,7 @@ $(document).ready(function() {
                         var cellContainer = $('<td>').attr('id', 'td_colored');
 
                         var select = $('<select>')
-                            .addClass('schedule-select form-select')
+                            .addClass('schedule-select form-select form-select-sm')
                             //.attr('onchange', 'colorset(this)')
                             .attr('id', 'id_store_select')
                             .attr('data-employee', staff.staff_id)
@@ -132,7 +121,7 @@ $(document).ready(function() {
 
                         // Добавляем input для времени работы
                         var workTimeInput = $('<input>')
-                            .addClass('form-control work-time-input')
+                            .addClass('form-control form-control-sm work-time-input')
                             .attr({
                                 'type': 'text',
                                 //'placeholder': 'Время работы',

@@ -19,7 +19,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
-    FinStatsMonthForm, TimeAndTypeSelectForm, CashStoreForm
+    FinStatsMonthForm, TimeAndTypeSelectForm, CashStoreForm, CheckReportsForm
 from .filters import *
 from .funcs import *
 
@@ -1016,6 +1016,46 @@ class FinStatsMonthDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delet
         return context
 
 
+class CheckReportsUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = CheckReports
+    form_class = CheckReportsForm
+    template_name = 'tph_system/check_reports/rep_update.html'
+    permission_required = 'tph_system.change_checkreports'
+    permission_denied_message = 'У вас нет прав на редактирование статусов отчетов'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('check_reports') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Проверка отчета'
+        context['card_title'] = 'Проверка отчета '
+        context['url_cancel'] = 'check_reports'
+        context['url_delete'] = 'check_reports_delete'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
+
+
+class CheckReportsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = CheckReports
+    template_name = 'tph_system/check_reports/rep_delete.html'
+    permission_required = 'tph_system.delete_checkreports'
+    permission_denied_message = 'У вас нет прав на удаление отчета'
+
+    def get_success_url(self):
+        # Возвращаем URL с сохраненными параметрами фильтрации
+        return reverse('check_reports') + '?' + self.request.GET.urlencode()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Отчеты - удаление'
+        context['card_title'] = 'Удаление отчета'
+        context['url_cancel'] = 'check_reports_update'
+        context['current_filter_params'] = self.request.GET.urlencode()
+        return context
+
+
 # ---------------------------Классы календаря----------------------------------
 # class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):
 #     template_name = 'tph_system/calendar/calendar.html'
@@ -1633,6 +1673,9 @@ def main_page(request):
 
     form = RefsAndTipsForm()
 
+    # Количество непроверенных отчетов
+    unchecked_rep = CheckReports.objects.filter(check_status='Не проверено').count()
+
     return render(request, 'tph_system/main_page/main_page.html', {
         'title': 'Главная страница',
         'sch': sch,
@@ -1651,7 +1694,8 @@ def main_page(request):
         'wdr': wdr,
         'zak_cnt': zak_cnt,
         'zak_all': zak_all,
-        'check_cash': check_cash
+        'check_cash': check_cash,
+        'unchecked_rep': unchecked_rep
     })
 
 
@@ -2161,6 +2205,17 @@ def reports(request):
     else:
         cash_staffs = None
 
+    # Статус проверки отчета
+    rep = CheckReports.objects.filter(store=selected_store, date=selected_date)
+    rep_color = -1
+    for r in rep:
+        if r.check_status == 'ОК':
+            rep_color = 1
+        elif r.check_status == 'Были ошибки':
+            rep_color = 2
+        elif r.check_status == 'Не проверено':
+            rep_color = 0
+
     return render(request, 'tph_system/fin_stats/reports.html', {
         'title': 'Сверка отчетов',
         'staffs_data': staffs_data,
@@ -2182,7 +2237,66 @@ def reports(request):
         'check_cash': check_cash,
         'td_color': td_color,
         'cash_staffs': cash_staffs,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        'rep': rep,
+        'rep_color': rep_color
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.view_checkreports', raise_exception=True)
+def check_reports(request):
+    rep = CheckReports.objects.all().select_related('store')
+
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if rep.filter(check_status='Не проверено').exists():
+        if not request.GET:
+            return redirect('{}?store=&date=&check_status=Не+проверено'.format(request.path))
+    else:
+        if not request.GET:
+            return redirect(('{}?store=&date=' + str(dt_format(datetime.today() - timedelta(1)))).format(request.path))
+
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
+    rep_filter = CheckReportsFilter(request.GET, queryset=rep)
+    rep = rep_filter.qs
+
+    # Пагинатор
+    paginator = Paginator(rep, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'tph_system/check_reports/check_reports.html', {
+        'title': 'Отчеты',
+        'current_filter_params': current_filter_params,
+        'rep_filter': rep_filter,
+        'paginator': paginator,
+        'page_obj': page_obj,
+        'rep_count': paginator.count
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.add_checkreports', raise_exception=True)
+def chk_rep_update(request):
+    # Сохраняем текущие GET-параметры для возможности возврата
+    current_filter_params = request.GET.urlencode()
+
+    if request.method == 'POST':
+        form = TimeSelectForm(request.POST)
+        if form.is_valid():
+            beg = form.cleaned_data['beg_date']
+            end = form.cleaned_data['end_date']
+            reports_list_update(beg, end)
+            return redirect(f'/check/reports/?{current_filter_params}')
+    else:
+        form = TimeSelectForm()
+
+    return render(request, 'tph_system/check_reports/rep_add_func.html', {
+        'title': 'Обновление отчетов',
+        'current_filter_params': current_filter_params,
+        'form': form
     })
 
 

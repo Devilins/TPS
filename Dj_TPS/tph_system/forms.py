@@ -896,3 +896,34 @@ class FinStatsStaffForm(ModelForm):
                 'placeholder': 'Сотрудник'
             })
         }
+
+
+class CheckReportsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = CheckReports
+        fields = ['sum_cashbox', 'check_status', 'comments']
+
+        labels = {
+            'sum_cashbox': 'Касса',
+            'check_status': 'Статус проверки',
+            'comments': 'Подробности проверки'
+        }
+
+        widgets = {
+            "sum_cashbox": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Касса'
+            }),
+            "check_status": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Статус проверки'
+            }),
+            "comments": Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Подробности проверки',
+                'rows': '1'
+            })
+        }

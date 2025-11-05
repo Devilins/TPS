@@ -555,6 +555,35 @@ def fin_stats_staff_calc(time_start, time_end):
             print(f"ImplEvents - новая запись {error}")
 
 
+def reports_list_update(time_start, time_end):
+    for day_date in date_generator(time_start, time_end):
+        now_day_sch = Schedule.objects.filter(date=day_date).values('store').annotate(cnt=Count('id'))
+        if now_day_sch:
+            for st_id in now_day_sch:
+                store = Store.objects.get(id=st_id['store'])
+                cashbx = Sales.objects.filter(date=day_date, store=store).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+
+                if not cashbx:
+                    cashbx = 0
+
+                # Update в БД
+                rep, created = CheckReports.objects.update_or_create(
+                    store=store,
+                    date=day_date,
+                    defaults={'sum_cashbox': cashbx}
+                )
+                action = 'Добавлено' if created else 'Обновлено'
+                print(f"reports_list_update => {rep}; {action}")
+
+                # Новая запись в системных событиях
+                rec = ImplEvents.objects.create(
+                    event_type='CheckReports_Update',
+                    event_message=f"Обновление отчетов за период {dt_format(time_start)} - {dt_format(time_end)}.\n"
+                                  f"Точка - {store}.\nВ БД {action}",
+                    status='Успешно'
+                )
+
+
 def qr_generate_tech():
     tech = Tech.objects.filter(name__icontains='Тушка')
     tech = tech.union(Tech.objects.filter(name__icontains='Объектив'))

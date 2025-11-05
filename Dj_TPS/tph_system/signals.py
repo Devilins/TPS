@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 
 from .middleware import *
-from .models import ImplEvents, TelegramUser, CashWithdrawn
+from .models import ImplEvents, TelegramUser, CashWithdrawn, CashStore
 from .funcs import sal_weekly_update
 
 
@@ -21,10 +21,11 @@ def set_user_edited(sender, instance, **kwargs):
 
 @receiver(post_save)
 def run_cw_sal_sync(sender, instance, **kwargs):
-    if sender == CashWithdrawn and hasattr(sender, 'week_beg_rec'):
-        if instance.week_beg_rec is not None:
+    if sender == CashWithdrawn and hasattr(sender, 'week_beg_rec') and hasattr(sender, 'staff'):
+        if instance.week_beg_rec is not None and instance.staff is not None:
             end_week = instance.week_beg_rec + timedelta(days=6)
             sal_weekly_update(instance.week_beg_rec, end_week)
+            sal_weekly_update(instance.week_beg_rec, end_week, instance.staff)
 
 
 @receiver(pre_delete)

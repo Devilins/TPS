@@ -89,6 +89,11 @@ class CashWithdrawnFilter(django_filters.FilterSet):
         lookup_expr='lte',
         widget=FengyuanChenDatePickerInput
     )
+    week_beg_rec = django_filters.DateFilter(
+        label="Первый день недели ЗП:",
+        field_name='week_beg_rec',
+        widget=FengyuanChenDatePickerInput
+    )
 
     class Meta:
         model = CashWithdrawn
@@ -203,3 +208,14 @@ class ReportsFilter(django_filters.FilterSet):
     class Meta:
         model = Schedule
         fields = ['store']
+
+
+class CheckReportsFilter(django_filters.FilterSet):
+    store = django_filters.ModelChoiceFilter(
+        queryset=Store.objects.filter(store_status="Действующая")
+    )
+    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+
+    class Meta:
+        model = CheckReports
+        fields = ['store', 'date', 'check_status']

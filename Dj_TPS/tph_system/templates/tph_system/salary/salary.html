@@ -41,7 +41,7 @@
                                 <div class="col col-md-auto">Дата c:<br>{{ s_filter.form.date_from}}</div>
                                 <div class="col col-md-auto">Дата по:<br>{{ s_filter.form.date_by}}</div>
                                 <div class="col col-md-auto">
-                                    <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
                                 </div>
                             </div>
                         </form>
@@ -52,10 +52,10 @@
         </div>
 
         <!-- Таблица с зарплатами -->
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
                 <caption><b style="margin-left: 20px;"> Количество записей: {{ sal_count }} </b></caption>
-                <thead>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
                     <tr>
                         <th scope="col">Сотрудник</th>
                         <th scope="col">Точка</th>
@@ -86,7 +86,7 @@
                         {% endif %}
                         <td>{{ s.date_upd }}</td>
                         <td>
-                            <button type="button" class="btn btn-link">
+                            <button type="button" class="btn btn-link py-0">
                                 <a href="{% url 'salary_update' s.id %}?{{ current_filter_params }}">
                                     <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
@@ -132,10 +132,10 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination justify-content-center" style="margin-top: 25px;">
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    {% if '?staff' in request.get_full_path %}
+                    {% if '?salary_sum' in request.get_full_path %}
                     <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
                     {% else %}
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
@@ -150,7 +150,7 @@
                         </li>
                     {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
                         <li class="page-item">
-                            {% if '?staff' in request.get_full_path %}
+                            {% if '?salary_sum' in request.get_full_path %}
                             <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
                             {% else %}
                             <a class="page-link" href="?page={{ p }}">{{ p }}</a>
@@ -161,7 +161,7 @@
             {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    {% if '?staff' in request.get_full_path %}
+                    {% if '?salary_sum' in request.get_full_path %}
                     <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
                     {% else %}
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>

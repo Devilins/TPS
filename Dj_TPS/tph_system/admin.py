@@ -149,6 +149,14 @@ class CashStoreAdmin(admin.ModelAdmin):
     list_filter = ['store', 'date']
     list_per_page = 30
 
+
+@admin.register(CheckReports)
+class CheckReportsAdmin(admin.ModelAdmin):
+    list_display = ['date', 'store', 'sum_cashbox', 'check_status', 'comments', 'date_created', 'date_upd', 'user_edited']
+    readonly_fields = ['date_created', 'date_upd', 'user_edited']
+    list_filter = ['date', 'check_status', 'store']
+    list_per_page = 30
+
 # @admin.register(CalendarEvent)
 # class CalendarEventAdmin(admin.ModelAdmin):
 #     list_display = ('title', 'event_type', 'start_date', 'end_date', 'employee')

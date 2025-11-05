@@ -413,6 +413,37 @@ class CashStore(models.Model):
     def __str__(self):
         return f'Нал {self.date} - {self.store}'
 
+
+class CheckReports(models.Model):
+    SLCT_CHECK_STATUS = (
+        ('ОК', 'ОК'),
+        ('Были ошибки', 'Были ошибки'),
+        ('Не проверено', 'Не проверено')
+    )
+    store = models.ForeignKey(Store, on_delete=models.PROTECT, verbose_name=u"Точка")
+    date = models.DateField(verbose_name=u"Дата")
+    sum_cashbox = models.IntegerField(default=0, verbose_name=u"Касса")
+    check_status = models.CharField(max_length=50, default="Не проверено", choices=SLCT_CHECK_STATUS, verbose_name=u"Статус проверки")
+    comments = models.TextField(null=True, blank=True, verbose_name=u"Подробности проверки")
+    date_created = models.DateTimeField(auto_now_add=True, editable=False, blank=True, verbose_name=u"Дата создания")
+    date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено")
+
+    class Meta:
+        verbose_name = 'Отчеты'
+        verbose_name_plural = 'Отчеты'
+        ordering = ['-date', 'store']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['store', 'date'],
+                name='unique_store_daily_reports'
+            )
+        ]
+
+    def __str__(self):
+        return f'Отчет от {self.date} на {self.store} - {self.check_status}'
+
 # --------------------------------------Календарь отпусков не используемый--------------------------------
 # class CalendarEvent(models.Model):
 #     EVENT_TYPES = [

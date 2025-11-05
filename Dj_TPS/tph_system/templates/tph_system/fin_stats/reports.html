@@ -88,6 +88,44 @@
             </div>
         </div>
 
+        {% if perms.tph_system.view_checkreports %}
+        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6" >
+            <div class="card shadow" id="check_rep_card">
+                <div class="card-header">
+                    <h5 class="card-title">Статус проверки отчета</h5>
+                </div>
+
+                <!-- Карточка с информацией о статусе проверки отчета -->
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-hover table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Статус</th>
+                                <th scope="col">Подробности проверки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in rep %}
+                            <tr>
+                                {% if rep_color == 1 %}
+                                <td class="table-success"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
+                                <td class="table-success">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
+                                {% elif rep_color == 2 %}
+                                <td class="table-warning"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
+                                <td class="table-warning">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
+                                {% elif rep_color == 0 %}
+                                <td class="table-danger"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
+                                <td class="table-danger">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 
     <div class="row align-items-start gy-3 mt-2">

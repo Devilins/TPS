@@ -14,5 +14,5 @@ class Command(BaseCommand):
         ts = datetime.strptime(kwargs['time_start'], "%Y-%m-%d")
         te = datetime.strptime(kwargs['time_end'], "%Y-%m-%d")
         sal_calc(ts, te, None)
-
-        self.stdout.write(self.style.SUCCESS(f'Зарплата подсчитана по дням c {ts} по {te}'))
+        reports_list_update(ts, te)
+        self.stdout.write(self.style.SUCCESS(f'Зарплата подсчитана по дням c {ts} по {te} и отчеты обновлены'))

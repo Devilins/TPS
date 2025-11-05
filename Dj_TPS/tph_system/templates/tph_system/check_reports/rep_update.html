@@ -1,0 +1,32 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card shadow" id="upd_del_forms">
+        <div class="card-header">
+            <h4 class="card-title">{{ card_title }}{{ checkreports.store }} за {{ checkreports.date}}</h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма изменения данных -->
+            <form method="post" class="form-control">
+                {% csrf_token %}
+                <div class="error_style">
+                    {% for error in form.non_field_errors %}
+                        <i>{{error}}</i>
+                    {% endfor %}
+                </div>
+                {% for f in form %}
+                <p><label class="form-label" for="{{ f.id_for_label }}"><i>{{ f.label }}:</i></label><br>{{ f }}</p>
+                <div class="form-error">{{ f.errors }}</div>
+                {% endfor %}
+                <button class="btn btn-success" type="submit">Сохранить</button>
+                <a class="btn btn-warning" href="{% url url_cancel %}?{{ current_filter_params }}" role="button">Отмена</a>
+                <a class="btn btn-danger" style="margin-left : 20px;"
+                   href="{% url url_delete checkreports.id %}?{{ current_filter_params }}" role="button">Удалить</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

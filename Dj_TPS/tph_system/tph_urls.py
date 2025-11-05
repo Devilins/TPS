@@ -20,6 +20,8 @@ urlpatterns = [
     path('fin_stats/', fin_stats, name='fin_stats'),
     path('fin_stats/calculation/', fin_stats_calc_view, name='fin_stats_calc'),
     path('reports/', reports, name='reports'),
+    path('check/reports/', check_reports, name='check_reports'),
+    path('check/reports/upd', chk_rep_update, name='check_reports_upd'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
     path('store/<int:pk>/delete', StoreDeleteView.as_view(), name='store_delete'),
     path('staff/<int:pk>/update', StaffUpdateView.as_view(), name='staff_update'),
@@ -47,6 +49,8 @@ urlpatterns = [
     path('salary/events/<int:pk>/update', ImplEventsUpdateView.as_view(), name='sal_events_update'),
     path('fin_stats/<int:pk>/update', FinStatsMonthUpdateView.as_view(), name='fin_stats_update'),
     path('fin_stats/<int:pk>/delete', FinStatsMonthDeleteView.as_view(), name='fin_stats_delete'),
+    path('check/reports/<int:pk>/update', CheckReportsUpdateView.as_view(), name='check_reports_update'),
+    path('check/reports/<int:pk>/delete', CheckReportsDeleteView.as_view(), name='check_reports_delete'),
 
     # path('base/', base_fx, name='base_fx'),
     # Календарь

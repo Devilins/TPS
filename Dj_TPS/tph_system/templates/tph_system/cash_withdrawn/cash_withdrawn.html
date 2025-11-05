@@ -46,7 +46,7 @@
                                 <div class="col col-md-auto">Дата по:<br>{{ c_filter.form.date_by}}</div>
                                 <div class="col col-md-auto">Первый день недели ЗП:<br>{{ c_filter.form.week_beg_rec}}</div>
                                 <div class="col col-md-auto">
-                                    <button type="submit" class="btn btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
                                 </div>
                             </div>
                         </form>
@@ -56,11 +56,11 @@
             </h4>
         </div>
 
-        <div class="table-responsive">
+        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
             <!-- Таблица с данными -->
-            <table class="table table-hover table-bordered align-middle caption-top" id="tableCons">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
                 <caption><b style="margin-left: 20px;"> Количество записей: {{ with_count }} </b></caption>
-                <thead>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
                     <tr>
                         <th scope="col">Точка</th>
                         <th scope="col">Сотрудник</th>
@@ -83,7 +83,7 @@
                         <td>{{ c.comment }}</td>
                         <td>{{ c.date_upd }}</td>
                         <td>
-                            <button type="button" class="btn btn-link">
+                            <button type="button" class="btn btn-link py-0">
                                 <a href="{% url 'c_w_update' c.id %}?{{ current_filter_params }}">
                                     <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
@@ -98,10 +98,10 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination justify-content-center" style="margin-top: 25px;">
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    {% if '?store' in request.get_full_path %}
+                    {% if '?withdrawn' in request.get_full_path %}
                     <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
                     {% else %}
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
@@ -116,7 +116,7 @@
                         </li>
                     {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
                         <li class="page-item">
-                            {% if '?store' in request.get_full_path %}
+                            {% if '?withdrawn' in request.get_full_path %}
                             <a class="page-link" href="{{ request.get_full_path }}&page={{ p }}">{{ p }}</a>
                             {% else %}
                             <a class="page-link" href="?page={{ p }}">{{ p }}</a>
@@ -127,7 +127,7 @@
             {% endif %}
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    {% if '?store' in request.get_full_path %}
+                    {% if '?withdrawn' in request.get_full_path %}
                     <a class="page-link" href="{{ request.get_full_path }}&page={{ page_obj.next_page_number }}">Следующая</a>
                     {% else %}
                     <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
