@@ -2151,7 +2151,7 @@ def reports(request):
     # Выччеты ЗП наличными
     wdr = CashWithdrawn.objects.filter(date=selected_date, store=selected_store).select_related('staff')
     # Касса
-    sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer').order_by('date')
+    sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer', 'user_edited').order_by('date')
     summary = {'cashbx_all': sales_data.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_park': sales_data.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_card': sales_data.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
@@ -2246,7 +2246,7 @@ def reports(request):
 @login_required
 @permission_required(perm='tph_system.view_checkreports', raise_exception=True)
 def check_reports(request):
-    rep = CheckReports.objects.all().select_related('store')
+    rep = CheckReports.objects.all().select_related('store', 'user_edited')
 
     # Если нет параметров в URL, редиректим с установленным фильтром
     if rep.filter(check_status='Не проверено').exists():
