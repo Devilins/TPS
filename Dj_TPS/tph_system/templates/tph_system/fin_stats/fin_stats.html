@@ -15,23 +15,24 @@
 <div class="container cont_store">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Финансы - компания <br>
+            <div class="card-title">
+                <h4>Финансы - компания</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="cs_filter">
+                <div class="card card-body p-2" id="cs_filter">
                     <form method="get">
-                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
-                                <div class="col-md-auto">
-                                    Отчетный месяц: {{ stats_filter.form.date }}
+                        <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-auto">
+                                    {{ stats_filter.form.date }}
+                                    <label style="left: 0.5rem">Отчетный месяц</label>
                                 </div>
-                                <div class="col-md-auto">
-                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 10px;">Применить</button>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                                 </div>
                             </div>
                     </form>
                 </div>
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица с Финансами - компания -->
@@ -74,26 +75,28 @@
 <div class="container cont_store" style="margin-top: 0px;">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Финансы - сотрудники <br>
+            <div class="card-title">
+                <h4>Финансы - сотрудники</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="s_filter">
+                <div class="card card-body p-2" id="s_filter">
                     <form method="get">
-                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
-                            <div class="col-md-auto">
-                                Отчетный месяц: {{ stats_staff_filter.form.date }}
+                        <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                            <div class="form-floating col-md-auto">
+                                {{ stats_staff_filter.form.date }}
+                                <label style="left: 0.5rem">Отчетный месяц</label>
                             </div>
-                            <div class="col-md-auto">
-                                Сотрудник: {{ stats_staff_filter.form.staff}}
+                            <div class="form-floating col-md-auto">
+                                {{ stats_staff_filter.form.staff}}
+                                <label style="left: 0.5rem">Сотрудник</label>
                             </div>
-                            <div class="col-md-auto">
-                                <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 10px;">Применить</button>
+                            <div class="col-md-auto align-self-center">
+                                <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                             </div>
                         </div>
                     </form>
                 </div>
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица с Финансами - сотрудники -->

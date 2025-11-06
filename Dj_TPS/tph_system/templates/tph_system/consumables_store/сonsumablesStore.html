@@ -19,34 +19,40 @@
 <div class="container cont_store">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Расходники на точке <br>
+            <div class="card-title">
+                <h4>Расходники на точке</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="cs_filter">
+                <div class="card card-body p-2" id="cs_filter">
                     <div class="container text-left">
                         <form method="get">
-                            <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
-                                <div class="col-md-auto">
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-auto">
                                     {% if perms.tph_system.consumables_view_all_stores %}
-                                    Точка: {{ cs_filter.form.store }}
+                                    {{ cs_filter.form.store }}
+                                    <label style="left: 0.5rem">Точка</label>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-auto">
-                                    Расходник: {{ cs_filter.form.consumable }}
+                                <div class="form-floating col-md-auto">
+                                    {{ cs_filter.form.consumable }}
+                                    <label style="left: 0.5rem">Расходник</label>
                                 </div>
-                                <div class="col-md-auto">
-                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 10px;">Применить</button>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица расходников -->
-        <div class="table-responsive" style="max-height: 73vh; overflow-y: auto;">
+        {% if paginator.num_pages > 1 %}
+        <div class="table-responsive" style="max-height: 72vh; overflow-y: auto;">
+        {% else %}
+        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
+        {% endif %}
             <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
                 <caption><b style="margin-left: 20px;"> Количество расходников: {{ cons_count }} </b></caption>
                 <thead style="position: sticky; top: 0; z-index: 10; background: white;">
@@ -114,7 +120,11 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
+        {% if paginator.num_pages > 1 %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 1rem; margin-bottom: 0px">
+        {% else %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 0px; margin-bottom: 0px">
+        {% endif %}
             {% if page_obj.has_previous %}
                 <li class="page-item">
                     {% if '?store' in request.get_full_path %}

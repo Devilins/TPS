@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import django_filters
 from django_filters import CharFilter, ChoiceFilter
-from django.forms import Select, NumberInput
+from django.forms import Select, NumberInput, TextInput
 
 from .forms import FengyuanChenDatePickerInput
 from .funcs import dt_format
@@ -10,9 +10,22 @@ from .models import *
 
 
 class ConsumablesStoreFilter(django_filters.FilterSet):
-    consumable = CharFilter(field_name='consumable', lookup_expr='icontains')  # icontains означает "содержит"
+    consumable = CharFilter(
+        field_name='consumable',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Расходник'
+        })
+    )
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.filter(store_status="Действующая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
 
     class Meta:
@@ -21,9 +34,53 @@ class ConsumablesStoreFilter(django_filters.FilterSet):
 
 
 class StaffFilter(django_filters.FilterSet):
-    f_name = CharFilter(field_name='f_name', lookup_expr='icontains')
-    name = CharFilter(field_name='name', lookup_expr='icontains')
-    o_name = CharFilter(field_name='o_name', lookup_expr='icontains')
+    f_name = CharFilter(
+        field_name='f_name',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Фамилия'
+        })
+    )
+    name = CharFilter(
+        field_name='name',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Имя'
+        })
+    )
+    o_name = CharFilter(
+        field_name='o_name',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Отчество'
+        })
+    )
+    date_empl = django_filters.DateFilter(
+        field_name='date_empl',
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Дата найма'
+        })
+    )
+    date_dism = django_filters.DateFilter(
+        field_name='date_dism',
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Дата увольнения'
+        })
+    )
+    dism_status = django_filters.ChoiceFilter(
+        field_name='dism_status',
+        choices=Staff.SLCT_DISM_STATUS,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Статус',
+            'label': 'Статус'
+        }))
 
     class Meta:
         model = Staff
@@ -31,10 +88,26 @@ class StaffFilter(django_filters.FilterSet):
 
 
 class TechFilter(django_filters.FilterSet):
-    name = CharFilter(field_name='name', lookup_expr='icontains')
-    serial_num = CharFilter(field_name='serial_num', lookup_expr='icontains')
+    name = CharFilter(field_name='name', lookup_expr='icontains',
+                      widget=TextInput(attrs={
+                          'class': 'form-control form-control-sm',
+                          'placeholder': 'Название техники'
+                      })
+                      )
+    serial_num = CharFilter(field_name='serial_num', lookup_expr='icontains',
+                            widget=NumberInput(attrs={
+                                'class': 'form-control form-control-sm',
+                                'placeholder': 'Серийный номер'
+                            })
+                            )
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.exclude(store_status="Закрытая")
+        queryset=Store.objects.exclude(store_status="Закрытая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
 
     class Meta:
@@ -44,25 +117,76 @@ class TechFilter(django_filters.FilterSet):
 
 class SalesFilter(django_filters.FilterSet):
     staff = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Администратор',
+            'label': 'Администратор'
+        })
     )
     photographer = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Фотограф',
+            'label': 'Фотограф'
+        })
     )
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.filter(store_status="Действующая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
     date_from = django_filters.DateFilter(
         label="Даты с",
         field_name='date',
         lookup_expr='gte',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты с'
+        })
     )
     date_by = django_filters.DateFilter(
         label="Даты по",
         field_name='date',
         lookup_expr='lte',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты по'
+        })
+    )
+    sale_type = django_filters.ChoiceFilter(
+        field_name='sale_type',
+        choices=Sales.SLCT_ST,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Что продали',
+            'label': 'Что продали'
+        })
+    )
+    payment_type = django_filters.ChoiceFilter(
+        field_name='payment_type',
+        choices=Sales.SLCT_PAYMENT,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Тип оплаты',
+            'label': 'Тип оплаты'
+        })
+    )
+    sum = django_filters.NumberFilter(
+        lookup_expr='icontains',
+        widget=NumberInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Сумма'
+        })
     )
 
     class Meta:
@@ -72,27 +196,56 @@ class SalesFilter(django_filters.FilterSet):
 
 class CashWithdrawnFilter(django_filters.FilterSet):
     staff = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'id': "floatingStaff",
+            'aria-label': 'Сотрудник',
+            'label': 'Сотрудник'
+        })
     )
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.filter(store_status="Действующая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
     date_from = django_filters.DateFilter(
         label="Даты с",
         field_name='date',
         lookup_expr='gte',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты с'
+        })
     )
     date_by = django_filters.DateFilter(
         label="Даты по",
         field_name='date',
         lookup_expr='lte',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты по'
+        })
     )
     week_beg_rec = django_filters.DateFilter(
-        label="Первый день недели ЗП:",
+        label="Первый день недели ЗП",
         field_name='week_beg_rec',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Первый день недели ЗП'
+        })
+    )
+    withdrawn = django_filters.NumberFilter(
+        lookup_expr='icontains',
+        widget=NumberInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Сумма'
+        })
     )
 
     class Meta:
@@ -101,8 +254,22 @@ class CashWithdrawnFilter(django_filters.FilterSet):
 
 
 class SettingsFilter(django_filters.FilterSet):
-    param = CharFilter(field_name='param', lookup_expr='icontains')
-    param_f_name = CharFilter(field_name='param_f_name', lookup_expr='icontains')
+    param = CharFilter(
+        field_name='param',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Параметр'
+        })
+    )
+    param_f_name = CharFilter(
+        field_name='param_f_name',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Описание'
+        })
+    )
 
     class Meta:
         model = Settings
@@ -110,24 +277,49 @@ class SettingsFilter(django_filters.FilterSet):
 
 
 class SalaryFilter(django_filters.FilterSet):
-    salary_sum = CharFilter(field_name='salary_sum', lookup_expr='icontains')
+    salary_sum = CharFilter(
+        field_name='salary_sum',
+        lookup_expr='icontains',
+        widget=NumberInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Зарплата'
+        })
+    )
     staff = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Сотрудник',
+            'label': 'Сотрудник'
+        })
     )
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.filter(store_status="Действующая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
     date_from = django_filters.DateFilter(
         label="Даты с",
         field_name='date',
         lookup_expr='gte',
-        widget=FengyuanChenDatePickerInput  # (attrs={'class': 'form-control form-control-sm'})
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты с'
+        })
     )
     date_by = django_filters.DateFilter(
         label="Даты по",
         field_name='date',
         lookup_expr='lte',
-        widget=FengyuanChenDatePickerInput
+        widget=FengyuanChenDatePickerInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Даты по'
+        })
     )
 
     class Meta:
@@ -136,10 +328,31 @@ class SalaryFilter(django_filters.FilterSet):
 
 
 class SalaryWeeklyFilter(django_filters.FilterSet):
-    week_begin = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+    week_begin = django_filters.DateFilter(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control form-control-sm',
+        'id': "floatingWB",
+        'placeholder': 'Дата начала недели'
+    }))
     staff = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'id': "floatingStaff",
+            'aria-label': 'Сотрудник',
+            'label': 'Сотрудник'
+        })
     )
+    paid_out = django_filters.ChoiceFilter(
+        field_name='paid_out',
+        choices=SalaryWeekly.SLCT_PAID,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'id': "floatingPO",
+            'aria-label': 'Выплачено',
+            'label': 'Выплачено'
+        }))
 
     class Meta:
         model = SalaryWeekly
@@ -155,7 +368,10 @@ class ImplEventsFilter(django_filters.FilterSet):
 
 
 class FinStatsMonthFilter(django_filters.FilterSet):
-    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control form-control-sm',
+        'placeholder': 'Отчетный месяц'
+    }))
 
     class Meta:
         model = FinStatsMonth
@@ -164,8 +380,18 @@ class FinStatsMonthFilter(django_filters.FilterSet):
 
 class FinStatsStaffFilter(django_filters.FilterSet):
     staff = django_filters.ModelChoiceFilter(
-        queryset=Staff.objects.filter(dism_status="Работает")
+        queryset=Staff.objects.filter(dism_status="Работает"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Сотрудник',
+            'label': 'Сотрудник'
+        })
     )
+    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control form-control-sm',
+        'placeholder': 'Отчетный месяц'
+    }))
 
     class Meta:
         model = FinStatsStaff
@@ -176,8 +402,8 @@ class MainPageFilter(django_filters.FilterSet):
     selected_date = django_filters.DateFilter(
         label="Выберите дату",
         widget=FengyuanChenDatePickerInput(attrs={
-                'class': 'form-control'
-            }),
+            'class': 'form-control'
+        }),
         initial=datetime.today()
     )
 
@@ -212,9 +438,27 @@ class ReportsFilter(django_filters.FilterSet):
 
 class CheckReportsFilter(django_filters.FilterSet):
     store = django_filters.ModelChoiceFilter(
-        queryset=Store.objects.filter(store_status="Действующая")
+        queryset=Store.objects.filter(store_status="Действующая"),
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Точка',
+            'label': 'Точка'
+        })
     )
-    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput)
+    date = django_filters.DateFilter(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control form-control-sm',
+        'placeholder': 'Дата'
+    }))
+    check_status = django_filters.ChoiceFilter(
+        field_name='check_status',
+        choices=CheckReports.SLCT_CHECK_STATUS,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Статус проверки',
+            'label': 'Статус проверки'
+        }))
 
     class Meta:
         model = CheckReports

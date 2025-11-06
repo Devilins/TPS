@@ -18,34 +18,53 @@
 <div class="container container-fluid staffs">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Список сотрудников <br>
+            <div class="card-title">
+                <h4>Список сотрудников</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="s_filter">
+                <div class="card card-body p-2" id="s_filter">
                     <div class="container text-left">
                         <form method="get">
-                            <div class="row">
-                                <div class="col col-md-auto">Фамилия:<br>{{ s_filter.form.f_name }}</div>
-                                <div class="col col-md-auto">Имя:<br>{{ s_filter.form.name }}</div>
-                                <div class="col col-md-auto">Отчество:<br>{{ s_filter.form.o_name }}</div>
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="col-md-3 col-sm-4">
+                                    {{ s_filter.form.f_name }}
+                                </div>
+                                <div class="col-md-3 col-sm-4">
+                                    {{ s_filter.form.name }}
+                                </div>
+                                <div class="col-md-3 col-sm-4">
+                                    {{ s_filter.form.o_name }}
+                                </div>
                             </div>
-                            <div class="row" style="margin-top: 10px">
-                                <div class="col col-md-auto">Дата найма:<br>{{ s_filter.form.date_empl }}</div>
-                                <div class="col col-md-auto">Дата увольнения:<br>{{ s_filter.form.date_dism }}</div>
-                                <div class="col col-md-auto">Статус:<br>{{ s_filter.form.dism_status }}</div>
-                                <div class="col col-md-auto">
-                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ s_filter.form.date_empl }}
+                                    <label style="left: 0.5rem">Дата найма</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ s_filter.form.date_dism }}
+                                    <label style="left: 0.5rem">Дата увольнения</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ s_filter.form.dism_status }}
+                                    <label style="left: 0.5rem">Статус</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица сотрудников -->
-        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+        {% if paginator.num_pages > 1 %}
+        <div class="table-responsive" style="max-height: 69vh; overflow-y: auto;">
+        {% else %}
+        <div class="table-responsive" style="max-height: 73vh; overflow-y: auto;">
+        {% endif %}
             <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
                 <caption><b style="margin-left: 20px;"> Количество сотрудников: {{ staff_count }} </b></caption>
                 <thead style="position: sticky; top: 0; z-index: 10; background: white;">
@@ -115,7 +134,11 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
+        {% if paginator.num_pages > 1 %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 1rem; margin-bottom: 0px">
+        {% else %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 0px; margin-bottom: 0px">
+        {% endif %}
             {% if page_obj.has_previous %}
                 <li class="page-item">
                     {% if '?f_name' in request.get_full_path or '?dism_status' in request.get_full_path%}

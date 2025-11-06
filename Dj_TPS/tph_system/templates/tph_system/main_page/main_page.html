@@ -36,11 +36,11 @@
     <!-- Количество непроверенных отчетов -->
     {% if unchecked_rep == 0 %}
         <a role="button" href="{% url 'check_reports' %}" class="btn btn-sm btn-outline-success my-xl-0 my-1" style="margin-right: 10px;">
-            Непроверенные отчеты ({{ unchecked_rep }})
+            Отчеты ({{ unchecked_rep }})
         </a>
     {% else %}
         <a role="button" href="{% url 'check_reports' %}" class="btn btn-sm btn-warning my-xl-0 my-1" style="margin-right: 10px;">
-            Непроверенные отчеты ({{ unchecked_rep }})
+            Отчеты ({{ unchecked_rep }})
         </a>
     {% endif %}
 {% endif %}
@@ -48,21 +48,21 @@
     <!-- Сообщения об ошибках выполнения бизнес функций -->
     {% if err_events_count == 0 %}
             <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-outline-success my-xl-0 my-1" style="margin-right: 10px;">
-                Ошибки выполнения ({{ err_events_count }})
+                BusinessErrors ({{ err_events_count }})
             </a>
         {% else %}
             <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-warning my-xl-0 my-1" style="margin-right: 10px;">
-                Ошибки выполнения ({{ err_events_count }})
+                BusinessErrors ({{ err_events_count }})
             </a>
         {% endif %}
     <!-- Сообщения о системных ошибках -->
     {% if sys_errors_count == 0 %}
         <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-outline-success my-xl-0 my-1">
-            Системные ошибки ({{ sys_errors_count }})
+            SystemErrors ({{ sys_errors_count }})
         </a>
     {% else %}
         <a role="button" href="{% url 'sal_events' %}" class="btn btn-sm btn-danger my-xl-0 my-1">
-            Системные ошибки ({{ sys_errors_count }})
+            SystemErrors ({{ sys_errors_count }})
         </a>
     {% endif %}
 {% endif %}

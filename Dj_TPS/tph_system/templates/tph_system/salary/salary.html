@@ -23,36 +23,53 @@
 <div class="container cont_store">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Зарплаты сотрудников по дням <br>
+            <div class="card-title">
+                <h4>Зарплаты сотрудников по дням</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="s_filter">
+                <div class="card card-body p-2" id="s_filter">
                     <div class="container text-left">
                         <form method="get">
-                            <div class="row">
-                                <div class="col col-md-auto">Зарплата:<br>{{ s_filter.form.salary_sum}}</div>
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-auto">
+                                    {{ s_filter.form.salary_sum}}
+                                    <label for="floatingSS" style="left: 0.5rem">Зарплата</label>
+                                </div>
                                 {% if perms.tph_system.view_all_salary %}
-                                <div class="col col-md-auto">Сотрудник:<br>{{ s_filter.form.staff}}</div>
+                                <div class="form-floating col-md-auto">
+                                    {{ s_filter.form.staff}}
+                                    <label for="floatingStaff" style="left: 0.5rem">Сотрудник</label>
+                                </div>
                                 {% endif %}
-                                <div class="col col-md-auto">Точка:<br>{{ s_filter.form.store }}</div>
-                            </div>
-                            <div class="row" style="margin-top: 10px">
-                                <div class="col col-md-auto">Дата c:<br>{{ s_filter.form.date_from}}</div>
-                                <div class="col col-md-auto">Дата по:<br>{{ s_filter.form.date_by}}</div>
-                                <div class="col col-md-auto">
-                                    <button type="submit" class="btn btn-sm btn-primary" style="margin-left: 0px; margin-top: 20px">Применить</button>
+                                <div class="form-floating col-md-auto">
+                                    {{ s_filter.form.store }}
+                                    <label for="floatingStore" style="left: 0.5rem">Точка</label>
+                                </div>
+                                <div class="form-floating col-md-auto">
+                                    {{ s_filter.form.date_from}}
+                                    <label for="floatingDF" style="left: 0.5rem">Даты с</label>
+                                </div>
+                                <div class="form-floating col-md-auto">
+                                    {{ s_filter.form.date_by}}
+                                    <label for="floatingDB" style="left: 0.5rem">Даты по</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
 
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица с зарплатами -->
-        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+        {% if paginator.num_pages > 1 %}
+        <div class="table-responsive" style="max-height: 72vh; overflow-y: auto;">
+        {% else %}
+        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
+        {% endif %}
             <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableCons">
                 <caption><b style="margin-left: 20px;"> Количество записей: {{ sal_count }} </b></caption>
                 <thead style="position: sticky; top: 0; z-index: 10; background: white;">
@@ -132,7 +149,11 @@
 
     <!-- Пагинация -->
     <nav class="list-pages">
-        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 25px;">
+        {% if paginator.num_pages > 1 %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 1rem; margin-bottom: 0px">
+        {% else %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 0px; margin-bottom: 0px">
+        {% endif %}
             {% if page_obj.has_previous %}
                 <li class="page-item">
                     {% if '?salary_sum' in request.get_full_path %}
