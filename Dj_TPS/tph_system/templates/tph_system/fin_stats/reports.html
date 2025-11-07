@@ -362,9 +362,9 @@
                             {% for sale in sales_data %}
                             <tr>
                                 <td><a href="{% url 'sales_update' sale.id %}?{{current_filter_params}}">{{ sale.staff }}</a></td>
-                                <td>{{ sale.photographer }}</td>
-                                <td>{{ sale.sale_type }}</td>
-                                <td>{{ sale.payment_type }}</td>
+                                <td><a href="{% url 'sales_update' sale.id %}?{{current_filter_params}}">{{ sale.photographer }}</a></td>
+                                <td><a href="{% url 'sales_update' sale.id %}?{{current_filter_params}}">{{ sale.sale_type }}</a></td>
+                                <td><a href="{% url 'sales_update' sale.id %}?{{current_filter_params}}">{{ sale.payment_type }}</a></td>
                                 <td><u>{{ sale.sum|floatformat:"g" }}</u></td>
                                 <td>{{ sale.photo_count|floatformat:"-2g" }}</td>
 <!--                                <td>{{ sale.cl_email }}</td>-->
