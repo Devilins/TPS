@@ -111,8 +111,8 @@
                                 <td class="table-success"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
                                 <td class="table-success">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
                                 {% elif rep_color == 2 %}
-                                <td class="table-warning"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
-                                <td class="table-warning">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
+                                <td class="table-primary"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
+                                <td class="table-primary">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>
                                 {% elif rep_color == 0 %}
                                 <td class="table-danger"><a href="{% url 'check_reports_update' s.id %}"><i>{{ s.check_status }}</i></a></td>
                                 <td class="table-danger">{% if s.comments != None %} {{ s.comments }} {% endif %}</td>

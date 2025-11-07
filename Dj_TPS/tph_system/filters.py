@@ -360,7 +360,14 @@ class SalaryWeeklyFilter(django_filters.FilterSet):
 
 
 class ImplEventsFilter(django_filters.FilterSet):
-    event_message = CharFilter(field_name='event_message', lookup_expr='icontains')
+    event_message = CharFilter(
+        field_name='event_message',
+        lookup_expr='icontains',
+        widget=TextInput(attrs={
+            'class': 'form-control form-control-sm',
+            'placeholder': 'Текст события'
+        })
+    )
 
     class Meta:
         model = ImplEvents

@@ -71,7 +71,17 @@
                         <td><a href="{% url 'reports' %}?selected_date={{ t.date|date:'d.m.Y' }}&selected_store={{ t.store.id }}">{{ t.store }}</a></td>
                         <td><a href="{% url 'reports' %}?selected_date={{ t.date|date:'d.m.Y' }}&selected_store={{ t.store.id }}">{{ t.date }}</a></td>
                         <td><a href="{% url 'reports' %}?selected_date={{ t.date|date:'d.m.Y' }}&selected_store={{ t.store.id }}">{{ t.sum_cashbox }}</a></td>
-                        <td><a href="{% url 'reports' %}?selected_date={{ t.date|date:'d.m.Y' }}&selected_store={{ t.store.id }}">{{ t.check_status }}</a></td>
+                        {% if t.check_status == 'ОК' %}
+                        <td class="table-success">
+                        {% elif t.check_status == 'Были ошибки' %}
+                        <td class="table-primary">
+                        {% elif t.check_status == 'Не проверено' %}
+                        <td class="table-danger">
+                        {% else %}
+                        <td>
+                        {% endif %}
+                            <a href="{% url 'reports' %}?selected_date={{ t.date|date:'d.m.Y' }}&selected_store={{ t.store.id }}">{{ t.check_status }}</a>
+                        </td>
                         <td>
                         {% if t.comments != None %}
                             {{ t.comments }}

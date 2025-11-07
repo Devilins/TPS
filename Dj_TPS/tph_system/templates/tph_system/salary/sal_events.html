@@ -13,29 +13,30 @@
 <div class="container cont_store">
     <div class="card shadow" style="width: 100%;">
         <div class="card-header">
-            <h4 class="card-title">
-                Ошибки в работе системы <br>
+            <div class="card-title">
+                <h4>Ошибки в работе системы</h4>
 
                 <!-- Фильтр -->
-                <div class="card card-body" id="cs_filter">
+                <div class="card card-body p-2" id="cs_filter">
                     <form method="get">
-                        <div class="row gy-sm-0 py-sm-0 gy-2 py-2">
-                            <div class="col-md-auto">
-                                Текст события: {{ err_filter.form.event_message}}
+                        <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                            <div class="form-floating col-md-auto">
+                                {{ err_filter.form.event_message}}
+                                <label style="left: 0.5rem">Текст события</label>
                             </div>
-                            <div class="col-md-auto">
-                                <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Применить</button>
+                            <div class="col-md-auto align-self-center">
+                                <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                             </div>
                         </div>
                     </form>
                 </div>
-            </h4>
+            </div>
         </div>
 
         <!-- Таблица с событиями -->
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle" id="tableCons">
-                <thead>
+        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle" id="tableCons">
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
                     <tr>
                         <th scope="col">Тип события</th>
                         <th scope="col">Текст события</th>
@@ -54,7 +55,7 @@
                         <td>{{ ev.solved }}</td>
                         <td>{{ ev.date_created }}</td>
                         <td>
-                            <button type="button" class="btn btn-link">
+                            <button type="button" class="btn btn-link py-0">
                                 <a href="{% url 'sal_events_update' ev.id %}?{{ current_filter_params }}">
                                     <img src="{% static 'tph_system/images/i_edit.png' %}" style="width: 25px" alt="Изменить"></a>
                             </button>
