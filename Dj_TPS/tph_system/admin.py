@@ -1,8 +1,20 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
 from tph_system.models import *
 
-# admin.site.register(Staff)
+
+class CustomUserAdmin(UserAdmin):
+    def user_groups(self, obj):
+        return ", ".join([group.name for group in obj.groups.all()])
+    user_groups.short_description = 'Группы'
+
+    list_display = ('username', 'first_name', 'last_name', 'is_active', 'is_staff', 'user_groups')
+    list_per_page = 40
+
+
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
 
 
 @admin.register(Staff)
@@ -10,28 +22,30 @@ class StaffAdmin(admin.ModelAdmin):
     readonly_fields = ['date_upd', 'user_edited']
     list_display = ('name', 'o_name', 'f_name', 'dism_status', 'st_username')
     list_filter = ('dism_status', 'name')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(TelegramUser)
 class TelegramUserAdmin(admin.ModelAdmin):
     list_display = ('user', 'telegram_id', 'edited_at', 'access_token', 'refresh_token', 'created_at')
     list_filter = ('user', 'telegram_id')
-    list_per_page = 30
+    list_per_page = 40
+
 
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
     list_display = ('name', 'short_name', 'store_status', 'date_upd', 'user_edited')
     list_filter = ('store_status', 'name')
-    list_per_page = 30
+    list_per_page = 40
+
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
     list_display = ('date', 'store', 'work_time', 'staff', 'position', 'date_upd', 'user_edited')
     list_filter = ('date', 'position', 'store', 'staff')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(ConsumablesStore)
@@ -39,7 +53,7 @@ class ConsumablesStoreAdmin(admin.ModelAdmin):
     readonly_fields = ('change_data', 'user_edited')
     list_display = ('consumable', 'cons_short', 'store', 'count', 'change_data', 'user_edited')
     list_filter = ('store', 'consumable')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(Sales)
@@ -49,13 +63,13 @@ class SalesAdmin(admin.ModelAdmin):
     list_filter = ('date', 'store')
     search_fields = ('sale_type', 'sum')
     search_help_text = 'Поиск по типу продажи или сумме'
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(ConsumablesSales)
 class ConsumablesSalesAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(Salary)
@@ -63,7 +77,7 @@ class SalaryAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
     list_display = ('date', 'store', 'staff', 'salary_sum', 'date_upd', 'user_edited')
     list_filter = ('store', 'staff')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(CashWithdrawn)
@@ -71,7 +85,7 @@ class CashWithdrawnAdmin(admin.ModelAdmin):
     readonly_fields = ('date_upd', 'user_edited')
     list_display = ('date', 'store', 'staff', 'withdrawn', 'week_beg_rec', 'date_upd', 'user_edited')
     list_filter = ('store', 'staff', 'week_beg_rec')
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(Tech)
@@ -81,7 +95,7 @@ class TechAdmin(admin.ModelAdmin):
     list_filter = ('store', 'name')
     search_fields = ['name', 'serial_num']
     search_help_text = 'Поиск по наименованию и серийному номеру'
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(RefsAndTips)
@@ -91,7 +105,7 @@ class RefsAndTipsAdmin(admin.ModelAdmin):
     search_fields = ['tip']
     list_filter = ['title']
     search_help_text = 'Поиск по информации'
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(Settings)
@@ -100,7 +114,7 @@ class SettingsAdmin(admin.ModelAdmin):
     list_display = ('param', 'param_f_name', 'value', 'date_upd', 'user_edited')
     search_fields = ('param', 'param_f_name')
     search_help_text = 'Поиск по параметру и описанию'
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(ImplEvents)
@@ -110,7 +124,7 @@ class ImplEventsAdmin(admin.ModelAdmin):
     list_filter = ('date_updated', 'status', 'solved', 'event_type')
     search_fields = ['event_message']
     search_help_text = 'Поиск по тексту события'
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(SalaryWeekly)
@@ -118,7 +132,7 @@ class SalaryWeeklyAdmin(admin.ModelAdmin):
     list_display = ['week_begin', 'week_end', 'staff', 'cash_box_week', 'salary_sum', 'paid_out', 'date_updated', 'user_edited']
     readonly_fields = ('date_updated', 'user_edited')
     list_filter = ['staff']
-    list_per_page = 30
+    list_per_page = 40
 
     # def week_begin_display(self, obj):
     #     return obj.week_begin.strftime('%d %b')
@@ -131,7 +145,7 @@ class FinStatsMonthAdmin(admin.ModelAdmin):
     list_display = ['date', 'revenue', 'salaries', 'expenses', 'profit']
     readonly_fields = ('date_updated', 'user_edited')
     list_filter = ['date']
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(FinStatsStaff)
@@ -139,7 +153,7 @@ class FinStatsStaffAdmin(admin.ModelAdmin):
     list_display = ['staff', 'date', 'cash_box', 'salary']
     readonly_fields = ('date_updated', 'user_edited')
     list_filter = ['staff', 'date']
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(CashStore)
@@ -147,7 +161,7 @@ class CashStoreAdmin(admin.ModelAdmin):
     list_display = ['date', 'store', 'cash_mrn', 'cash_evn', 'date_created', 'date_upd', 'user_edited']
     readonly_fields = ('date_created', 'date_upd', 'user_edited')
     list_filter = ['store', 'date']
-    list_per_page = 30
+    list_per_page = 40
 
 
 @admin.register(CheckReports)
@@ -155,7 +169,8 @@ class CheckReportsAdmin(admin.ModelAdmin):
     list_display = ['date', 'store', 'sum_cashbox', 'check_status', 'comments', 'date_created', 'date_upd', 'user_edited']
     readonly_fields = ['date_created', 'date_upd', 'user_edited']
     list_filter = ['date', 'check_status', 'store']
-    list_per_page = 30
+    list_per_page = 40
+
 
 # @admin.register(CalendarEvent)
 # class CalendarEventAdmin(admin.ModelAdmin):
