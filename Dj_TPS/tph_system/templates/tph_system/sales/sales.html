@@ -46,6 +46,19 @@
     </li>
     {% endif %}
 {% endif %}
+{% if perms.tph_system.view_checkreports %}
+    <li class="nav-item">
+        <div class="nav-link dropdown">
+            <button type="button" class="btn btn-sm btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Экспорт
+            </button>
+            <ul class="dropdown-menu">
+<!--                <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&_export=csv">CSV</a></li>-->
+                <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&_export=xlsx">Excel</a></li>
+            </ul>
+        </div>
+    </li>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block event_msg %}

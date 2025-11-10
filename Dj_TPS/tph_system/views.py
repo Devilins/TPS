@@ -27,6 +27,12 @@ from .funcs import *
 from rest_framework import viewsets, status
 from .serializers import MonitoringSerializer, TelegramUserSerializer, UserSerializer
 
+# Генерация отчетов
+import django_tables2 as tables
+from django_tables2.export.export import TableExport
+from .tables import SalesReportTable, export_to_excel_template, standard_export, SalaryWeekReportTable, \
+    SalaryReportTable
+
 
 # Для календаря
 # from schedule.views import CalendarByPeriodsView
@@ -1495,22 +1501,15 @@ def sales(request):
     sales_all = sale_filter.qs
 
     # Итоги продаж
-    cashbx_all = sales_all.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
-    cashbx_park = sales_all.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
-    cashbx_card = sales_all.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
-    cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+    cashbx_all = sales_all.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
+    cashbx_park = sales_all.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
+    cashbx_card = sales_all.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
+    cashbx_cash = sales_all.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
     cashbx_qr_p = sales_all.filter(payment_type__in=['Оплата по QR коду', 'Перевод по номеру телефона']
-                                   ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+                                   ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
     cashbx_orders = sales_all.filter(payment_type='Предоплаченный заказ',
                                      sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
-                                     ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
-
-    if cashbx_all is None: cashbx_all = 0
-    if cashbx_park is None: cashbx_park = 0
-    if cashbx_card is None: cashbx_card = 0
-    if cashbx_cash is None: cashbx_cash = 0
-    if cashbx_qr_p is None: cashbx_qr_p = 0
-    if cashbx_orders is None: cashbx_orders = 0
+                                     ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'] or 0
 
     # Сотрудники без ролей
     staff_without_role = len(Schedule.objects.filter(position='Роль не указана', date__lte=datetime.now()))
@@ -1536,6 +1535,17 @@ def sales(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Генерация отчета
+    table = SalesReportTable(sales_all)
+    date_from = sale_filter.form.cleaned_data.get('date_from')
+    date_by = sale_filter.form.cleaned_data.get('date_by')
+
+    export_format = request.GET.get('_export', None)
+    if export_format == 'xlsx':
+        return export_to_excel_template(table, sales_all, date_from, date_by, "Sales")
+    elif TableExport.is_valid_format(export_format):
+        return standard_export(table, date_from, date_by, export_format, "Sales")
+
     return render(request, 'tph_system/sales/sales.html', {
         'title': 'Продажи',
         'form': form,
@@ -1554,7 +1564,9 @@ def sales(request):
         'cashbx_orders': cashbx_orders,
         'current_filter_params': current_filter_params,
         'staff_without_role': staff_without_role,
-        'cash_on_store': cash_on_store
+        'cash_on_store': cash_on_store,
+        # Генерация отчетов
+        'export_formats': ['csv', 'xlsx'],
     })
 
 
@@ -1838,6 +1850,14 @@ def salary_weekly(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Генерация отчета
+    table = SalaryWeekReportTable(slr)
+    week_begin = sw_filter.form.cleaned_data.get('week_begin')
+
+    export_format = request.GET.get('_export', None)
+    if TableExport.is_valid_format(export_format):
+        return standard_export(table, week_begin, week_begin + timedelta(days=6), export_format, "Salary Weekly")
+
     return render(request, 'tph_system/salary_weekly/salary_weekly.html', {
         'title': 'Зарплата по неделям',
         'sw_filter': sw_filter,
@@ -1847,7 +1867,9 @@ def salary_weekly(request):
         'page_obj': page_obj,
         'paginator': paginator,
         'sal_week_count': paginator.count,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        # Генерация отчетов
+        'export_formats': ['csv', 'xlsx'],
     })
 
 
@@ -1913,6 +1935,15 @@ def salary_details(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Генерация отчета
+    table = SalaryReportTable(slr)
+    date_from = s_filter.form.cleaned_data.get('date_from')
+    date_by = s_filter.form.cleaned_data.get('date_by')
+
+    export_format = request.GET.get('_export', None)
+    if TableExport.is_valid_format(export_format):
+        return standard_export(table, date_from, date_by, export_format, "Salary")
+
     return render(request, 'tph_system/salary/salary.html', {
         'title': 'Зарплата по дням',
         'form': form,
@@ -1920,7 +1951,9 @@ def salary_details(request):
         'page_obj': page_obj,
         'paginator': paginator,
         'sal_count': paginator.count,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        # Генерация отчетов
+        'export_formats': ['csv', 'xlsx'],
     })
 
 
