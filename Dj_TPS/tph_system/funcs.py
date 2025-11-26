@@ -338,12 +338,20 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                 if sales_order_zak.exists():
                     cashbx_staff += int(sales_order_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                     for sl in sales_order_zak:
-                        if sl.photo_count >= 2:
-                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out_less')
-                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_less')}) + '
-                        else:
-                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out')
-                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
+                        if day_date.weekday() in (5, 6):  # Выходные
+                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out_wknd')
+                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_wknd')}) + '
+                        else: # Будни
+                            sal_staff += float(sl.photo_count) * param_gets('order_ph_out_budn')
+                            c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_budn')}) + '
+
+                        # ------Старый подсчет, который зависит от кол-ва часов в заказе.
+                        # if sl.photo_count >= 2:
+                        #     sal_staff += float(sl.photo_count) * param_gets('order_ph_out_less')
+                        #     c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_less')}) + '
+                        # else:
+                        #     sal_staff += float(sl.photo_count) * param_gets('order_ph_out')
+                        #     c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
 
                 if sales_ph_order.exists():
                     c_log = c_log + 'Фотограф(В): '
