@@ -1,12 +1,16 @@
 {% extends 'tph_system/base.html' %}
 
 {% block func_buttons %}
-<!-- Кнопка модального окна для ввода графика
-{% if perms.tph_system.add_schedule %}
-<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-schedule-form">
-    Новая Запись
-</button>
-{% endif %} -->
+{% if perms.tph_system.view_workvacschedule %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'workvac_schedule' %}">
+            <button type="button" class="btn btn-sm btn-warning">График выходов и отпусков</button>
+            {% if not workvac_n_w_check %}
+            <p class="text-danger">Заполните график выходов на следующую неделю</p>
+            {% endif %}
+        </a>
+    </li>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}
@@ -29,17 +33,24 @@
         </div>
 
         <div class="table-responsive" style="max-height: 78vh; overflow-y: auto;">
-            <table class="table table-hover table-bordered align-middle" id="schedule-table" style="min-width: 900px;">
+            <table class="table table-bordered table-hover align-middle" id="schedule-table" style="min-width: 900px;">
                 <thead style="position: sticky; top: 0; z-index: 10; background: white;">
                     <tr>
-                        <th>Сотрудник</th>
+                        <th style="width: 15%;">Сотрудник</th>
                         {% for i in "0123456"|make_list %}
-                            <th class="date-header"></th>
+                            <th class="date-header" style="width: 12.14%;"></th>
                         {% endfor %}
                     </tr>
                 </thead>
-                <tbody>
-
+                <tbody id="schedule-tbody">
+                    <!-- Индикатор загрузки -->
+                    <tr id="loading-row">
+                        <td colspan="8" class="text-center py-4">
+                            <div class="loading-spinner-large"></div>
+                            <div class="mt-2">Загрузка графика...</div>
+                        </td>
+                    </tr>
+                    <!-- Данные будут загружены через JavaScript -->
                 </tbody>
             </table>
         </div>
@@ -47,12 +58,182 @@
 
 </div>
 
+<!-- Модальное окно для редактирования расписания -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal-employee-info" class="mb-2 fw-bold"></div>
+                <div id="modal-date-info" class="mb-2"></div>
 
+                <!-- Информация о статусе из WorkVacSchedule -->
+                <div id="modal-workvac-info" class="mb-2" style="display: none;">
+                    <span class="badge text-bg-dark" id="workvac-status-text"></span>
+                </div>
+
+                <div id="store-time-container" class="mb-2">
+                    <!-- Здесь будут динамически добавляться строки точек и времени -->
+                </div>
+
+                {% if perms.tph_system.change_schedule %}
+                <button type="button" class="btn btn-sm btn-outline-success float-end mt-2" id="add-store-btn">
+                    + Добавить точку
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.schedule-cell {
+    cursor: pointer;
+    min-height: 60px;
+    padding: 8px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    position: relative;
+}
+
+.schedule-cell:hover {
+    background-color: #f8f9fa !important;
+    transition: 0.2s ease;
+    z-index: 5;
+    filter: brightness(0.9);
+}
+
+/* Цвета для разных точек - используем !important для переопределения Bootstrap */
+.schedule-cell.store-color-LLAzv {
+    background-color: #d4edda !important;
+    border-left: 4px solid #28a745 !important;
+}
+.schedule-cell.store-color-LLGgr {
+    background-color: #cce7ff !important;
+    border-left: 4px solid #007bff !important;
+}
+.schedule-cell.store-color-LLKun {
+    background-color: #ffe6e6 !important;
+    border-left: 4px solid #dc3545 !important;
+}
+.schedule-cell.store-color-LLBeg {
+    background-color: #fffce6 !important;
+    border-left: 4px solid #dcce35 !important;
+}
+.schedule-cell.store-color-LLKsh {
+    background-color: #e6fffe !important;
+    border-left: 4px solid #35dcd4 !important;
+}
+.schedule-cell.store-color-LLVgs {
+    background-color: #ffe6fe !important;
+    border-left: 4px solid #dc35ce !important;
+}
+.schedule-cell.store-color-default {
+    background-color: #ffffff !important;
+}
+
+/* Цвета для статусов из WorkVacSchedule */
+.schedule-cell.workvac-status-Работает {
+    border-left: 4px solid #a7fb78 !important;
+}
+.schedule-cell.workvac-status-Отпуск {
+    border-left: 4px solid #f5bc70 !important;
+    cursor: not-allowed !important;
+}
+.schedule-cell.workvac-status-Отгул {
+    border-left: 4px solid #a94eea !important;
+    cursor: not-allowed !important;
+}
+.schedule-cell.workvac-status-Больничный {
+    border-left: 4px solid #4a57e8 !important;
+    cursor: not-allowed !important;
+}
+
+.store-time-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 5px;
+}
+
+.store-select {
+    flex: 1;
+    min-width: 0;
+}
+
+.work-time-input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Индикатор загрузки */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Индикатор загрузки для таблицы */
+.loading-spinner-large {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Стили для индикатора загрузки таблицы */
+#loading-row td {
+    background-color: #f8f9fa;
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+</style>
 
 <script>
+// Глобальные переменные для кэширования
+const scheduleCache = new Map();
+let currentWeekData = null;
+
+// Цвета для разных точек
+const storeColors = {
+    'LLAzv': 'store-color-LLAzv',
+    'LLGgr': 'store-color-LLGgr',
+    'LLKun': 'store-color-LLKun',
+    'LLBeg': 'store-color-LLBeg',
+    'LLKsh': 'store-color-LLKsh',
+    'LLVgs': 'store-color-LLVgs'
+};
+
+// Цвета для статусов из WorkVacSchedule
+const workvacStatusColors = {
+    'Работает': 'workvac-status-Работает',
+    'Отпуск': 'workvac-status-Отпуск',
+    'Отгул': 'workvac-status-Отгул',
+    'Больничный': 'workvac-status-Больничный'
+};
+
 $(document).ready(function() {
+
+    // Текущие данные для модального окна
+    let currentEmployeeId = null;
+    let currentDate = null;
+    let currentCell = null;
+    let currentWorkvacData = null;
+    let originalCellData = null;
+
     // Инициализация текущей даты из Django context
-    var currentDate = new Date('{{ start_date|date:"Y-m-d" }}');
+    var currentWeekDate = new Date('{{ start_date|date:"Y-m-d" }}');
 
     // Функция для форматирования даты в строку YYYY-MM-DD
     function formatDate(date) {
@@ -67,145 +248,537 @@ $(document).ready(function() {
         return [year, month, day].join('-');
     }
 
-    // Функция для обновления таблицы расписания
-    function updateTable(newDate) {
+    // Функция для создания строки точки и времени
+    function createStoreTimeRow(storeValue = '', workTimeValue = '', index = 0) {
+        const row = document.createElement('div');
+        row.className = 'store-time-row';
+
+        const select = document.createElement('select');
+        select.className = 'form-select form-select-sm store-select';
+        select.setAttribute('data-index', index);
+
+        // Добавляем опции в select
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'Выберите точку';
+        select.appendChild(emptyOption);
+
+        {% for store in stores %}
+        const option{{ forloop.counter }} = document.createElement('option');
+        option{{ forloop.counter }}.value = '{{ store.short_name }}';
+        option{{ forloop.counter }}.textContent = '{{ store.short_name }}';
+        select.appendChild(option{{ forloop.counter }});
+        {% endfor %}
+
+        // Устанавливаем текущее значение
+        select.value = storeValue;
+
+        const workTimeInput = document.createElement('input');
+        workTimeInput.className = 'form-control form-control-sm work-time-input';
+        workTimeInput.type = 'text';
+        workTimeInput.placeholder = 'Время';
+        workTimeInput.setAttribute('data-index', index);
+        workTimeInput.value = workTimeValue;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn btn-sm btn-outline-danger';
+        removeBtn.innerHTML = '×';
+        removeBtn.type = 'button';
+        removeBtn.style.flex = '0 0 auto';
+        removeBtn.addEventListener('click', function() {
+            row.remove();
+        });
+
+        {% if not perms.tph_system.change_schedule %}
+            select.disabled = true;
+            workTimeInput.disabled = true;
+            removeBtn.style.display = 'none';
+        {% endif %}
+
+        row.appendChild(select);
+        row.appendChild(workTimeInput);
+        row.appendChild(removeBtn);
+        return row;
+    }
+
+    // Функция для обновления отображения ячейки
+    function updateCellDisplay(cell, stores, workTimes, workvacData) {
+        // Формируем текст для отображения
+        let displayText = '';
+        let hasData = false;
+        let firstStore = '';
+        let timeText = '';
+
+        // Сначала проверяем назначенные точки
+        for (let i = 0; i < stores.length; i++) {
+            if (stores[i]) {
+                if (displayText !== '') displayText += ', ';
+                displayText += stores[i];
+                if (workTimes[i] && workTimes[i].trim() !== '') {
+                    timeText = workTimes[i];
+                }
+                if (!hasData) {
+                    hasData = true;
+                    firstStore = stores[i];
+                }
+            }
+        }
+
+        // Если точек нет, проверяем данные из WorkVacSchedule
+        if (!hasData && workvacData && workvacData.status) {
+            displayText = workvacData.status;
+            if (workvacData.time_availiable && workvacData.time_availiable.trim() !== '') {
+                timeText = workvacData.time_availiable;
+            }
+        }
+
+        // Формируем полный текст ячейки
+        let fullText = displayText;
+        if (timeText) {
+            fullText += ` ${timeText}`;
+        }
+
+        cell.textContent = fullText || '';
+
+        // Устанавливаем цвет ячейки
+        cell.className = 'schedule-cell';
+
+        // Удаляем все классы цветов
+        Object.keys(storeColors).forEach(store => {
+            cell.classList.remove(storeColors[store]);
+        });
+        Object.keys(workvacStatusColors).forEach(status => {
+            cell.classList.remove(workvacStatusColors[status]);
+        });
+        cell.classList.remove('store-color-default');
+
+
+        if (hasData && firstStore && storeColors[firstStore]) {
+            cell.classList.add(storeColors[firstStore]);
+        }
+        else if (workvacData && workvacData.status && workvacStatusColors[workvacData.status]) {
+            cell.classList.add(workvacStatusColors[workvacData.status]);
+        }
+        else {
+            cell.classList.add('store-color-default');
+        }
+    }
+
+    // Функция для обработки клика по ячейке
+    function handleCellClick(event) {
+        const cell = event.currentTarget;
+        const workvacData = JSON.parse(cell.getAttribute('data-workvac') || 'null');
+        openScheduleModal(
+            cell.getAttribute('data-employee'),
+            cell.getAttribute('data-date'),
+            $(cell),
+            cell.getAttribute('data-employee-name'),
+            workvacData
+        );
+    }
+
+
+    // Функция для проверки, можно ли редактировать ячейку
+    function canEditCell(workvacData) {
+        if (!workvacData || !workvacData.status) {
+            return true; // Нет данных из WorkVacSchedule - можно редактировать
+        }
+
+        // Нельзя редактировать если статус Отпуск, Отгул, Больничный
+        const nonEditableStatuses = ['Отпуск', 'Отгул', 'Больничный'];
+        return !nonEditableStatuses.includes(workvacData.status);
+    }
+
+    // Функция для загрузки данных сотрудника с сервера
+    function loadEmployeeSchedule(employeeId, date, callback) {
+        const cacheKey = `${employeeId}-${date}`;
+
+        // Проверяем кэш
+        if (scheduleCache.has(cacheKey)) {
+            callback(scheduleCache.get(cacheKey));
+            return;
+        }
+
         $.ajax({
-            url: '{% url "schedule" %}',
+            url: '{% url "get_employee_schedule" %}',
             data: {
-                'start_date': formatDate(newDate)
+                'staff_id': employeeId,
+                'date': date
             },
             dataType: 'json',
-            success: function(data) {
-                var tbody = $('#schedule-table tbody');
-                tbody.empty(); // Очищаем существующее содержимое таблицы
-
-                // Обновляем отображаемую дату начала недели
-                $('#start-date').text(new Date(data.start_date).toLocaleDateString('ru-RU'));
-
-                // Обновляем заголовки с датами
-                $('.date-header').each(function(index) {
-                    var headerDate = new Date(data.start_date);
-                    headerDate.setDate(headerDate.getDate() + index);
-                    $(this).text(headerDate.toLocaleDateString('ru-RU', {weekday: 'short', day: '2-digit', month: '2-digit'}));
-                });
-
-                // Создаем строки таблицы для каждого сотрудника
-                $.each(data.schedule_data, function(index, staff) {
-                    var row = $('<tr>');
-                    row.append($('<td>').text(staff.staff_name + ' ' + staff.staff_f_name));
-
-                    // Добавляем ячейки с select для каждого дня недели
-                    $.each(staff.schedule, function(index, day) {
-                        var cellContainer = $('<td>').attr('id', 'td_colored');
-
-                        var select = $('<select>')
-                            .addClass('schedule-select form-select form-select-sm')
-                            //.attr('onchange', 'colorset(this)')
-                            .attr('id', 'id_store_select')
-                            .attr('data-employee', staff.staff_id)
-                            .attr('data-date', day.date)
-                            {% if not perms.tph_system.change_schedule %}
-                                .attr('disabled', true);
-                            {% else %}
-                                ;
-                            {% endif %}
-
-                        // Добавляем опции в select
-                        $('<option>').val('').text('').appendTo(select);
-                        {% for store in stores %}
-                        $('<option>').val('{{ store.short_name }}').text('{{ store.short_name }}').appendTo(select);
-                        {% endfor %}
-
-                        // Устанавливаем текущее значение смены
-                        select.val(day.store);
-
-                        // Добавляем input для времени работы
-                        var workTimeInput = $('<input>')
-                            .addClass('form-control form-control-sm work-time-input')
-                            .attr({
-                                'type': 'text',
-                                //'placeholder': 'Время работы',
-                                'data-employee': staff.staff_id,
-                                'data-date': day.date
-                            })
-                            .val(day.work_time || '')
-                            {% if not perms.tph_system.change_schedule %}
-                                .attr('disabled', true);
-                            {% else %}
-                                ;
-                            {% endif %}
-
-                        // Добавляем select и input в ячейку
-                        cellContainer.append(select).append(workTimeInput);
-                        row.append(cellContainer);
-
-                        //row.append($('<td>').append(select).addClass('table-success')); // Не используется
-
-                        //row.append($('<td>').append(select).attr('id', 'td_colored')); // Старый ввод
-
-                    });
-
-                    tbody.append(row);
-                });
+            success: function(response) {
+                if (response.status === 'success') {
+                    scheduleCache.set(cacheKey, response);
+                    callback(response);
+                } else {
+                    console.error('Ошибка при загрузке данных:', response.message);
+                    callback({schedule_data: [], employee_name: '', workvac_data: null});
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при загрузке данных:', error);
+                callback({schedule_data: [], employee_name: '', workvac_data: null});
             }
         });
     }
 
-    // Функция для изменения цвета ячейки точки
-    //function colorset(val){
-    //    switch(val){
-    //        case "BWVgs": $('#td_colored').addClass('table-success'); break;
-    //        case "LLGgr": $('#td_colored').addClass('table-primary'); break;
-    //        case "LLKun": $('#td_colored').addClass('table-danger');
-    //    }
-    //}
 
-    // Обработчики кликов по кнопкам смены недели
-    $('#prev-week').click(function() {
-        currentDate.setDate(currentDate.getDate() - 7);
-        updateTable(currentDate);
-    });
+    // Функция для открытия модального окна
+    function openScheduleModal(employeeId, date, cell, employeeName, workvacData) {
+        currentEmployeeId = employeeId;
+        currentDate = date;
+        currentCell = cell;
+        currentWorkvacData = workvacData;
 
-    $('#next-week').click(function() {
-        currentDate.setDate(currentDate.getDate() + 7);
-        updateTable(currentDate);
-    });
 
-    // Инициализация таблицы при загрузке страницы
-    updateTable(currentDate);
+        // СОХРАНЯЕМ ОРИГИНАЛЬНЫЕ ДАННЫЕ ЯЧЕЙКИ
+        originalCellData = {
+            html: cell.html(),
+            stores: [],
+            workTimes: [],
+            hasStore: false,
+            hasWorkvacStatus: false  // НОВОЕ: есть ли статус из WorkVacSchedule
+        };
 
-    // Обработчик изменения значения в select или input
-    $(document).on('change', '.schedule-select, .work-time-input', function() {
-        var employeeId = $(this).data('employee');
-        var date = $(this).data('date');
-        var store = $(this).closest('td').find('.schedule-select').val();
-        var workTime = $(this).closest('td').find('.work-time-input').val();
+        // Извлекаем текущие точки из ячейки (если есть)
+        const cellContent = cell.html();
+
+        // ПРОВЕРЯЕМ ЕСТЬ ЛИ ТОЧКИ (не статусы WorkVac)
+        if (cellContent && !cellContent.includes('Работает') &&
+            !cellContent.includes('Отпуск') && !cellContent.includes('Отгул') &&
+            !cellContent.includes('Больничный') && cellContent.trim() !== '') {
+            // Это значит в ячейке уже есть назначенные точки
+            originalCellData.hasStore = true;
+            // Парсим точки из текста ячейки
+            const textOnly = cellContent.replace(/<br>.*/, ''); // Убираем время если есть
+            const points = textOnly.split(', ');
+            points.forEach(point => {
+                const parts = point.split(' ');
+                if (parts[0]) {
+                    originalCellData.stores.push(parts[0]);
+                    // Ищем время работы для этой точки
+                    const timeMatch = cellContent.match(new RegExp(parts[0] + '\\s+([\\d:-]+)'));
+                    originalCellData.workTimes.push(timeMatch ? timeMatch[1] : '');
+                }
+            });
+        }
+
+        // ПРОВЕРЯЕМ ЕСТЬ ЛИ СТАТУС ИЗ WORKVAC
+        if (cellContent && (cellContent.includes('Работает') ||
+            cellContent.includes('Отпуск') || cellContent.includes('Отгул') ||
+            cellContent.includes('Больничный'))) {
+            originalCellData.hasWorkvacStatus = true;
+        }
+
+        // Проверяем, можно ли редактировать ячейку
+        const editable = canEditCell(workvacData);
+
+        // Показываем loading состояние
+        $('#store-time-container').html('<div class="text-center"><div class="loading-spinner"></div> Загрузка...</div>');
+
+        // Загружаем актуальные данные с сервера
+        loadEmployeeSchedule(employeeId, date, function(response) {
+            const scheduleData = response.schedule_data || [];
+            const displayName = response.employee_name || employeeName;
+
+            // Заполняем информацию в модальном окне
+            $('#modal-employee-info').text('Сотрудник: ' + displayName);
+            $('#modal-date-info').text('Дата: ' + new Date(date).toLocaleDateString('ru-RU'));
+
+            // Показываем информацию о статусе из WorkVacSchedule, если есть
+            if (workvacData && workvacData.status) {
+                let statusText = workvacData.status;
+                if (workvacData.time_availiable) {
+                    statusText += ' (' + workvacData.time_availiable + ')';
+                }
+
+                $('#workvac-status-text').text(statusText);
+                $('#modal-workvac-info').show();
+            } else {
+                $('#modal-workvac-info').hide();
+            }
+
+
+            // Очищаем контейнер и добавляем строки
+            const container = document.getElementById('store-time-container');
+            container.innerHTML = '';
+
+            // Если можно редактировать, показываем редактируемую форму
+            if (editable && {% if perms.tph_system.change_schedule %}true{% else %}false{% endif %}) {
+                if (scheduleData.length === 0) {
+                    // Если данных нет, добавляем одну пустую строку
+                    container.appendChild(createStoreTimeRow('', '', 0));
+                } else {
+                    scheduleData.forEach(function(item, index) {
+                        container.appendChild(createStoreTimeRow(item.store, item.work_time, index));
+                    });
+                }
+                $('#add-store-btn').show();
+            } else {
+                // Если нельзя редактировать, показываем только для просмотра
+                if (scheduleData.length === 0) {
+
+                } else {
+                    scheduleData.forEach(function(item, index) {
+                        const row = document.createElement('div');
+                        row.className = 'store-time-row mb-2';
+                        row.textContent = item.store + (item.work_time ? ' ' + item.work_time : '');
+                        container.appendChild(row);
+                    });
+                }
+                $('#add-store-btn').hide();
+            }
+
+            // Показываем модальное окно
+            $('#scheduleModal').modal('show');
+        });
+    }
+
+    // Функция для сохранения данных из модального окна
+    function saveScheduleData(callback) {
+        const container = document.getElementById('store-time-container');
+        const rows = container.getElementsByClassName('store-time-row');
+
+        const stores = [];
+        const workTimes = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const select = row.querySelector('.store-select');
+            if (select) {
+                const store = select.value;
+                const workTime = row.querySelector('.work-time-input')?.value;
+                if (store) {
+                    stores.push(store || '');
+                    workTimes.push(workTime || '');
+                }
+            }
+        }
+
+        // Очищаем кэш для этой ячейки
+        const cacheKey = `${currentEmployeeId}-${currentDate}`;
+        scheduleCache.delete(cacheKey);
+
+        // ПРОВЕРЯЕМ НАЛИЧИЕ ИЗМЕНЕНИЙ:
+        // 1. Были точки → теперь пусто (удалил все точки) = ОТПРАВЛЯЕМ запрос
+        // 2. Был статус WorkVac → ничего не выбрал = НЕ отправляем запрос
+        // 3. Были точки → изменил точки = ОТПРАВЛЯЕМ запрос
+        // 4. Было пусто → добавил точки = ОТПРАВЛЯЕМ запрос
+
+        let shouldSendRequest = false;
+        let requestReason = '';
+
+        if (stores.length > 0) {
+            // Пользователь выбрал точки - всегда отправляем
+            shouldSendRequest = true;
+            requestReason = 'Выбраны новые точки';
+        } else if (originalCellData && originalCellData.hasStore) {
+            // Были точки, а теперь пусто - отправляем (удалил точки)
+            shouldSendRequest = true;
+            requestReason = 'Удалены все точки';
+        }
+        // Если был статус WorkVac и ничего не выбрано - НЕ отправляем
+
+        if (!shouldSendRequest) {
+            console.log('Изменений нет, запрос не отправляется');
+            if (callback) callback(true, 'Изменений нет');
+            return;
+        }
+
+        console.log('Отправка запроса:', requestReason);
+
+        // Проверяем, можно ли редактировать (защита на клиентской стороне)
+        if (!canEditCell(currentWorkvacData)) {
+            if (callback) callback(false, 'Редактирование запрещено для этого статуса');
+            return;
+        }
 
         $.ajax({
             url: '{% url "update_schedule" %}',
             method: 'POST',
             data: {
-                'staff_id': employeeId,
-                'date': date,
-                'store': store,
-                'work_time': workTime,
+                'staff_id': currentEmployeeId,
+                'date': currentDate,
+                'stores[]': stores,
+                'work_times[]': workTimes,
                 csrfmiddlewaretoken: '{{ csrf_token }}'
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    console.log('График для сотрудника успешно ' +
-                        (response.action === 'deleted' ? 'очищен' :
-                         response.action === 'created' ? 'создан' : 'обновлен'));
+                    // Обновляем отображение ячейки
+                    if (stores.length > 0) {
+                        // Показать выбранные точки
+                        updateCellDisplay(currentCell[0], stores, workTimes, null);
+                    } else {
+                        // Удалил все точки - показать статус из WorkVac или пустую ячейку
+                        updateCellDisplay(currentCell[0], [], [], currentWorkvacData);
+                    }
+                    if (callback) callback(true);
                 } else {
-                    console.error('Ошибка при обновлении графика для сотрудника:', response.message);
+                    console.error('Ошибка при обновлении графика:', response.message);
+                    if (callback) callback(false, response.message);
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Ошибка при отправке запроса:', error);
+                if (callback) callback(false, error);
             }
         });
+    }
 
-        console.log('Сотрудник ' + employeeId + ', дата ' + date + ', точка ' + store + ', время работы ' + workTime);
+
+    // Функция для построения таблицы из данных
+    function buildTable(data) {
+        const tbody = document.getElementById('schedule-tbody');
+
+        // Сначала удаляем индикатор загрузки
+        const loadingRow = document.getElementById('loading-row');
+        if (loadingRow) {
+            loadingRow.remove();
+        }
+
+        // Очищаем таблицу
+        tbody.innerHTML = '';
+
+        // Сохраняем данные для текущей недели
+        currentWeekData = data;
+
+        // Обновляем отображаемую дату начала недели
+        document.getElementById('start-date').textContent = new Date(data.start_date).toLocaleDateString('ru-RU');
+
+        // Обновляем заголовки с датами
+        const dateHeaders = document.getElementsByClassName('date-header');
+        for (let i = 0; i < dateHeaders.length; i++) {
+            const headerDate = new Date(data.start_date);
+            headerDate.setDate(headerDate.getDate() + i);
+            dateHeaders[i].textContent = headerDate.toLocaleDateString('ru-RU', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        // Создаем DocumentFragment для пакетного добавления
+        const fragment = document.createDocumentFragment();
+
+        // Создаем строки таблицы для каждого сотрудника
+        data.schedule_data.forEach(function(staff) {
+            const row = document.createElement('tr');
+
+            // Ячейка с именем сотрудника
+            const nameCell = document.createElement('td');
+            nameCell.textContent = staff.staff_name + ' ' + staff.staff_f_name;
+            row.appendChild(nameCell);
+
+            // Добавляем ячейки для каждого дня недели
+            staff.schedule.forEach(function(day) {
+                const cell = document.createElement('td');
+                cell.className = 'schedule-cell';
+                cell.setAttribute('data-employee', staff.staff_id);
+                cell.setAttribute('data-date', day.date);
+                cell.setAttribute('data-employee-name', staff.staff_name + ' ' + staff.staff_f_name);
+                cell.setAttribute('data-workvac', day.workvac ? JSON.stringify(day.workvac) : 'null');
+
+                // Обновляем отображение ячейки с учетом workvac данных
+                updateCellDisplay(cell, day.stores, day.work_times, day.workvac || null);
+
+                // Добавляем обработчик клика
+                cell.addEventListener('click', handleCellClick);
+
+                row.appendChild(cell);
+            });
+
+            fragment.appendChild(row);
+        });
+
+        // Добавляем все строки за одну операцию
+        tbody.appendChild(fragment);
+    }
+
+
+    // Функция для загрузки данных недели
+    function loadWeekData(date, callback) {
+        const cacheKey = formatDate(date);
+
+        // Проверяем кэш
+        if (scheduleCache.has(cacheKey)) {
+            if (callback) callback(scheduleCache.get(cacheKey));
+            return;
+        }
+
+        // Показываем индикатор загрузки при каждом обновлении
+        const tbody = document.getElementById('schedule-tbody');
+        tbody.innerHTML = `
+            <tr id="loading-row">
+                <td colspan="8" class="text-center py-4">
+                    <div class="loading-spinner-large"></div>
+                    <div class="mt-2">Загрузка графика...</div>
+                </td>
+            </tr>
+        `;
+
+        $.ajax({
+            url: '{% url "schedule" %}',
+            data: {
+                'start_date': formatDate(date)
+            },
+            dataType: 'json',
+            success: function(data) {
+                // Кэшируем данные
+                scheduleCache.set(cacheKey, data);
+                if (callback) callback(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при загрузке данных недели:', error);
+                if (callback) callback(null);
+            }
+        });
+    }
+
+    {% if perms.tph_system.change_schedule %}
+    // Обработчики для модального окна
+    document.getElementById('add-store-btn').addEventListener('click', function() {
+        const container = document.getElementById('store-time-container');
+        const index = container.getElementsByClassName('store-time-row').length;
+        container.appendChild(createStoreTimeRow('', '', index));
+    });
+
+    // Сохраняем данные при закрытии модального окна
+    $('#scheduleModal').on('hide.bs.modal', function () {
+        if (currentEmployeeId && currentDate) {
+            saveScheduleData(function(success, message) {
+                if (!success && message !== 'Изменений нет') {
+                    console.error('Ошибка при сохранении:', message);
+                }
+            });
+        }
+    });
+    {% endif %}
+
+    // Обработчики кликов по кнопкам смены недели
+    document.getElementById('prev-week').addEventListener('click', function() {
+        currentWeekDate.setDate(currentWeekDate.getDate() - 7);
+        loadWeekData(currentWeekDate, function(data) {
+            if (data) {
+                buildTable(data);
+            }
+        });
+    });
+
+    document.getElementById('next-week').addEventListener('click', function() {
+        currentWeekDate.setDate(currentWeekDate.getDate() + 7);
+        loadWeekData(currentWeekDate, function(data) {
+            if (data) {
+                buildTable(data);
+            }
+        });
+    });
+
+    // Инициализация таблицы при загрузке страницы
+    loadWeekData(currentWeekDate, function(data) {
+        if (data) {
+            buildTable(data);
+        }
     });
 });
 </script>
