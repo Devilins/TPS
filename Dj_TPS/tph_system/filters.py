@@ -443,6 +443,21 @@ class ReportsFilter(django_filters.FilterSet):
         fields = ['store']
 
 
+def create_reports_filter(user, stf_wrk_stores_list=None, *args, **kwargs):
+    filter_instance = ReportsFilter(*args, **kwargs)
+
+    if user and user.has_perm('tph_system.reports_boss_view'):
+        # Все точки доступны - ничего не меняем
+        pass
+    elif len(stf_wrk_stores_list) > 1:
+        # Ограничиваем queryset доступными точками
+        store_ids = [store.id for store in stf_wrk_stores_list]
+        filter_instance.filters['selected_store'].queryset = Store.objects.filter(id__in=store_ids)
+        filter_instance.filters['selected_store'].initial = stf_wrk_stores_list[0]
+
+    return filter_instance
+
+
 class CheckReportsFilter(django_filters.FilterSet):
     store = django_filters.ModelChoiceFilter(
         queryset=Store.objects.filter(store_status="Действующая"),

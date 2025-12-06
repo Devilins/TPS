@@ -34,11 +34,6 @@ from .tables import SalesReportTable, export_to_excel_template, standard_export,
     SalaryReportTable
 
 
-# Для календаря
-# from schedule.views import CalendarByPeriodsView
-# from schedule.periods import Month
-
-
 class MonitoringViewSet(viewsets.ModelViewSet):
     queryset = ImplEvents.objects.filter(event_type__icontains='Error', solved='Нет')
     serializer_class = MonitoringSerializer
@@ -395,7 +390,8 @@ class SalesUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
 
         # Уменьшаем нал на конец дня из-за изменения продажи за наличку
         if payment_type_old == 'Наличные' and payment_type == 'Наличные' and sum_old != sum:
-            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(cash_evn=F("cash_evn") + sum - sum_old)
+            num_chars = CashStore.objects.filter(store=store, date=date_pay).update(
+                cash_evn=F("cash_evn") + sum - sum_old)
             if num_chars == 1:
                 # Логируем изменение наличных
                 ImplEvents.objects.create(
@@ -553,13 +549,11 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        auth_user = self.request.user
 
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=Staff.objects.get(st_username=auth_user)).store)
-        except ObjectDoesNotExist:
+        stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), self.request.user)
+        if stf_wrk_stores_list:
+            store_staff_working_obj = stf_wrk_stores_list[0]
+        else:
             store_staff_working_obj = None
 
         admin = ''
@@ -571,15 +565,22 @@ class SalesCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
             elif sch.position == 'Фотограф':
                 photog = sch.staff
             elif sch.position == 'Универсальный фотограф':
-                admin = Staff.objects.get(st_username=auth_user)
-                photog = Staff.objects.get(st_username=auth_user)
+                admin = sch.staff
+                photog = sch.staff
+            elif photog == '' and sch.position in ['Выездной фотограф', 'Видеограф']:
+                photog = sch.staff
 
-        initial.update({
-            'store': store_staff_working_obj,
-            'date': datetime.now(),
-            'staff': admin,
-            'photographer': photog
-        })
+        if stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+            initial.update({
+                'date': datetime.now()
+            })
+        else:
+            initial.update({
+                'store': store_staff_working_obj,
+                'date': datetime.now(),
+                'staff': admin,
+                'photographer': photog
+            })
         return initial
 
     @atomic
@@ -654,16 +655,17 @@ class CashWithdrawnCreateView(PermissionRequiredMixin, LoginRequiredMixin, Creat
         return reverse('cash_withdrawn') + '?' + self.request.GET.urlencode()
 
     def get_context_data(self, **kwargs):
-        auth_staff = Staff.objects.get(st_username=self.request.user)
 
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=auth_staff).store)
-        except ObjectDoesNotExist:
+        stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), self.request.user)
+        if stf_wrk_stores_list:
+            store_staff_working_obj = stf_wrk_stores_list[0]
+        else:
             store_staff_working_obj = None
 
-        cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+        if stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+            cash_on_store = CashStore.objects.filter(date=datetime.now(), store=None)
+        else:
+            cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
 
         context = super().get_context_data(**kwargs)
         context['title'] = 'Выдача ЗП наличными'
@@ -675,20 +677,23 @@ class CashWithdrawnCreateView(PermissionRequiredMixin, LoginRequiredMixin, Creat
 
     def get_initial(self):
         initial = super().get_initial()
-        auth_staff = Staff.objects.get(st_username=self.request.user)
+        auth_user = self.request.user
+        auth_staff = Staff.objects.get(st_username=auth_user)
 
-        try:
-            store_staff_working_obj = Store.objects.get(
-                name=Schedule.objects.get(date=datetime.now(),
-                                          staff_id=auth_staff).store)
-        except ObjectDoesNotExist:
+        stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+        if stf_wrk_stores_list:
+            store_staff_working_obj = stf_wrk_stores_list[0]
+        else:
             store_staff_working_obj = None
 
-        initial.update({
-            'store': store_staff_working_obj,
-            'date': datetime.now(),
-            'staff': auth_staff
-        })
+        if stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+            initial.update({'date': datetime.now(), 'staff': auth_staff})
+        else:
+            initial.update({
+                'store': store_staff_working_obj,
+                'date': datetime.now(),
+                'staff': auth_staff
+            })
         return initial
 
     @atomic
@@ -759,7 +764,8 @@ class CashWithdrawnUpdateView(PermissionRequiredMixin, LoginRequiredMixin, Updat
         staff = form.cleaned_data["staff"]
 
         # Изменяем кол-во нала на точке в этот день
-        num_chars = CashStore.objects.filter(store=store, date=date).update(cash_evn=F("cash_evn") + withdrawn_old - withdrawn)
+        num_chars = CashStore.objects.filter(store=store, date=date).update(
+            cash_evn=F("cash_evn") + withdrawn_old - withdrawn)
         if num_chars == 1:
             # Логируем изменение наличных
             ImplEvents.objects.create(
@@ -1062,57 +1068,19 @@ class CheckReportsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, Delete
         return context
 
 
-# ---------------------------Классы календаря----------------------------------
-# class CalendarView(LoginRequiredMixin, CalendarByPeriodsView):
-#     template_name = 'tph_system/calendar/calendar.html'
-#     period = Month
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['events'] = CalendarEvent.objects.all()
-#         context['event_types'] = CalendarEvent.EVENT_TYPES
-#         context['event_colors'] = CalendarEvent.EVENT_COLORS
-#         return context
-#
-#
-# class EventCreateView(LoginRequiredMixin, CreateView):
-#     model = CalendarEvent
-#     template_name = 'tph_system/calendar/event_form.html'
-#     success_url = reverse_lazy('calendar')
-#
-#     def get_form_class(self):
-#         from django import forms
-#
-#         class EventForm(forms.ModelForm):
-#             class Meta:
-#                 model = CalendarEvent
-#                 fields = ['event_type', 'title', 'start_date', 'end_date', 'description']
-#
-#             def __init__(self, *args, **kwargs):
-#                 super().__init__(*args, **kwargs)
-#                 self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})
-#                 self.fields['end_date'].widget = forms.DateInput(attrs={'type': 'date'})
-#
-#         return EventForm
-#
-#     def form_valid(self, form):
-#         if form.instance.event_type == 'vacation':
-#             form.instance.employee = self.request.user
-#         return super().form_valid(form)
-#
-#
-# class VacationCreateView(EventCreateView):
-#     template_name = 'tph_system/calendar/vacation_form.html'
-#
-#     def get_form_class(self):
-#         form_class = super().get_form_class()
-#         form_class._meta.fields = ['start_date', 'end_date', 'description']
-#         return form_class
-#
-#     def form_valid(self, form):
-#         form.instance.event_type = 'vacation'
-#         return super().form_valid(form)
-# --------------------------------Конец--------------------------------
+def fx_stores_stf_working_list(get_date: datetime, auth_user: User) -> list | None:
+    try:
+        staff_sch = Schedule.objects.filter(date=get_date,
+                                            staff_id=Staff.objects.get(st_username=auth_user)).select_related('store')
+        if staff_sch.count() > 0:
+            arr = []
+            for i in staff_sch:
+                arr.append(i.store)
+            return arr
+        else:
+            return None
+    except ObjectDoesNotExist:
+        return None
 
 
 @login_required
@@ -1191,24 +1159,28 @@ def staff(request):
 @login_required
 @permission_required(perm='tph_system.view_consumablesstore', raise_exception=True)
 def cons_store(request):
-    auth_user = User.objects.get(id=request.user.id)
-
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
-    except ObjectDoesNotExist:
+    auth_user = request.user
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    store_filter_enabled = False
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+        if len(stf_wrk_stores_list) > 1:
+            store_filter_enabled = True
+    else:
         store_staff_working_obj = None
 
     # Если нет параметров в URL, редиректим с установленным фильтром
-    if not request.GET and store_staff_working_obj is not None:
+    if not request.GET and store_staff_working_obj is not None and len(stf_wrk_stores_list) == 1:
         return redirect(('{}?store=' + str(store_staff_working_obj.id)).format(request.path))
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.consumables_view_all_stores'):
         con_store = ConsumablesStore.objects.all().select_related('store')
     else:
-        con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj).select_related('store')
+        if stf_wrk_stores_list:
+            con_store = ConsumablesStore.objects.filter(store__in=stf_wrk_stores_list).select_related('store')
+        else:
+            con_store = ConsumablesStore.objects.filter(store=store_staff_working_obj).select_related('store')
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1223,6 +1195,8 @@ def cons_store(request):
             form.save()
             # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
             return redirect(f'/consumables/?{current_filter_params}')
+    elif stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+        form = ConsStoreForm()
     else:
         form = ConsStoreForm(initial={'store': store_staff_working_obj})
 
@@ -1238,31 +1212,33 @@ def cons_store(request):
         'page_obj': page_obj,
         'paginator': paginator,
         'cons_count': paginator.count,
-        'current_filter_params': current_filter_params
+        'current_filter_params': current_filter_params,
+        'store_filter_enabled': store_filter_enabled
     })
 
 
 @login_required
 @permission_required(perm='tph_system.view_tech', raise_exception=True)
 def tech_mtd(request):
-    auth_user = User.objects.get(id=request.user.id)
-
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
-    except ObjectDoesNotExist:
+    auth_user = request.user
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+    else:
         store_staff_working_obj = None
 
     # Если нет параметров в URL, редиректим с установленным фильтром
-    if not request.GET and store_staff_working_obj is not None:
+    if not request.GET and store_staff_working_obj is not None and len(stf_wrk_stores_list) == 1:
         return redirect(('{}?store=' + str(store_staff_working_obj.id)).format(request.path))
 
     # Сотрудник видит расходники той точки, на которой работает по графику, если нет права на просмотр всех расходников
     if auth_user.has_perm('tph_system.tech_view_all_stores'):
         tech = Tech.objects.all().select_related('store')
     else:
-        tech = Tech.objects.filter(store=store_staff_working_obj).select_related('store')
+        if stf_wrk_stores_list:
+            tech = Tech.objects.filter(store__in=stf_wrk_stores_list).select_related('store')
+        else:
+            tech = Tech.objects.filter(store=store_staff_working_obj).select_related('store')
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1277,6 +1253,8 @@ def tech_mtd(request):
             form.save()
             # Возвращаемся на страницу с сохранением фильтров (используется ПРЯМАЯ ССЫЛКА)
             return redirect(f'/tech/?{current_filter_params}')
+    elif stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+        form = TechForm()
     else:
         form = TechForm(initial={'store': store_staff_working_obj})
 
@@ -1310,38 +1288,103 @@ def schedule_mtd(request):
     # Вычисляем конец недели (воскресенье)
     end_date = start_date + timedelta(days=6)
 
-    staffs = Staff.objects.filter(dism_status="Работает").select_related('st_username')
-    stores = Store.objects.filter(store_status="Действующая")
-    schedules = Schedule.objects.filter(date__range=[start_date, end_date])
+    workvac_n_w_check = True
 
-    # Если запрос AJAX, возвращаем данные в формате JSON
+    auth_user = request.user
+    if auth_user.has_perm('tph_system.view_all_staff_schedule'):
+        staffs = Staff.objects.filter(dism_status="Работает").select_related('st_username')
+    else:  # Обычный юзер видит только свой график
+        staffs = Staff.objects.filter(st_username=auth_user)
+
+        workvac_n_w_check = WorkVacSchedule.objects.filter(
+            date__range=[start_date + timedelta(days=7), end_date + timedelta(days=7)],
+            staff__in=staffs
+        ).exists()
+
+    stores = Store.objects.filter(store_status="Действующая")
+
+    # Собираем все данные за один запрос с агрегацией
+    schedules_data = Schedule.objects.filter(
+        date__range=[start_date, end_date],
+        staff__in=staffs
+    ).select_related('store').values(
+        'staff_id', 'date', 'work_time', 'store__short_name'
+    ).order_by('staff_id', 'date')
+
+    # Собираем workvac данные за один запрос
+    workvac_data = WorkVacSchedule.objects.filter(
+        date__range=[start_date, end_date],
+        staff__in=staffs
+    ).values('staff_id', 'date', 'staff_wrk_status', 'time_availiable')
+
+    # Преобразуем в словари для O(1) доступа
+    schedules_dict = {}
+    for item in schedules_data:
+        key = (item['staff_id'], item['date'].isoformat())
+        schedules_dict.setdefault(key, []).append({
+            'store': item['store__short_name'] or '',
+            'work_time': item['work_time'] or ''
+        })
+
+    workvac_dict = {
+        (item['staff_id'], item['date'].isoformat()): {
+            'status': item['staff_wrk_status'],
+            'time_availiable': item['time_availiable'] or ''
+        }
+        for item in workvac_data
+    }
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Собираем данные за O(n) вместо O(n*m)
         schedule_data = []
-        for stf in staffs:
-            staff_schedules = schedules.filter(staff=stf)
+        staffs_list = list(staffs.values('id', 'f_name', 'name'))
+
+        for stf in staffs_list:
             week_data = []
+
             for i in range(7):
                 date = start_date + timedelta(days=i)
-                schedule = staff_schedules.filter(date=date).first()
+                date_str = date.strftime('%Y-%m-%d')
+                key = (stf['id'], date_str)
+
+                # Получаем данные из словарей за O(1)
+                day_schedules = schedules_dict.get(key, [])
+
+                stores_list = [s['store'] for s in day_schedules]
+                work_times = [s['work_time'] for s in day_schedules]
+
+                workvac_info = workvac_dict.get(key)
+                workvac_data_item = None
+                if workvac_info:
+                    workvac_data_item = {
+                        'status': workvac_info['status'],
+                        'time_availiable': workvac_info['time_availiable']
+                    }
+
                 week_data.append({
-                    'date': date.strftime('%Y-%m-%d'),
-                    'store': schedule.store.short_name if schedule else '',
-                    'work_time': schedule.work_time if schedule else '',  # Добавляем информацию о времени работы
+                    'date': date_str,
+                    'stores': stores_list,
+                    'work_times': work_times,
+                    'workvac': workvac_data_item
                 })
+
             schedule_data.append({
-                'staff_id': stf.id,
-                'staff_f_name': stf.f_name,
-                'staff_name': stf.name,
+                'staff_id': stf['id'],
+                'staff_f_name': stf['f_name'],
+                'staff_name': stf['name'],
                 'schedule': week_data
             })
-        return JsonResponse({'schedule_data': schedule_data, 'start_date': start_date.strftime('%Y-%m-%d')})
+
+        return JsonResponse({
+            'schedule_data': schedule_data,
+            'start_date': start_date.strftime('%Y-%m-%d')
+        })
 
     return render(request, 'tph_system/schedule/schedule.html', {
         'title': 'График сотрудников',
-        'staffs': staffs,
-        'schedule': schedules,
         'stores': stores,
-        'start_date': start_date
+        'start_date': start_date,
+        'workvac_n_w_check': workvac_n_w_check
     })
 
 
@@ -1352,33 +1395,44 @@ def update_schedule(request):
     # Получаем данные из POST-запроса
     staff_id = request.POST.get('staff_id')
     date = request.POST.get('date')
-    sel_store = request.POST.get('store')
-    work_time = request.POST.get('work_time', '')  # Новое поле для времени работы
+    stores = request.POST.getlist('stores[]')  # Получаем список точек
+    work_times = request.POST.getlist('work_times[]')  # Получаем список времени работы
 
     try:
         # Получаем сотрудника по ID
         employee = get_object_or_404(Staff, id=staff_id)
 
-        if sel_store == '' or sel_store is None:
-            # Если выбрано пустое значение, удаляем запись из расписания
-            Schedule.objects.filter(staff=employee, date=date).delete()
-            action = 'Удалено'
-        else:
-            # Обновляем или создаем запись в расписании
-            f_store = get_object_or_404(Store, short_name=sel_store)
+        # Проверяем, есть ли запись в WorkVacSchedule с запрещенным статусом
+        workvac = WorkVacSchedule.objects.filter(staff=employee, date=date).first()
+        if workvac and workvac.staff_wrk_status in ['Отпуск', 'Отгул', 'Больничный']:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Нельзя назначить точку, сотрудник в статусе "{workvac.staff_wrk_status}"'
+            })
 
-            schedule, created = Schedule.objects.update_or_create(
-                staff=employee,
-                date=date,
-                defaults={
-                    'store': f_store,
-                    'work_time': work_time  # Добавляем время работы
-                }
-            )
-            action = 'Добавлено' if created else 'Обновлено'
+        # Удаляем все существующие записи для этого сотрудника на эту дату
+        Schedule.objects.filter(staff=employee, date=date).delete()
+
+        # Если переданы точки, создаем новые записи
+        if stores:
+            for i, store_short_name in enumerate(stores):
+                if store_short_name:  # Проверяем, что точка не пустая
+                    f_store = get_object_or_404(Store, short_name=store_short_name)
+                    work_time = work_times[i] if i < len(work_times) else ''
+
+                    Schedule.objects.create(
+                        staff=employee,
+                        date=date,
+                        store=f_store,
+                        work_time=work_time
+                    )
+            action = 'updated'
+        else:
+            # Если точек нет, просто удалили все записи
+            action = 'deleted'
 
         # Возвращаем успешный ответ с информацией о выполненном действии
-        return JsonResponse({'status': 'success', 'action': action, 'work_time': work_time})
+        return JsonResponse({'status': 'success', 'action': action})
 
     except Exception as e:
         # Логируем ошибку
@@ -1393,20 +1447,233 @@ def update_schedule(request):
 
 
 @login_required
+@permission_required(perm='tph_system.view_schedule', raise_exception=True)
+def get_employee_schedule(request):
+    staff_id = request.GET.get('staff_id')
+    date = request.GET.get('date')
+
+    try:
+        employee = get_object_or_404(Staff, id=staff_id)
+        schedules = Schedule.objects.filter(staff=employee, date=date)
+        workvac = WorkVacSchedule.objects.filter(staff=employee, date=date).first()
+
+        schedule_data = []
+        for schedule in schedules:
+            schedule_data.append({
+                'store': schedule.store.short_name,
+                'work_time': schedule.work_time or ''
+            })
+
+        workvac_data = None
+        if workvac and workvac.staff_wrk_status:
+            workvac_data = {
+                'status': workvac.staff_wrk_status,
+                'time_availiable': workvac.time_availiable or ''
+            }
+
+        return JsonResponse({
+            'status': 'success',
+            'schedule_data': schedule_data,
+            'workvac_data': workvac_data,
+            'employee_name': f"{employee.name} {employee.f_name}"
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
+@permission_required(perm='tph_system.view_workvacschedule', raise_exception=True)
+def workvac_schedule(request):
+    """График выходов и отпусков сотрудников"""
+    # Получаем дату начала недели из GET-параметра или используем текущую дату
+    start_date = request.GET.get('start_date')
+    if start_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    else:
+        # Если дата не указана, берем понедельник текущей недели
+        start_date = datetime.now().date() - timedelta(days=datetime.now().weekday())
+
+    # Вычисляем конец недели (воскресенье)
+    end_date = start_date + timedelta(days=6)
+
+    auth_user = request.user
+    if auth_user.has_perm('tph_system.view_all_staff_schedule'):
+        staffs = Staff.objects.filter(dism_status="Работает").select_related('st_username')
+    else:  # Обычный юзер видит только свой график
+        staffs = Staff.objects.filter(st_username=auth_user)
+
+    # Если запрос AJAX, возвращаем данные в формате JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        schedule_data = []
+        staffs_data = list(staffs.values('id', 'f_name', 'name'))
+
+        # Загружаем все расписания за неделю одним запросом
+        all_schedules = WorkVacSchedule.objects.filter(
+            date__range=[start_date, end_date],
+            staff__in=staffs
+        ).values('staff_id', 'date', 'staff_wrk_status', 'time_availiable')
+
+        # Преобразуем в словарь для O(1) доступа
+        schedule_dict = {}
+        for schedule in all_schedules:
+            # Преобразуем дату в строку для совместимости
+            date_str = schedule['date'].strftime('%Y-%m-%d')
+            schedule_dict[(schedule['staff_id'], date_str)] = {
+                'status': schedule['staff_wrk_status'],
+                'time_availiable': schedule['time_availiable'] or ''
+            }
+
+        # Заранее готовим все даты недели
+        week_dates = []
+        for i in range(7):
+            date = start_date + timedelta(days=i)
+            week_dates.append(date)
+
+        # Собираем данные без вложенных запросов
+        for staff in staffs_data:
+            week_data = []
+
+            for date in week_dates:
+                date_str = date.strftime('%Y-%m-%d')
+                schedule = schedule_dict.get((staff['id'], date_str))
+
+                week_data.append({
+                    'date': date_str,
+                    'status': schedule['status'] if schedule else '',
+                    'time_availiable': schedule['time_availiable'] if schedule else '',
+                })
+
+            schedule_data.append({
+                'staff_id': staff['id'],
+                'staff_f_name': staff['f_name'],
+                'staff_name': staff['name'],
+                'schedule': week_data
+            })
+
+        return JsonResponse({
+            'schedule_data': schedule_data,
+            'start_date': start_date.strftime('%Y-%m-%d')
+        })
+
+    return render(request, 'tph_system/schedule/workvac_schedule.html', {
+        'title': 'График выходов и отпусков',
+        'start_date': start_date
+    })
+
+
+@login_required
+@permission_required(perm='tph_system.add_workvacschedule', raise_exception=True)
+def get_workvac_day_data(request):
+    """Получение данных за конкретный день для модального окна"""
+    staff_id = request.GET.get('staff_id')
+    date = request.GET.get('date')
+
+    try:
+        staff = get_object_or_404(Staff, id=staff_id)
+        schedule = WorkVacSchedule.objects.filter(staff=staff, date=date).first()
+
+        data = {
+            'status': schedule.staff_wrk_status if schedule else '',
+            'time_availiable': schedule.time_availiable if schedule else '',
+        }
+
+        return JsonResponse({
+            'status': 'success',
+            'data': data,
+            'staff_name': f"{staff.name} {staff.f_name}"
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
+@permission_required(perm='tph_system.change_workvacschedule', raise_exception=True)
+@require_http_methods(["POST"])
+def update_workvac_schedule(request):
+    """Обновление графика выходов/отпусков"""
+    staff_id = request.POST.get('staff_id')
+    date_str = request.POST.get('date')
+    status = request.POST.get('status')
+    time_availiable = request.POST.get('time_availiable')
+    days_count = int(request.POST.get('days_count', 1))
+
+    try:
+        # Получаем сотрудника
+        employee = get_object_or_404(Staff, id=staff_id)
+
+        # Преобразуем строку в дату
+        start_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        if not status:
+            # Если статус пустой - удаляем все записи за указанный период
+            end_date = start_date + timedelta(days=days_count - 1)
+            WorkVacSchedule.objects.filter(
+                staff=employee,
+                date__range=[start_date, end_date]
+            ).delete()
+            action = 'deleted'
+        else:
+            # Создаем/обновляем записи для указанного количества дней
+            created_count = 0
+            updated_count = 0
+
+            for i in range(days_count):
+                current_date = start_date + timedelta(days=i)
+
+                # Обновляем или создаем запись
+                schedule, created = WorkVacSchedule.objects.update_or_create(
+                    staff=employee,
+                    date=current_date,
+                    defaults={
+                        'staff_wrk_status': status,
+                        'time_availiable': time_availiable if time_availiable else None,
+                        'user_edited': request.user,
+                    }
+                )
+
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            if created_count > 0 and updated_count > 0:
+                action = f'created {created_count}, updated {updated_count}'
+            elif created_count > 0:
+                action = f'created {created_count}'
+            else:
+                action = f'updated {updated_count}'
+
+        return JsonResponse({'status': 'success', 'action': action})
+
+    except Exception as e:
+        # Логируем ошибку
+        print(f"Ошибка при обновлении графика выходов/отпусков: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
 @permission_required(perm='tph_system.add_sales', raise_exception=True)
 def m_position_select(request):
-    auth_user = User.objects.get(id=request.user.id)
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
-    except ObjectDoesNotExist:
+    auth_user = request.user
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    inform_store_view_flag = False
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+        if len(stf_wrk_stores_list) > 1:
+            inform_store_view_flag = True
+    else:
         store_staff_working_obj = None
 
     if auth_user.has_perm('tph_system.user_sales_view_all'):
         today_sch = Schedule.objects.filter(date=datetime.now())
     else:
-        today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+        if stf_wrk_stores_list:
+            today_sch = Schedule.objects.filter(date=datetime.now(), store__in=stf_wrk_stores_list)
+        else:
+            today_sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj)
 
     if request.method == 'POST':
         formset = PositionSelectFormSet(request.POST, queryset=today_sch)
@@ -1419,33 +1686,32 @@ def m_position_select(request):
     return render(request, 'tph_system/sales/position_select.html', {
         'formset': formset,
         'store': store_staff_working_obj,
-        'date': datetime.now().date()
+        'date': datetime.now().date(),
+        'inform_store_view_flag': inform_store_view_flag
     })
 
 
 @login_required
 @permission_required(perm='tph_system.add_sales', raise_exception=True)
 def m_cash_add(request):
-    auth_user = User.objects.get(id=request.user.id)
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=Staff.objects.get(st_username=auth_user)).store)
-    except ObjectDoesNotExist:
+    auth_user = request.user
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+    else:
         store_staff_working_obj = None
 
     if request.method == 'POST':
-        form = CashStoreForm(request.POST)
+        form = CashStoreForm(request.POST, sws_list=stf_wrk_stores_list)
         if form.is_valid():
             instance = form.save(commit=False)
             instance.cash_evn = form.cleaned_data['cash_mrn']
             instance.save()
             return redirect('sales')
+    elif stf_wrk_stores_list and len(stf_wrk_stores_list) > 1:
+        form = CashStoreForm(initial={'date': datetime.now()})
     else:
-        form = CashStoreForm(initial={
-                                    'store': store_staff_working_obj,
-                                    'date': datetime.now()
-                                })
+        form = CashStoreForm(initial={'store': store_staff_working_obj, 'date': datetime.now()})
 
     return render(request, 'tph_system/sales/cash_add.html', {
         'card_title': 'Наличные на точке на начало дня',
@@ -1464,33 +1730,45 @@ def sales(request):
         return redirect(('{}?date_from=' + str(dt_format(datetime.now())) +
                          '&date_by=' + str(dt_format(datetime.now()))).format(request.path))
 
-    auth_user = User.objects.get(id=request.user.id)
+    auth_user = request.user
     auth_staff = Staff.objects.get(st_username=auth_user)
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=auth_staff).store)
-    except ObjectDoesNotExist:
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+    else:
         store_staff_working_obj = None
 
     # Сотрудник видит только сегодняшние продажи точки, на которой работает по графику, если нет права на просмотр всех продаж
     if auth_user.has_perm('tph_system.user_sales_view_all'):
         sales_all = Sales.objects.all().select_related('store', 'staff', 'photographer', 'user_edited')
     else:
-        sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now()
-                                         ).select_related('store', 'staff', 'photographer', 'user_edited')
+        if stf_wrk_stores_list:
+            sales_all = Sales.objects.filter(store__in=stf_wrk_stores_list, date=datetime.now()
+                                             ).select_related('store', 'staff', 'photographer', 'user_edited')
+        else:
+            sales_all = Sales.objects.filter(store=store_staff_working_obj, date=datetime.now()
+                                             ).select_related('store', 'staff', 'photographer', 'user_edited')
 
     # Флаг для кнопки выбора роли на сегодня
     flag = 0
-    today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=auth_staff)
+    if stf_wrk_stores_list:
+        today_staff = Schedule.objects.filter(date=datetime.now(), store__in=stf_wrk_stores_list)
+    else:
+        today_staff = Schedule.objects.filter(date=datetime.now(), staff_id=auth_staff)
     positions = [i.position for i in today_staff]
     if 'Роль не указана' in positions:
         flag = 1
 
     # Флаг для кнопки наличных на начало дня
     flag_cash = 0
-    cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
-    if not cash_on_store.exists() and store_staff_working_obj is not None:
+    lenstf = 0
+    if stf_wrk_stores_list:
+        cash_on_store = CashStore.objects.filter(date=datetime.now(), store__in=stf_wrk_stores_list)
+        lenstf = len(stf_wrk_stores_list)
+    else:
+        cash_on_store = CashStore.objects.filter(date=datetime.now(), store=store_staff_working_obj)
+
+    if lenstf != cash_on_store.count() and store_staff_working_obj is not None:
         flag_cash = 1
 
     # Сохраняем текущие GET-параметры для возможности возврата
@@ -1565,6 +1843,7 @@ def sales(request):
         'current_filter_params': current_filter_params,
         'staff_without_role': staff_without_role,
         'cash_on_store': cash_on_store,
+        'lenstf': lenstf,
         # Генерация отчетов
         'export_formats': ['csv', 'xlsx'],
     })
@@ -1714,15 +1993,24 @@ def main_page(request):
 @login_required
 @permission_required(perm='tph_system.view_cashwithdrawn', raise_exception=True)
 def cash_withdrawn(request):
-    auth_user = User.objects.get(id=request.user.id)
+    auth_user = request.user
     auth_staff = Staff.objects.get(st_username=auth_user)
 
-    try:
-        staff_sch = Schedule.objects.get(date=datetime.now(), staff_id=auth_staff)
-        store_staff_working_obj = Store.objects.get(name=staff_sch.store)
-    except ObjectDoesNotExist:
-        staff_sch = None
+    adm_flag = False
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    if stf_wrk_stores_list:
+        store_staff_working_obj = stf_wrk_stores_list[0]
+
+        staff_sch = Schedule.objects.filter(date=datetime.now(), staff_id=auth_staff)
+        for i in staff_sch:
+            if i.position in ('Администратор', 'Универсальный фотограф'):
+                adm_flag = True
+    else:
         store_staff_working_obj = None
+
+    # Если нет параметров в URL, редиректим с установленным фильтром
+    if not request.GET and store_staff_working_obj:
+        return redirect(('{}?date_from=' + str(dt_format(datetime.now()))).format(request.path))
 
     # Сохраняем текущие GET-параметры для возможности возврата
     current_filter_params = request.GET.urlencode()
@@ -1744,9 +2032,13 @@ def cash_withdrawn(request):
         cash = c_filter.qs
 
         # Если сотрудник админ - то видит списание налички всех работников в этот день на этой точке
-        if staff_sch is not None and staff_sch.position in ('Администратор', 'Универсальный фотограф'):
-            sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj
-                                          ).exclude(staff_id=auth_staff).values_list('staff', flat=True)
+        if adm_flag:
+            if stf_wrk_stores_list:
+                sch = Schedule.objects.filter(date=datetime.now(), store__in=stf_wrk_stores_list
+                                              ).exclude(staff_id=auth_staff).values_list('staff', flat=True)
+            else:
+                sch = Schedule.objects.filter(date=datetime.now(), store=store_staff_working_obj
+                                              ).exclude(staff_id=auth_staff).values_list('staff', flat=True)
             cash = cash.union(CashWithdrawn.objects.filter(staff_id__in=[i for i in sch], date=datetime.now()
                                                            ).select_related('store', 'staff')).order_by('-date')
 
@@ -1822,7 +2114,7 @@ def salary_weekly(request):
     if not request.GET:
         return redirect(('{}?week_begin=' + str(dt_format(f_week_begin - timedelta(7)))).format(request.path))
 
-    auth_user = User.objects.get(id=request.user.id)
+    auth_user = request.user
 
     # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
     if auth_user.has_perm('tph_system.view_all_salary'):
@@ -1905,7 +2197,7 @@ def salary_details(request):
         return redirect(('{}?date_from=' + str(dt_format(datetime.now() - timedelta(1))) +
                          '&date_by=' + str(dt_format(datetime.now()))).format(request.path))
 
-    auth_user = User.objects.get(id=request.user.id)
+    auth_user = request.user
 
     # Сотрудник видит только свою зарплату, если нет права на просмотр всех зарплат
     if auth_user.has_perm('tph_system.view_all_salary'):
@@ -2135,13 +2427,14 @@ def fin_stats_calc_view(request):
 @login_required
 @permission_required(perm='tph_system.reports_view', raise_exception=True)
 def reports(request):
-    auth_user = User.objects.get(id=request.user.id)
-    auth_staff = Staff.objects.get(st_username=auth_user)
-    try:
-        store_staff_working_obj = Store.objects.get(
-            name=Schedule.objects.get(date=datetime.now(),
-                                      staff_id=auth_staff).store)
-    except ObjectDoesNotExist:
+    func_btn_enable_flag = False
+    auth_user = request.user
+    stf_wrk_stores_list = fx_stores_stf_working_list(datetime.now(), auth_user)
+    if stf_wrk_stores_list:
+        if len(stf_wrk_stores_list) > 1:
+            func_btn_enable_flag = True
+        store_staff_working_obj = stf_wrk_stores_list[0]
+    else:
         store_staff_working_obj = None
 
     # Значения по умолчанию
@@ -2155,7 +2448,9 @@ def reports(request):
         return redirect('main_page')
 
     # Фильтр даты
-    date_filter = ReportsFilter(
+    date_filter = create_reports_filter(
+        auth_user,
+        stf_wrk_stores_list,
         request.GET or {'selected_date': selected_date, 'selected_store': selected_store},
         queryset=Schedule.objects.filter(date=selected_date, store=selected_store)
     )
@@ -2164,6 +2459,10 @@ def reports(request):
     if date_filter.form.is_valid():
         selected_date = date_filter.form.cleaned_data.get('selected_date')
         selected_store = date_filter.form.cleaned_data.get('selected_store')
+
+    # Перезаписываем selected_date, так как в форме у сотрудников дата недоступна
+    if func_btn_enable_flag:
+        selected_date = datetime.today().date()
 
     cfp_q = {'store': selected_store.id}
     current_filter_params = urllib.parse.urlencode(cfp_q)
@@ -2184,16 +2483,23 @@ def reports(request):
     # Выччеты ЗП наличными
     wdr = CashWithdrawn.objects.filter(date=selected_date, store=selected_store).select_related('staff')
     # Касса
-    sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer', 'user_edited').order_by('date')
+    sales_data = Sales.objects.filter(date=selected_date, store=selected_store).select_related('staff', 'photographer',
+                                                                                               'user_edited').order_by(
+        'date')
     summary = {'cashbx_all': sales_data.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
-               'cashbx_park': sales_data.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_park': sales_data.filter(payment_type='Оплата через парк').aggregate(cashbx_sum=Sum('sum'))[
+                   'cashbx_sum'],
                'cashbx_card': sales_data.filter(payment_type='Карта').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
                'cashbx_cash': sales_data.filter(payment_type='Наличные').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
-               'cashbx_qr': sales_data.filter(payment_type='Оплата по QR коду').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
-               'cashbx_trans': sales_data.filter(payment_type='Перевод по номеру телефона').aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'],
+               'cashbx_qr': sales_data.filter(payment_type='Оплата по QR коду').aggregate(cashbx_sum=Sum('sum'))[
+                   'cashbx_sum'],
+               'cashbx_trans':
+                   sales_data.filter(payment_type='Перевод по номеру телефона').aggregate(cashbx_sum=Sum('sum'))[
+                       'cashbx_sum'],
                'cashbx_orders': sales_data.filter(payment_type='Предоплаченный заказ',
-                                                 sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
-                                                 ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
+                                                  sale_type__in=['Заказной фотосет', 'Заказ выездной',
+                                                                 'Заказная видеосъемка']
+                                                  ).aggregate(cashbx_sum=Sum('sum'))['cashbx_sum']
                }
     sales_count = sales_data.count()
     zak_count = sales_data.filter(payment_type='Предоплаченный заказ',
@@ -2233,7 +2539,8 @@ def reports(request):
             td_color = 0
 
     # Личные кассы фотографов
-    if staffs_data.filter(position__in=['Фотограф', 'Видеограф', 'Универсальный фотограф', 'Выездной фотограф']).count() > 1:
+    if staffs_data.filter(
+            position__in=['Фотограф', 'Видеограф', 'Универсальный фотограф', 'Выездной фотограф']).count() > 1:
         cash_staffs = sales_data.values('photographer__name', 'photographer__f_name').annotate(cash_staff=Sum('sum'))
     else:
         cash_staffs = None
@@ -2272,7 +2579,8 @@ def reports(request):
         'cash_staffs': cash_staffs,
         'current_filter_params': current_filter_params,
         'rep': rep,
-        'rep_color': rep_color
+        'rep_color': rep_color,
+        'func_btn_enable_flag': func_btn_enable_flag
     })
 
 

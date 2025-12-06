@@ -1,0 +1,213 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+<!-- Кнопка модального окна для ввода графика
+{% if perms.tph_system.add_schedule %}
+<button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modal-schedule-form">
+    Новая Запись
+</button>
+{% endif %} -->
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+
+    <!-- Таблица с графиком -->
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <h4 class="card-title">
+                График работы сотрудников <br>
+
+                <div class="card card-body mt-3" style="font-size: 15px; max-width: 550px;">
+                    <div class="d-grid gap-2 d-md-block">
+                            <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>
+                            <span class="px-2" id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>
+                            <button class="btn btn-sm btn-primary" id="next-week">Следующая неделя →</button>
+                    </div>
+                </div>
+            </h4>
+        </div>
+
+        <div class="table-responsive" style="max-height: 78vh; overflow-y: auto;">
+            <table class="table table-hover table-bordered align-middle" id="schedule-table" style="min-width: 900px;">
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th>Сотрудник</th>
+                        {% for i in "0123456"|make_list %}
+                            <th class="date-header"></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+
+<script>
+$(document).ready(function() {
+    // Инициализация текущей даты из Django context
+    var currentDate = new Date('{{ start_date|date:"Y-m-d" }}');
+
+    // Функция для форматирования даты в строку YYYY-MM-DD
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    // Функция для обновления таблицы расписания
+    function updateTable(newDate) {
+        $.ajax({
+            url: '{% url "schedule" %}',
+            data: {
+                'start_date': formatDate(newDate)
+            },
+            dataType: 'json',
+            success: function(data) {
+                var tbody = $('#schedule-table tbody');
+                tbody.empty(); // Очищаем существующее содержимое таблицы
+
+                // Обновляем отображаемую дату начала недели
+                $('#start-date').text(new Date(data.start_date).toLocaleDateString('ru-RU'));
+
+                // Обновляем заголовки с датами
+                $('.date-header').each(function(index) {
+                    var headerDate = new Date(data.start_date);
+                    headerDate.setDate(headerDate.getDate() + index);
+                    $(this).text(headerDate.toLocaleDateString('ru-RU', {weekday: 'short', day: '2-digit', month: '2-digit'}));
+                });
+
+                // Создаем строки таблицы для каждого сотрудника
+                $.each(data.schedule_data, function(index, staff) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(staff.staff_name + ' ' + staff.staff_f_name));
+
+                    // Добавляем ячейки с select для каждого дня недели
+                    $.each(staff.schedule, function(index, day) {
+                        var cellContainer = $('<td>').attr('id', 'td_colored');
+
+                        var select = $('<select>')
+                            .addClass('schedule-select form-select form-select-sm')
+                            //.attr('onchange', 'colorset(this)')
+                            .attr('id', 'id_store_select')
+                            .attr('data-employee', staff.staff_id)
+                            .attr('data-date', day.date)
+                            {% if not perms.tph_system.change_schedule %}
+                                .attr('disabled', true);
+                            {% else %}
+                                ;
+                            {% endif %}
+
+                        // Добавляем опции в select
+                        $('<option>').val('').text('').appendTo(select);
+                        {% for store in stores %}
+                        $('<option>').val('{{ store.short_name }}').text('{{ store.short_name }}').appendTo(select);
+                        {% endfor %}
+
+                        // Устанавливаем текущее значение смены
+                        select.val(day.store);
+
+                        // Добавляем input для времени работы
+                        var workTimeInput = $('<input>')
+                            .addClass('form-control form-control-sm work-time-input')
+                            .attr({
+                                'type': 'text',
+                                //'placeholder': 'Время работы',
+                                'data-employee': staff.staff_id,
+                                'data-date': day.date
+                            })
+                            .val(day.work_time || '')
+                            {% if not perms.tph_system.change_schedule %}
+                                .attr('disabled', true);
+                            {% else %}
+                                ;
+                            {% endif %}
+
+                        // Добавляем select и input в ячейку
+                        cellContainer.append(select).append(workTimeInput);
+                        row.append(cellContainer);
+
+                        //row.append($('<td>').append(select).addClass('table-success')); // Не используется
+
+                        //row.append($('<td>').append(select).attr('id', 'td_colored')); // Старый ввод
+
+                    });
+
+                    tbody.append(row);
+                });
+            }
+        });
+    }
+
+    // Функция для изменения цвета ячейки точки
+    //function colorset(val){
+    //    switch(val){
+    //        case "BWVgs": $('#td_colored').addClass('table-success'); break;
+    //        case "LLGgr": $('#td_colored').addClass('table-primary'); break;
+    //        case "LLKun": $('#td_colored').addClass('table-danger');
+    //    }
+    //}
+
+    // Обработчики кликов по кнопкам смены недели
+    $('#prev-week').click(function() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        updateTable(currentDate);
+    });
+
+    $('#next-week').click(function() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        updateTable(currentDate);
+    });
+
+    // Инициализация таблицы при загрузке страницы
+    updateTable(currentDate);
+
+    // Обработчик изменения значения в select или input
+    $(document).on('change', '.schedule-select, .work-time-input', function() {
+        var employeeId = $(this).data('employee');
+        var date = $(this).data('date');
+        var store = $(this).closest('td').find('.schedule-select').val();
+        var workTime = $(this).closest('td').find('.work-time-input').val();
+
+        $.ajax({
+            url: '{% url "update_schedule" %}',
+            method: 'POST',
+            data: {
+                'staff_id': employeeId,
+                'date': date,
+                'store': store,
+                'work_time': workTime,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    console.log('График для сотрудника успешно ' +
+                        (response.action === 'deleted' ? 'очищен' :
+                         response.action === 'created' ? 'создан' : 'обновлен'));
+                } else {
+                    console.error('Ошибка при обновлении графика для сотрудника:', response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при отправке запроса:', error);
+            }
+        });
+
+        console.log('Сотрудник ' + employeeId + ', дата ' + date + ', точка ' + store + ', время работы ' + workTime);
+    });
+});
+</script>
+
+{% endblock %}

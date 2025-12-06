@@ -88,11 +88,13 @@
                     <div class="container text-left">
                         <form method="get">
                             <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
-                                {% if perms.tph_system.user_sales_view_all %}
+                                {% if perms.tph_system.user_sales_view_all or lenstf > 1 %}
                                     <div class="form-floating col-md-auto">
                                         {{ sale_filter.form.store }}
                                         <label style="left: 0.5rem">Точка</label>
                                     </div>
+                                {% endif %}
+                                {% if perms.tph_system.user_sales_view_all %}
                                     <div class="form-floating col-md-auto">
                                         {{ sale_filter.form.date_from }}
                                         <label style="left: 0.5rem">Даты c</label>

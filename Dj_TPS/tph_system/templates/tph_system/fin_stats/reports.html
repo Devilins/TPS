@@ -3,7 +3,7 @@
 {% load tags_extras %}
 
 {% block func_buttons %}
-{% if perms.tph_system.reports_boss_view %}
+{% if perms.tph_system.reports_boss_view or func_btn_enable_flag %}
 <li class="nav-item">
     <a class="nav-link">
         <div class="card text-dark border-success" style="max-width: 250px;">
@@ -13,8 +13,10 @@
             <!-- Форма для выбора даты -->
             <div class="card-body">
                 <form method="get" id="store-filter-form">
-                    Дата: <br>
-                    {{ date_filter.form.selected_date }}<br>
+                    {% if perms.tph_system.reports_boss_view %}
+                        Дата: <br>
+                        {{ date_filter.form.selected_date }}<br>
+                    {% endif %}
                     Точка: <br>
                     {{ date_filter.form.selected_store }}
                 </form>

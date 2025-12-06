@@ -6,7 +6,11 @@
     <div class="card shadow col-xl-6 col-lg-8 col-md-10">
         <div class="card-header">
             <h4 class="card-title">
-                Роли сотрудников на точке <i>{{store.name}}</i> на {{date}}
+                {% if perms.tph_system.user_sales_view_all or inform_store_view_flag %}
+                    Роли сотрудников на {{date}}
+                {% else %}
+                    Роли сотрудников на точке <i>{{store.name}}</i> на {{date}}
+                {% endif %}
             </h4>
         </div>
 
@@ -18,7 +22,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Сотрудник</th>
-                        {% if perms.tph_system.user_sales_view_all %}
+                        {% if perms.tph_system.user_sales_view_all or inform_store_view_flag %}
                         <th scope="col">Точка</th>
                         {% endif %}
                         <th scope="col">Роль</th>
@@ -28,7 +32,7 @@
                     {% for form in formset %}
                     <tr>
                         <td>{{ form.instance.staff.name }} {{ form.instance.staff.f_name }}</td>
-                        {% if perms.tph_system.user_sales_view_all %}
+                        {% if perms.tph_system.user_sales_view_all or inform_store_view_flag %}
                         <td>{{ form.instance.store }}</td>
                         {% endif %}
                         <td>

@@ -4,7 +4,7 @@
 {% if perms.tph_system.view_workvacschedule %}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'workvac_schedule' %}">
-            <button type="button" class="btn btn-sm btn-warning">График выходов и отпусков</button>
+            <button type="button" class="btn btn-sm btn-success">График выходов и отпусков</button>
             {% if not workvac_n_w_check %}
             <p class="text-danger">Заполните график выходов на следующую неделю</p>
             {% endif %}
@@ -43,13 +43,6 @@
                     </tr>
                 </thead>
                 <tbody id="schedule-tbody">
-                    <!-- Индикатор загрузки -->
-                    <tr id="loading-row">
-                        <td colspan="8" class="text-center py-4">
-                            <div class="loading-spinner-large"></div>
-                            <div class="mt-2">Загрузка графика...</div>
-                        </td>
-                    </tr>
                     <!-- Данные будут загружены через JavaScript -->
                 </tbody>
             </table>
@@ -165,46 +158,9 @@
     min-width: 0;
 }
 
-/* Индикатор загрузки */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Индикатор загрузки для таблицы */
-.loading-spinner-large {
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-/* Стили для индикатора загрузки таблицы */
-#loading-row td {
-    background-color: #f8f9fa;
-    font-size: 1.1rem;
-    color: #6c757d;
-}
 </style>
 
 <script>
-// Глобальные переменные для кэширования
-const scheduleCache = new Map();
-let currentWeekData = null;
-
 // Цвета для разных точек
 const storeColors = {
     'LLAzv': 'store-color-LLAzv',
@@ -393,12 +349,6 @@ $(document).ready(function() {
     function loadEmployeeSchedule(employeeId, date, callback) {
         const cacheKey = `${employeeId}-${date}`;
 
-        // Проверяем кэш
-        if (scheduleCache.has(cacheKey)) {
-            callback(scheduleCache.get(cacheKey));
-            return;
-        }
-
         $.ajax({
             url: '{% url "get_employee_schedule" %}',
             data: {
@@ -408,7 +358,6 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.status === 'success') {
-                    scheduleCache.set(cacheKey, response);
                     callback(response);
                 } else {
                     console.error('Ошибка при загрузке данных:', response.message);
@@ -472,9 +421,6 @@ $(document).ready(function() {
 
         // Проверяем, можно ли редактировать ячейку
         const editable = canEditCell(workvacData);
-
-        // Показываем loading состояние
-        $('#store-time-container').html('<div class="text-center"><div class="loading-spinner"></div> Загрузка...</div>');
 
         // Загружаем актуальные данные с сервера
         loadEmployeeSchedule(employeeId, date, function(response) {
@@ -557,7 +503,6 @@ $(document).ready(function() {
 
         // Очищаем кэш для этой ячейки
         const cacheKey = `${currentEmployeeId}-${currentDate}`;
-        scheduleCache.delete(cacheKey);
 
         // ПРОВЕРЯЕМ НАЛИЧИЕ ИЗМЕНЕНИЙ:
         // 1. Были точки → теперь пусто (удалил все точки) = ОТПРАВЛЯЕМ запрос
@@ -580,12 +525,9 @@ $(document).ready(function() {
         // Если был статус WorkVac и ничего не выбрано - НЕ отправляем
 
         if (!shouldSendRequest) {
-            console.log('Изменений нет, запрос не отправляется');
             if (callback) callback(true, 'Изменений нет');
             return;
         }
-
-        console.log('Отправка запроса:', requestReason);
 
         // Проверяем, можно ли редактировать (защита на клиентской стороне)
         if (!canEditCell(currentWorkvacData)) {
@@ -631,17 +573,8 @@ $(document).ready(function() {
     function buildTable(data) {
         const tbody = document.getElementById('schedule-tbody');
 
-        // Сначала удаляем индикатор загрузки
-        const loadingRow = document.getElementById('loading-row');
-        if (loadingRow) {
-            loadingRow.remove();
-        }
-
         // Очищаем таблицу
         tbody.innerHTML = '';
-
-        // Сохраняем данные для текущей недели
-        currentWeekData = data;
 
         // Обновляем отображаемую дату начала недели
         document.getElementById('start-date').textContent = new Date(data.start_date).toLocaleDateString('ru-RU');
@@ -700,23 +633,6 @@ $(document).ready(function() {
     function loadWeekData(date, callback) {
         const cacheKey = formatDate(date);
 
-        // Проверяем кэш
-        if (scheduleCache.has(cacheKey)) {
-            if (callback) callback(scheduleCache.get(cacheKey));
-            return;
-        }
-
-        // Показываем индикатор загрузки при каждом обновлении
-        const tbody = document.getElementById('schedule-tbody');
-        tbody.innerHTML = `
-            <tr id="loading-row">
-                <td colspan="8" class="text-center py-4">
-                    <div class="loading-spinner-large"></div>
-                    <div class="mt-2">Загрузка графика...</div>
-                </td>
-            </tr>
-        `;
-
         $.ajax({
             url: '{% url "schedule" %}',
             data: {
@@ -724,8 +640,6 @@ $(document).ready(function() {
             },
             dataType: 'json',
             success: function(data) {
-                // Кэшируем данные
-                scheduleCache.set(cacheKey, data);
                 if (callback) callback(data);
             },
             error: function(xhr, status, error) {
@@ -734,6 +648,7 @@ $(document).ready(function() {
             }
         });
     }
+
 
     {% if perms.tph_system.change_schedule %}
     // Обработчики для модального окна

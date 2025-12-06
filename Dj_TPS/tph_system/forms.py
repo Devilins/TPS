@@ -232,6 +232,34 @@ class ScheduleForm(ModelForm):
         }
 
 
+class WorkVacScheduleForm(forms.ModelForm):
+    days_count = forms.IntegerField(min_value=1, max_value=31, initial=1, label="Количество дней",
+                                    widget=forms.NumberInput(attrs={
+                                        'class': 'form-control', 'min': '1', 'max': '31'
+                                    }))
+
+    class Meta:
+        model = WorkVacSchedule
+        fields = ['staff_wrk_status', 'time_availiable']
+
+        labels = {
+            'staff_wrk_status': 'Рабочий статус',
+            'time_availiable': 'Временной период'
+        }
+
+        widgets = {
+            'staff_wrk_status': forms.Select(attrs={
+                'class': 'form-select',
+                'aria-label': 'Рабочий статус',
+                'label': 'Рабочий статус'
+            }),
+            'time_availiable': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Например: 09:00-18:00 или "весь день"'
+            }),
+        }
+
+
 class SalesForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -628,6 +656,7 @@ PositionSelectFormSet = modelformset_factory(
 
 class CashStoreForm(ModelForm):
     def __init__(self, *args, **kwargs):
+        self.sws_list: list | None = kwargs.pop('sws_list', None)
         super().__init__(*args, **kwargs)
         self.fields['store'].queryset = Store.objects.filter(store_status="Действующая")
         self.fields['store'].empty_label = "Выберите точку"
@@ -669,6 +698,12 @@ class CashStoreForm(ModelForm):
         if date > datetime.today().date():
             raise ValidationError('Дата не может быть в будущем')
         return date
+
+    def clean_store(self):
+        store = self.cleaned_data["store"]
+        if self.sws_list and store not in self.sws_list:
+            raise ValidationError(f'Вы не работаете сегодня на точке {store.name}.')
+        return store
 
 
 class TimeSelectForm(Form):

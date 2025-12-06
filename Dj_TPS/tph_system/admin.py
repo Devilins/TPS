@@ -48,6 +48,14 @@ class ScheduleAdmin(admin.ModelAdmin):
     list_per_page = 40
 
 
+@admin.register(WorkVacSchedule)
+class WorkVacScheduleAdmin(admin.ModelAdmin):
+    readonly_fields = ('date_upd', 'user_edited')
+    list_display = ('date', 'staff', 'staff_wrk_status', 'time_availiable', 'date_upd', 'user_edited')
+    list_filter = ('date', 'staff_wrk_status', 'staff')
+    list_per_page = 40
+
+
 @admin.register(ConsumablesStore)
 class ConsumablesStoreAdmin(admin.ModelAdmin):
     readonly_fields = ('change_data', 'user_edited')

@@ -86,10 +86,10 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
             sal_staff = 0  # Зарплата сотрудника за день
 
             # Все продажи сотрудника за день. Раскидываем на фотографа, админа и универсала и заказы.
-            sales_ph = sales_today.filter(photographer=sch.staff).exclude(staff=sch.staff)
-            sales_adm = sales_today.filter(staff=sch.staff).exclude(photographer=sch.staff)
-            sales_univ = sales_today.filter(staff=sch.staff, photographer=sch.staff)
-            sales_zak = Sales.objects.filter(date=day_date, photographer=sch.staff,
+            sales_ph = sales_today.filter(store=sch.store, photographer=sch.staff).exclude(staff=sch.staff)
+            sales_adm = sales_today.filter(store=sch.store, staff=sch.staff).exclude(photographer=sch.staff)
+            sales_univ = sales_today.filter(store=sch.store, staff=sch.staff, photographer=sch.staff)
+            sales_zak = Sales.objects.filter(store=sch.store, date=day_date, photographer=sch.staff,
                                              sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка'])
 
             phot_in_store_cnt = len(Schedule.objects.filter(date=day_date, store=sch.store, position='Фотограф'))
@@ -98,8 +98,8 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
             if sales_zak.exists():
                 # Касса заказов
                 cashbx_staff += int(sales_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                c_log = c_log + 'Заказы: '
                 for sl in sales_zak:
-                    c_log = c_log + 'Заказы: '
                     if sl.sale_type == 'Заказной фотосет':
                         # Проверка на выходные
                         if day_date.weekday() in (5, 6):
@@ -111,13 +111,12 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                             sal_staff += delta
                             c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets(str(sl.store.short_name) + '_order_ph_budn')}) + '
                     elif sl.sale_type == 'Заказ выездной' and sch.position == 'Выездной фотограф':
-                        delta = float(sl.photo_count) * param_gets('order_ph_out')
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out')}) + '
+                        pass  # Подсчет зп для выездных фотографов считается на 328 строчке. Тут только проверка роли.
+
                     elif sl.sale_type == 'Заказная видеосъемка' and sch.position == 'Видеограф':
                         delta = float(sl.photo_count) * param_gets('video_order_ph_out')
                         sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({str(sl.photo_count)} * {param_gets('video_order_ph_out')}) + '
+                        c_log = c_log + 'Видеосъемка ' + str(delta) + f' ({str(sl.photo_count)} * {param_gets('video_order_ph_out')}) + '
                     else:
                         error = ImplEvents.objects.create(
                             event_type='Salary_PositionError',
@@ -283,9 +282,9 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('admin_incr_perc_pay_budn') / 100}) + '
 
-            if (not Sales.objects.filter(date=day_date,
+            if (not Sales.objects.filter(store=sch.store, date=day_date,
                                          photographer=sch.staff,
-                                         sale_type='Заказ выездной').exists()
+                                         sale_type__in=['Заказ выездной', 'Заказная видеосъемка']).exists()
                     and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists()):
                 c_log = c_log + 'Кассы 0, мин зп: '
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
@@ -315,7 +314,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
 
             if sch.position == 'Администратор':
                 # Заказы, где сотрудник является только админом. Работает только для роли администратор
-                sales_zak_admin_service = Sales.objects.filter(date=day_date, staff=sch.staff,
+                sales_zak_admin_service = Sales.objects.filter(store=sch.store, date=day_date, staff=sch.staff,
                                                                sale_type__in=['Заказной фотосет', 'Заказ выездной', 'Заказная видеосъемка']
                                                                ).exclude(photographer=sch.staff)
                 if sales_zak_admin_service.exists():
@@ -328,7 +327,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
 
             if sch.position == 'Выездной фотограф':
                 # Отдельно считается ЗП для выездных фотографов.
-                sales_order_zak = Sales.objects.filter(date=day_date, photographer=sch.staff, sale_type='Заказ выездной')
+                sales_order_zak = Sales.objects.filter(store=sch.store, date=day_date, photographer=sch.staff, sale_type='Заказ выездной')
                 sales_ph_order = sales_ph.exclude(sale_type='Исходники заказа')
                 sales_univ_order = sales_univ.exclude(sale_type='Исходники заказа')
                 cashbx_staff = 0
@@ -341,7 +340,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         if day_date.weekday() in (5, 6):  # Выходные
                             sal_staff += float(sl.photo_count) * param_gets('order_ph_out_wknd')
                             c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_wknd')}) + '
-                        else: # Будни
+                        else:  # Будни
                             sal_staff += float(sl.photo_count) * param_gets('order_ph_out_budn')
                             c_log = c_log + str(sal_staff) + f' ({str(sl.photo_count)} * {param_gets('order_ph_out_budn')}) + '
 

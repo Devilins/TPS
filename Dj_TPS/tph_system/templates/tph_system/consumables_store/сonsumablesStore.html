@@ -28,7 +28,7 @@
                         <form method="get">
                             <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
                                 <div class="form-floating col-md-auto">
-                                    {% if perms.tph_system.consumables_view_all_stores %}
+                                    {% if perms.tph_system.consumables_view_all_stores or store_filter_enabled %}
                                     {{ cs_filter.form.store }}
                                     <label style="left: 0.5rem">Точка</label>
                                     {% endif %}

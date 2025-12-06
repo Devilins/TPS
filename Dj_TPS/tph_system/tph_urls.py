@@ -17,6 +17,10 @@ urlpatterns = [
     path('salary/events/', sal_err_events, name='sal_events'),
     path('cash_withdrawn/', cash_withdrawn, name='cash_withdrawn'),
     path('update-schedule/', update_schedule, name='update_schedule'),
+    path('get_employee_schedule/', get_employee_schedule, name='get_employee_schedule'),
+    path('schedule/workvac/', workvac_schedule, name='workvac_schedule'),
+    path('get_workvac_day_data/', get_workvac_day_data, name='get_workvac_day_data'),
+    path('update_workvac_schedule/', update_workvac_schedule, name='update_workvac_schedule'),
     path('fin_stats/', fin_stats, name='fin_stats'),
     path('fin_stats/calculation/', fin_stats_calc_view, name='fin_stats_calc'),
     path('reports/', reports, name='reports'),
@@ -53,8 +57,4 @@ urlpatterns = [
     path('check/reports/<int:pk>/delete', CheckReportsDeleteView.as_view(), name='check_reports_delete'),
 
     # path('base/', base_fx, name='base_fx'),
-    # Календарь
-    # path('calendar/', CalendarView.as_view(), name='calendar'),
-    # path('calendar/event/add/', EventCreateView.as_view(), name='event_add'),
-    # path('calendar/vacation/add/', VacationCreateView.as_view(), name='vacation_add')
 ]

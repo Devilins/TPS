@@ -93,10 +93,45 @@ class Schedule(models.Model):
         verbose_name = 'График сотрудников'
         verbose_name_plural = 'График сотрудников'
         ordering = ['-date', 'store']
-        unique_together = ('staff', 'date')  # Гарантируем уникальность записи для сотрудника в определенный день
+        unique_together = ('staff', 'date', 'store')  # Гарантируем уникальность записи для сотрудника и точки в определенный день
+        indexes = [
+            models.Index(fields=['date', 'staff']),
+            models.Index(fields=['staff', 'date']),
+        ]
 
     def __str__(self):
         return f'{self.date} - {self.staff} - {self.store} - {self.position}'
+
+
+class WorkVacSchedule(models.Model):  # Не забудь добавить permission view_all_staff_schedule!!!!!!!!
+    SLCT_WRK_STATUS = (
+        ('', ''),
+        ('Работает', 'Работает'),
+        ('Отпуск', 'Отпуск'),
+        ('Отгул', 'Отгул'),
+        ('Больничный', 'Больничный'),
+    )
+    staff = models.ForeignKey(Staff, on_delete=models.PROTECT, verbose_name=u"Сотрудник")
+    date = models.DateField(verbose_name=u"Дата")
+    staff_wrk_status = models.CharField(max_length=40, default='', blank=True, null=True, choices=SLCT_WRK_STATUS,
+                                        verbose_name=u"Рабочий статус")
+    time_availiable = models.CharField(verbose_name=u"Временной период", max_length=30, blank=True, null=True)
+    date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
+    user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
+                                    verbose_name=u"Кем было изменено")
+
+    class Meta:
+        verbose_name = 'График выходов и отпусков'
+        verbose_name_plural = 'График выходов и отпусков'
+        ordering = ['-date', 'staff']
+        unique_together = ('staff', 'date')
+        indexes = [
+            models.Index(fields=['date', 'staff']),
+            models.Index(fields=['staff', 'date']),
+        ]
+
+    def __str__(self):
+        return f'{self.date} - {self.staff} - {self.staff_wrk_status}'
 
 
 class ConsumablesStore(models.Model):
@@ -443,60 +478,3 @@ class CheckReports(models.Model):
 
     def __str__(self):
         return f'Отчет от {self.date} на {self.store} - {self.check_status}'
-
-# --------------------------------------Календарь отпусков не используемый--------------------------------
-# class CalendarEvent(models.Model):
-#     EVENT_TYPES = [
-#         ('vacation', 'Отпуск'),
-#         ('holiday', 'Праздничный день'),
-#         ('school_break', 'Школьные каникулы'),
-#     ]
-#
-#     EVENT_COLORS = {
-#         'vacation': '#FF9999',  # Красноватый для отпусков
-#         'holiday': '#99FF99',  # Зеленоватый для праздников
-#         'school_break': '#9999FF',  # Синеватый для каникул
-#     }
-#
-#     title = models.CharField(_('Название'), max_length=200)
-#     event_type = models.CharField(_('Тип события'), max_length=20, choices=EVENT_TYPES)
-#     start_date = models.DateField(_('Дата начала'))
-#     end_date = models.DateField(_('Дата окончания'))
-#     description = models.TextField(_('Описание'), blank=True)
-#     employee = models.ForeignKey(
-#         Staff,
-#         on_delete=models.CASCADE,
-#         null=True,
-#         blank=True,
-#         verbose_name=_('Сотрудник'),
-#         help_text=_('Заполняется только для отпусков')
-#     )
-#     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-#
-#     class Meta:
-#         verbose_name = _('Календарь событий')
-#         verbose_name_plural = _('Календарь событий')
-#
-#     def save(self, *args, **kwargs):
-#         if not self.pk:  # Если объект создается впервые
-#             calendar = Calendar.objects.get(slug='company-calendar')
-#
-#             # Формируем заголовок события
-#             if self.event_type == 'vacation':
-#                 title = f'Отпуск: {self.employee.get_full_name()}'    # Есть вопросы к методу
-#             else:
-#                 title = self.title
-#
-#             # Создаем событие в календаре
-#             event = Event(
-#                 start=self.start_date,
-#                 end=self.end_date,
-#                 title=title,
-#                 description=self.description,
-#                 calendar=calendar,
-#                 color_event=self.EVENT_COLORS[self.event_type],
-#                 creator=self.employee if self.employee else None
-#             )
-#             event.save()
-#             self.event = event
-#         super().save(*args, **kwargs)

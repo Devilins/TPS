@@ -1,0 +1,411 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+{% if perms.tph_system.view_schedule %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'schedule' %}">
+            <button type="button" class="btn btn-sm btn-warning">График сотрудников</button>
+        </a>
+    </li>
+{% endif %}
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+
+    <!-- Таблица с графиком -->
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <h4 class="card-title">
+                График выходов и отпусков сотрудников <br>
+
+                <div class="card card-body mt-3" style="font-size: 15px; max-width: 550px;">
+                    <div class="d-grid gap-2 d-md-block">
+                            <button class="btn btn-sm btn-primary" id="prev-week">← Предыдущая неделя</button>
+                            <span class="px-2" id="current-week">Неделя с <span id="start-date">{{ start_date|date:"d.m.Y" }}</span></span>
+                            <button class="btn btn-sm btn-primary" id="next-week">Следующая неделя →</button>
+                    </div>
+                </div>
+            </h4>
+        </div>
+
+        <div class="table-responsive" style="max-height: 78vh; overflow-y: auto;">
+            <table class="table table-bordered table-hover align-middle" id="workvac-table" style="min-width: 900px;">
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th style="width: 15%;">Сотрудник</th>
+                        {% for i in "0123456"|make_list %}
+                            <th class="date-header" style="width: 12.14%;"></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody id="workvac-tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Модальное окно для редактирования графика -->
+<div class="modal fade" id="workvacModal" tabindex="-1" aria-labelledby="workvacModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal-employee-info" class="mb-2 fw-bold"></div>
+                <div id="modal-date-info" class="mb-2 text-muted"></div>
+
+                <form id="workvac-form">
+                    <input type="hidden" id="edit-staff-id">
+                    <input type="hidden" id="edit-date">
+
+                    <div class="mb-2">
+                        <label for="edit-status" class="form-label">Рабочий статус</label>
+                        <select class="form-select form-select-sm" id="edit-status" required>
+                            <option value="">-</option>
+                            <option value="Работает">Работает</option>
+                            <option value="Отпуск">Отпуск</option>
+                            <option value="Отгул">Отгул</option>
+                            <option value="Больничный">Больничный</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="edit-time-availiable" class="form-label">Временной период</label>
+                        <input type="text" class="form-control form-control-sm" id="edit-time-availiable"
+                               placeholder="Например: 09:00-18:00 или 'весь день'">
+                        <div class="form-text">Оставьте пустым, если не требуется</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="edit-days-count" class="form-label">Количество дней</label>
+                        <input type="number" class="form-control form-control-sm" id="edit-days-count"
+                               min="1" max="31" value="1" required>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.workvac-cell {
+    cursor: pointer;
+    min-height: 60px;
+    padding: 8px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    position: relative;
+}
+
+.workvac-cell:hover {
+    background-color: #f8f9fa !important;
+    transition: 0.2s ease;
+    z-index: 5;
+    filter: brightness(0.9);
+}
+
+/* Цвета для разных статусов */
+.workvac-cell.status-Работает {
+    background-color: #d4edda !important;
+    border-left: 4px solid #28a745 !important;
+}
+.workvac-cell.status-Отпуск {
+    background-color: #fff3cd !important;
+    border-left: 4px solid #ffc107 !important;
+}
+.workvac-cell.status-Больничный {
+    background-color: #cce7ff !important;
+    border-left: 4px solid #007bff !important;
+}
+.workvac-cell.status-Отгул {
+    background-color: #ffe6e6 !important;
+    border-left: 4px solid #dc3545 !important;
+}
+.workvac-cell.status-default {
+    background-color: #ffffff !important;
+}
+
+/* Стили для времени в ячейках */
+.cell-time {
+    font-size: 0.75rem;
+    color: #666;
+    display: block;
+    margin-top: 3px;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Цвета для разных статусов
+    const statusColors = {
+        'Работает': 'status-Работает',
+        'Отпуск': 'status-Отпуск',
+        'Отгул': 'status-Отгул',
+        'Больничный': 'status-Больничный'
+    };
+
+    // Текущие данные для модального окна
+    let currentStaffId = null;
+    let currentDate = null;
+    let currentCell = null;
+
+    // Инициализация текущей даты из Django context
+    var currentWeekDate = new Date('{{ start_date|date:"Y-m-d" }}');
+
+    // Функция для форматирования даты в строку YYYY-MM-DD
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    // Функция для отображения времени в ячейке
+    function formatTimeDisplay(timeStr) {
+        if (!timeStr) return '';
+        if (timeStr.toLowerCase() === 'весь день') return 'весь день';
+        return timeStr;
+    }
+
+    // Функция для обновления отображения ячейки
+    function updateCellDisplay(cell, status, time) {
+        // Формируем текст для отображения
+        let displayText = status || '';
+        if (time) {
+            displayText += `<br><small class="cell-time">${formatTimeDisplay(time)}</small>`;
+        }
+
+        cell.html(displayText);
+
+        // Устанавливаем цвет ячейки на основе статуса
+        cell.removeClass('status-Работает status-Отпуск status-Отгул status-Больничный status-default');
+
+        if (status && statusColors[status]) {
+            cell.addClass(statusColors[status]);
+        } else {
+            cell.addClass('status-default');
+        }
+    }
+
+    // Функция для загрузки данных дня с сервера
+    function loadDayData(staffId, date, callback) {
+        $.ajax({
+            url: '{% url "get_workvac_day_data" %}',
+            data: {
+                'staff_id': staffId,
+                'date': date
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    callback(response.data, response.staff_name);
+                } else {
+                    console.error('Ошибка при загрузке данных:', response.message);
+                    callback({status: '', time_availiable: ''}, '');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при загрузке данных:', error);
+                callback({status: '', time_availiable: ''}, '');
+            }
+        });
+    }
+
+    // Функция для открытия модального окна
+    function openWorkvacModal(staffId, date, cell, staffName) {
+        currentStaffId = staffId;
+        currentDate = date;
+        currentCell = cell;
+
+        // Показываем загрузку
+        $('#modal-employee-info').text('Загрузка...');
+        $('#modal-date-info').text('');
+
+        // Загружаем данные дня
+        loadDayData(staffId, date, function(data, actualStaffName) {
+            const displayName = actualStaffName || staffName;
+            const displayDate = new Date(date).toLocaleDateString('ru-RU');
+
+            $('#modal-employee-info').text('Сотрудник: ' + displayName);
+            $('#modal-date-info').text('Дата: ' + displayDate);
+
+            // Заполняем форму данными
+            $('#edit-status').val(data.status || '');
+            $('#edit-time-availiable').val(data.time_availiable || '');
+
+            // Сбрасываем количество дней на 1
+            $('#edit-days-count').val(1);
+
+            // Показываем модальное окно
+            $('#workvacModal').modal('show');
+        });
+    }
+
+    // Функция для сохранения данных
+    function saveWorkvacData(callback) {
+        const status = $('#edit-status').val();
+        let timeAvailiable = $('#edit-time-availiable').val();
+        const daysCount = parseInt($('#edit-days-count').val());
+
+        if (status === '') {
+            timeAvailiable = '';
+            $('#edit-time-availiable').val('');
+        }
+
+        $.ajax({
+            url: '{% url "update_workvac_schedule" %}',
+            method: 'POST',
+            data: {
+                'staff_id': currentStaffId,
+                'date': currentDate,
+                'status': status,
+                'time_availiable': timeAvailiable,
+                'days_count': daysCount,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    // Обновляем отображение ячейки
+                    updateCellDisplay(currentCell, status, timeAvailiable);
+
+                    // Если нужно обновить всю таблицу (при daysCount > 1)
+                    if (daysCount > 1) {
+                        updateTable(currentWeekDate);
+                    }
+
+                    if (callback) callback(true);
+                } else {
+                    console.error('Ошибка при обновлении:', response.message);
+                    if (callback) callback(false, response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при отправке запроса:', error);
+                if (callback) callback(false, error);
+            }
+        });
+    }
+
+    // Функция для обновления таблицы
+    function updateTable(newDate) {
+
+        $.ajax({
+            url: '{% url "workvac_schedule" %}',
+            data: {
+                'start_date': formatDate(newDate)
+            },
+            dataType: 'json',
+            success: function(data) {
+                const tbody = $('#workvac-tbody');
+                tbody.empty();
+
+                // Обновляем отображаемую дату начала недели
+                $('#start-date').text(new Date(data.start_date).toLocaleDateString('ru-RU'));
+
+                // Обновляем заголовки с датами
+                $('.date-header').each(function(index) {
+                    const headerDate = new Date(data.start_date);
+                    headerDate.setDate(headerDate.getDate() + index);
+                    $(this).text(headerDate.toLocaleDateString('ru-RU', {
+                        weekday: 'short',
+                        day: '2-digit',
+                        month: '2-digit'
+                    }));
+                });
+
+                // Создаем строки таблицы для каждого сотрудника
+                data.schedule_data.forEach(function(staff) {
+                    const row = $('<tr>');
+                    row.append($('<td>').text(staff.staff_name + ' ' + staff.staff_f_name));
+
+                    // Добавляем ячейки для каждого дня недели
+                    staff.schedule.forEach(function(day) {
+                        const cell = $('<td>')
+                            .addClass('workvac-cell')
+                            .attr('data-staff', staff.staff_id)
+                            .attr('data-date', day.date)
+                            .attr('data-staff-name', staff.staff_name + ' ' + staff.staff_f_name);
+
+                        // Обновляем отображение ячейки
+                        updateCellDisplay(cell, day.status, day.time_availiable);
+
+                        // Обработчик клика для открытия модального окна
+                        cell.click(function() {
+                            openWorkvacModal(
+                                staff.staff_id,
+                                day.date,
+                                $(this),
+                                staff.staff_name + ' ' + staff.staff_f_name
+                            );
+                        });
+
+                        row.append(cell);
+                    });
+
+                    tbody.append(row);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка при загрузке данных:', error);
+                $('#workvac-tbody').html(`
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-danger">
+                            Ошибка загрузки данных. Попробуйте обновить страницу.
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+
+    // Обработчики для модального окна
+    $('#save-workvac').click(function() {
+        const $btn = $(this);
+        const originalText = $btn.html();
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Сохранение...');
+
+        saveWorkvacData(function(success, error) {
+            $btn.prop('disabled', false).html(originalText);
+
+            if (success) {
+                $('#workvacModal').modal('hide');
+            } else {
+                alert('Ошибка при сохранении: ' + error);
+            }
+        });
+    });
+
+    {% if perms.tph_system.change_workvacschedule %}
+    // Сохраняем данные при закрытии модального окна
+    $('#workvacModal').on('hide.bs.modal', function () {
+        if (currentStaffId && currentDate) {
+            saveWorkvacData();
+        }
+    });
+    {% endif %}
+
+    // Обработчики кнопок смены недели
+    $('#prev-week').click(function() {
+        currentWeekDate.setDate(currentWeekDate.getDate() - 7);
+        updateTable(currentWeekDate);
+    });
+
+    $('#next-week').click(function() {
+        currentWeekDate.setDate(currentWeekDate.getDate() + 7);
+        updateTable(currentWeekDate);
+    });
+
+    // Инициализация таблицы при загрузке страницы
+    updateTable(currentWeekDate);
+});
+</script>
+
+{% endblock %}
