@@ -96,8 +96,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
 
             c_log = ''
             if sales_zak.exists():
-                # Касса заказов
-                cashbx_staff += int(sales_zak.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                # Кассу заказов не учитываем в подсчете
                 c_log = c_log + 'Заказы: '
                 for sl in sales_zak:
                     if sl.sale_type == 'Заказной фотосет':
@@ -216,7 +215,36 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                     sal_staff += delta
                     c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('univ_perc_payment') / 100}) + '
 
-            elif sales_ph.exists():
+            elif sales_adm.exists():
+                c_log = c_log + 'Администратор: '
+                # Касса администратора
+                cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                cashbx_staff += cashbx_sum
+
+                if cashbx_sum <= param_gets('admin_cashbx_min_border'):
+                    delta = param_gets('admin_min_payment')
+                    sal_staff += delta
+                    c_log = c_log + str(delta) + ' + '
+                elif day_date.weekday() in (5, 6):  # Выходные
+                    if cashbx_sum < param_gets('admin_cashbx_perc_border_wknd'):  # 20000
+                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_wknd') / 100  # 0.1
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_wknd') / 100}) + '
+                    else:
+                        delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100}) + '
+                else:
+                    if cashbx_sum < param_gets('admin_cashbx_perc_border_budn'):  # 10000
+                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_budn') / 100  # 0.1
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_budn') / 100}) + '
+                    else:
+                        delta = cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('admin_incr_perc_pay_budn') / 100}) + '
+
+            if sales_ph.exists():
                 c_log = c_log + 'Фотограф: '
                 # Касса фотографа
                 cashbx_sum = int(sales_ph.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
@@ -252,35 +280,6 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         delta = cashbx_sum * param_gets('phot_many_incr_perc_pay_budn') / 100  # 0.25
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_budn') / 100}) + '
-
-            elif sales_adm.exists():
-                c_log = c_log + 'Администратор: '
-                # Касса администратора
-                cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
-                cashbx_staff += cashbx_sum
-
-                if cashbx_sum <= param_gets('admin_cashbx_min_border'):
-                    delta = param_gets('admin_min_payment')
-                    sal_staff += delta
-                    c_log = c_log + str(delta) + ' + '
-                elif day_date.weekday() in (5, 6):  # Выходные
-                    if cashbx_sum < param_gets('admin_cashbx_perc_border_wknd'):  # 20000
-                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_wknd') / 100  # 0.1
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_wknd') / 100}) + '
-                    else:
-                        delta = cashbx_sum * param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100  # 0.17
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets(str(sch.store.short_name) + '_admin_incr_perc_pay_wknd') / 100}) + '
-                else:
-                    if cashbx_sum < param_gets('admin_cashbx_perc_border_budn'):  # 10000
-                        delta = param_gets('admin_min_payment') + cashbx_sum * param_gets('admin_stand_perc_pay_budn') / 100  # 0.1
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({param_gets('admin_min_payment')} + {cashbx_sum} * {param_gets('admin_stand_perc_pay_budn') / 100}) + '
-                    else:
-                        delta = cashbx_sum * param_gets('admin_incr_perc_pay_budn') / 100  # 0.2
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('admin_incr_perc_pay_budn') / 100}) + '
 
             if (not Sales.objects.filter(store=sch.store, date=day_date,
                                          photographer=sch.staff,
