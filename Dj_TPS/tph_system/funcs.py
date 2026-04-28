@@ -386,8 +386,115 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                     sal_staff += delta
                     c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('univ_perc_payment') / 100}) + '
 
+            # -------------------------------------
+            # Расчет ЗП для сотрудников в Joky Joya
+            # -------------------------------------
+            if 'JJ' in sch.store.short_name and sch.position != 'Выездной фотограф':
+                cashbx_staff = 0  # Касса сотрудника за день
+                sal_staff = 0  # Зарплата сотрудника за день
+
+                c_log = ''
+                if sales_ph.exists():
+                    if sch.position == 'Фотограф':
+                        c_log = c_log + 'Фотограф JJ: '
+                        # Касса фотографа
+                        cashbx_sum = int(sales_ph.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                        cashbx_staff += cashbx_sum
+
+                        if cashbx_sum <= param_gets('JJ_min_border_phot'):
+                            delta = param_gets('JJ_min_payment_phot')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + ' + '
+                        else:
+                            delta = cashbx_sum * param_gets('JJ_stnd_perc_phot') / 100  # 0.16
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_phot') / 100}) + '
+                    elif sch.position == 'Универсальный фотограф':
+                        c_log = c_log + 'Универсал JJ: '
+                        # Касса универсала
+                        cashbx_sum = int(sales_ph.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                        cashbx_staff += cashbx_sum
+
+                        if cashbx_sum <= param_gets('JJ_min_border_univ'):
+                            delta = param_gets('JJ_min_payment_univ')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + ' + '
+                        else:
+                            delta = cashbx_sum * param_gets('JJ_stnd_perc_univ') / 100  # 0.18
+                            sal_staff += delta
+                            c_log = c_log + str(
+                                delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_univ') / 100}) + '
+                    else:
+                        error = ImplEvents.objects.create(
+                            event_type='Salary_PositionError',
+                            event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position}. "
+                                          f"Влияет на расчет ЗП по {sales_ph[0]}",
+                            status='Бизнес ошибка',
+                            solved='Нет'
+                        )
+                        print(f"ImplEvents - новая запись {error}")
+                elif sales_univ.exists():
+                    if sch.position == 'Супер универсал (JJ)':
+                        c_log = c_log + 'Супер универсал JJ: '
+                        # Касса Супер универсала
+                        cashbx_sum = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                        cashbx_staff += cashbx_sum
+
+                        if cashbx_sum <= param_gets('JJ_min_border_supuniv'):
+                            delta = param_gets('JJ_min_payment_supuniv')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + ' + '
+                        else:
+                            delta = cashbx_sum * param_gets('JJ_stnd_perc_supuniv') / 100  # 0.25
+                            sal_staff += delta
+                            c_log = c_log + str(
+                                delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_supuniv') / 100}) + '
+                    else:
+                        error = ImplEvents.objects.create(
+                            event_type='Salary_PositionError',
+                            event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position} "
+                                          f"вместо Супер универсала. Влияет на расчет ЗП по {sales_univ[0]}",
+                            status='Бизнес ошибка',
+                            solved='Нет'
+                        )
+                        print(f"ImplEvents - новая запись {error}")
+                elif sales_adm.exists():
+                    if sch.position == 'Админ-ретушер (JJ)':
+                        c_log = c_log + 'Админ-ретушер JJ: '
+                        # Касса Админа ретушера
+                        cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                        cashbx_staff += cashbx_sum
+
+                        if cashbx_sum <= param_gets('JJ_min_border_admin_rtch'):
+                            delta = param_gets('JJ_min_payment_admin_rtch')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + ' + '
+                        else:
+                            delta = cashbx_sum * param_gets('JJ_stnd_perc_admin_rtch') / 100  # 0.13
+                            sal_staff += delta
+                            c_log = c_log + str(
+                                delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_admin_rtch') / 100}) + '
+                    elif sch.position == 'Ретушер (JJ)':
+                        c_log = c_log + 'Ретушер JJ: '
+                        # Касса Ретушера
+                        cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                        cashbx_staff += cashbx_sum
+
+                        delta = cashbx_sum * param_gets('JJ_stnd_perc_rtch') / 100  # 0.10
+                        sal_staff += delta
+                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_rtch') / 100}) + '
+                    else:
+                        error = ImplEvents.objects.create(
+                            event_type='Salary_PositionError',
+                            event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position} "
+                                          f"вместо Супер универсала. Влияет на расчет ЗП по {sales_adm[0]}",
+                            status='Бизнес ошибка',
+                            solved='Нет'
+                        )
+                        print(f"ImplEvents - новая запись {error}")
+
             # Оформление логов расчета
-            if c_log[-2] == '+':
+            if len(c_log) >= 2 and c_log[-2] == '+':
                 c_log = c_log[:len(c_log)-3:]
 
             # Update в БД
