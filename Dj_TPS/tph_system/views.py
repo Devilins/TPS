@@ -1937,7 +1937,7 @@ def main_page(request):
 
     check_cash = {}
     for csh in CashStore.objects.filter(date=selected_date):
-        if csh.cash_mrn == cash_yesterday[csh.store.name]:
+        if csh.cash_mrn == cash_yesterday[csh.store.name] or "JJ" in csh.store.short_name:
             check_cash[csh.store.name] = {
                 'check': f'{csh.cash_evn} | Сверка ОК',
                 'color': 1
@@ -2528,7 +2528,7 @@ def reports(request):
     check_cash = ''
     td_color = -1
     for csh in cash_s:
-        if csh.cash_mrn == cash_yesterday:
+        if csh.cash_mrn == cash_yesterday or "JJ" in csh.store.short_name:  # Если точка Джоки, то сверка всегда ОК
             check_cash = '-> Сверка ОК'
             td_color = 1
         elif cash_yesterday == -1:
@@ -2540,7 +2540,8 @@ def reports(request):
 
     # Личные кассы фотографов
     if staffs_data.filter(
-            position__in=['Фотограф', 'Видеограф', 'Универсальный фотограф', 'Выездной фотограф']).count() > 1:
+            position__in=['Фотограф', 'Видеограф', 'Универсальный фотограф', 'Выездной фотограф',
+                          'Супер универсал (JJ)']).count() > 1:
         cash_staffs = sales_data.values('photographer__name', 'photographer__f_name').annotate(cash_staff=Sum('sum'))
     else:
         cash_staffs = None
