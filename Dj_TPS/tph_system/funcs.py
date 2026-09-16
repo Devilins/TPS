@@ -99,7 +99,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                 # Кассу заказов не учитываем в подсчете
                 c_log = c_log + 'Заказы: '
                 for sl in sales_zak:
-                    if sl.sale_type == 'Заказной фотосет':
+                    if sl.sale_type == 'Заказной фотосет' and sch.position != 'Выездной фотограф':
                         # Проверка на выходные
                         if day_date.weekday() in (5, 6):
                             delta = float(sl.photo_count) * param_gets(str(sl.store.short_name) + '_order_ph_wknd')
@@ -281,11 +281,14 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         sal_staff += delta
                         c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('phot_many_incr_perc_pay_budn') / 100}) + '
 
+            zero_cashbox_flag = False  # Флаг нулевой кассы
+
             if (not Sales.objects.filter(store=sch.store, date=day_date,
                                          photographer=sch.staff,
                                          sale_type__in=['Заказ выездной', 'Заказная видеосъемка']).exists()
                     and not sales_adm.exists() and not sales_ph.exists() and not sales_univ.exists()):
                 c_log = c_log + 'Кассы 0, мин зп: '
+                zero_cashbox_flag = True  # Флаг нулевой кассы
                 # Начисление минимальной зарплаты сотрудникам, если за день все кассы 0
                 match sch.position:
                     case 'Администратор':
@@ -297,6 +300,15 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                     case 'Универсальный фотограф':
                         sal_staff += param_gets('univ_min_payment')
                         c_log = c_log + str(param_gets('univ_min_payment'))
+                    case 'Ретушер (JJ)':
+                        sal_staff += param_gets('JJ_min_payment_rtch')
+                        c_log = c_log + str(param_gets('JJ_min_payment_rtch'))
+                    case 'Админ-ретушер (JJ)':
+                        sal_staff += param_gets('JJ_min_payment_admin_rtch')
+                        c_log = c_log + str(param_gets('JJ_min_payment_admin_rtch'))
+                    case 'Супер универсал (JJ)':
+                        sal_staff += param_gets('JJ_min_payment_supuniv')
+                        c_log = c_log + str(param_gets('JJ_min_payment_supuniv'))
                     case 'Видеограф':
                         pass
                     case 'Выездной фотограф':
@@ -389,7 +401,7 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
             # -------------------------------------
             # Расчет ЗП для сотрудников в Joky Joya
             # -------------------------------------
-            if 'JJ' in sch.store.short_name and sch.position != 'Выездной фотограф':
+            if 'JJ' in sch.store.short_name and sch.position != 'Выездной фотограф' and not zero_cashbox_flag:
                 cashbx_staff = 0  # Касса сотрудника за день
                 sal_staff = 0  # Зарплата сотрудника за день
 
@@ -480,9 +492,14 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         cashbx_sum = int(sales_adm.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
                         cashbx_staff += cashbx_sum
 
-                        delta = cashbx_sum * param_gets('JJ_stnd_perc_rtch') / 100  # 0.10
-                        sal_staff += delta
-                        c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_rtch') / 100}) + '
+                        if cashbx_sum <= param_gets('JJ_min_border_rtch'):
+                            delta = param_gets('JJ_min_payment_rtch')
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + ' + '
+                        else:
+                            delta = cashbx_sum * param_gets('JJ_stnd_perc_rtch') / 100  # 0.10
+                            sal_staff += delta
+                            c_log = c_log + str(delta) + f' ({str(cashbx_sum)} * {param_gets('JJ_stnd_perc_rtch') / 100}) + '
                     else:
                         error = ImplEvents.objects.create(
                             event_type='Salary_PositionError',
