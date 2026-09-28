@@ -264,7 +264,7 @@
           {% endif %}
           {% if perms.tph_system.reports_view %}
           <li class="nav-item"><a{% if request.path|startswith:'/reports/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'reports' %}">
-              <img src="{% static 'tph_system/images/i_reports.png' %}"> Сверка отчетов </a></li>
+              <img src="{% static 'tph_system/images/i_reports.png' %}"> Просмотр отчетов </a></li>
           {% endif %}
           {% if perms.tph_system.view_checkreports %}
           <li class="nav-item"><a{% if request.path|startswith:'/check/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'check_reports' %}">

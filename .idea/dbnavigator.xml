@@ -11,10 +11,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseAssistantManager">
     <assistants>
-      <assistant-state connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" default-profile-name="" selected-profile-name="" selected-model-name="" assistant-type="GENERIC" selected-action="SHOW_SQL" availability="UNAVAILABLE" acknowledgement="NONE">
-        <messages />
+      <assistant-state connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
+        <tools />
+        <mcp-servers />
       </assistant-state>
     </assistants>
+    <selection-state>
+      <model-selection />
+    </selection-state>
   </component>
   <component name="DBNavigator.Project.DatabaseBrowserManager">
     <autoscroll-to-editor value="false" />
@@ -124,8 +128,14 @@ commit;]]></console>
     <filters />
   </component>
   <component name="DBNavigator.Project.Settings">
+    <states>
+      <state category="SECRET_STORAGE_MIGRATION">
+        <cleaned value="true" />
+        <migrated value="true" />
+      </state>
+    </states>
     <connections>
-      <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" active="true" signed="true">
+      <connection source-id="" id="688bec83-c60c-46c7-ab0d-7d1041532910" active="true" signed="true">
         <database>
           <name value="tps_db" />
           <description value="" />
@@ -141,11 +151,20 @@ commit;]]></console>
           <database value="tps_db" />
           <tns-folder value="" />
           <tns-profile value="" />
+          <server-type value="" />
+          <protocol value="" />
+          <url-parameters />
           <type value="USER_PASSWORD" />
           <user value="tps_user_p" />
           <token-type value="" />
           <token-config-file value="" />
           <token-profile value="" />
+          <adb-compartment-ocid value="" />
+          <adb-database-ocid value="" />
+          <azure-token-database-id-uri value="" />
+          <azure-token-tenant-id value="" />
+          <azure-token-client-id value="" />
+          <azure-token-client-certificate-file value="" />
           <session-user value="tps_user_p" />
         </database>
         <properties>
@@ -183,22 +202,30 @@ commit;]]></console>
         </details>
         <debugger>
           <compile-dependencies value="true" />
-          <tcp-driver-tunneling value="false" />
           <tcp-host-address value="" />
           <tcp-port-from value="4000" />
           <tcp-port-to value="4999" />
+          <jdwp-tunnel-type value="NONE" />
           <debugger-type value="JDBC" />
+          <reverse-ssh-tunnel>
+            <host value="" />
+            <port value="22" />
+            <bind-host value="127.0.0.1" />
+            <bind-port value="0" />
+            <auth-type value="PASSWORD" />
+            <user value="" />
+            <key-file value="" />
+          </reverse-ssh-tunnel>
         </debugger>
         <object-filters hide-empty-schemas="false" hide-pseudo-columns="false" hide-audit-columns="false">
           <object-filters />
           <object-type-filter use-master-settings="true">
-            <object-type name="SCHEMA" enabled="true" />
-            <object-type name="USER" enabled="true" />
             <object-type name="ROLE" enabled="true" />
             <object-type name="PRIVILEGE" enabled="true" />
             <object-type name="CHARSET" enabled="true" />
             <object-type name="TABLE" enabled="true" />
             <object-type name="VIEW" enabled="true" />
+            <object-type name="JSON_VIEW" enabled="true" />
             <object-type name="MATERIALIZED_VIEW" enabled="true" />
             <object-type name="NESTED_TABLE" enabled="true" />
             <object-type name="COLUMN" enabled="true" />
@@ -215,14 +242,16 @@ commit;]]></console>
             <object-type name="TYPE_ATTRIBUTE" enabled="true" />
             <object-type name="ARGUMENT" enabled="true" />
             <object-type name="JAVA_CLASS" enabled="true" />
-            <object-type name="JAVA_INNER_CLASS" enabled="true" />
             <object-type name="JAVA_FIELD" enabled="true" />
             <object-type name="JAVA_METHOD" enabled="true" />
+            <object-type name="JAVA_RESOURCE" enabled="true" />
             <object-type name="DIMENSION" enabled="true" />
             <object-type name="CLUSTER" enabled="true" />
             <object-type name="DBLINK" enabled="true" />
             <object-type name="CREDENTIAL" enabled="true" />
             <object-type name="AI_PROFILE" enabled="true" />
+            <object-type name="MINING_MODEL" enabled="true" />
+            <object-type name="DATASOURCE_CONFIG" enabled="true" />
           </object-type-filter>
         </object-filters>
       </connection>
@@ -233,16 +262,16 @@ commit;]]></console>
         <navigation-history-size value="100" />
         <show-object-details value="false" />
         <enable-sticky-paths value="true" />
+        <enable-quick-filters value="false" />
       </general>
       <filters>
         <object-type-filter>
-          <object-type name="SCHEMA" enabled="true" />
-          <object-type name="USER" enabled="true" />
           <object-type name="ROLE" enabled="true" />
           <object-type name="PRIVILEGE" enabled="true" />
           <object-type name="CHARSET" enabled="true" />
           <object-type name="TABLE" enabled="true" />
           <object-type name="VIEW" enabled="true" />
+          <object-type name="JSON_VIEW" enabled="true" />
           <object-type name="MATERIALIZED_VIEW" enabled="true" />
           <object-type name="NESTED_TABLE" enabled="true" />
           <object-type name="COLUMN" enabled="true" />
@@ -259,14 +288,16 @@ commit;]]></console>
           <object-type name="TYPE_ATTRIBUTE" enabled="true" />
           <object-type name="ARGUMENT" enabled="true" />
           <object-type name="JAVA_CLASS" enabled="true" />
-          <object-type name="JAVA_INNER_CLASS" enabled="true" />
           <object-type name="JAVA_FIELD" enabled="true" />
           <object-type name="JAVA_METHOD" enabled="true" />
+          <object-type name="JAVA_RESOURCE" enabled="true" />
           <object-type name="DIMENSION" enabled="true" />
           <object-type name="CLUSTER" enabled="true" />
           <object-type name="DBLINK" enabled="true" />
           <object-type name="CREDENTIAL" enabled="true" />
           <object-type name="AI_PROFILE" enabled="true" />
+          <object-type name="MINING_MODEL" enabled="true" />
+          <object-type name="DATASOURCE_CONFIG" enabled="true" />
         </object-type-filter>
       </filters>
       <sorting>
@@ -292,6 +323,7 @@ commit;]]></console>
           <object-type name="CHARSET" enabled="false" />
           <object-type name="TABLE" enabled="true" />
           <object-type name="VIEW" enabled="true" />
+          <object-type name="JSON VIEW" enabled="true" />
           <object-type name="MATERIALIZED VIEW" enabled="true" />
           <object-type name="INDEX" enabled="true" />
           <object-type name="CONSTRAINT" enabled="true" />
@@ -308,6 +340,7 @@ commit;]]></console>
           <object-type name="JAVA FIELD" enabled="true" />
           <object-type name="JAVA METHOD" enabled="true" />
           <object-type name="JAVA PARAMETER" enabled="true" />
+          <object-type name="JAVA RESOURCE" enabled="true" />
           <object-type name="DIMENSION" enabled="false" />
           <object-type name="CLUSTER" enabled="false" />
           <object-type name="DBLINK" enabled="true" />
@@ -365,8 +398,10 @@ commit;]]></console>
           <content-type name="DTD" enabled="true" />
           <content-type name="HTML" enabled="true" />
           <content-type name="XHTML" enabled="true" />
+          <content-type name="CSS" enabled="true" />
           <content-type name="SQL" enabled="true" />
           <content-type name="PL/SQL" enabled="true" />
+          <content-type name="JavaScript" enabled="true" />
           <content-type name="JSON" enabled="true" />
           <content-type name="JSON5" enabled="true" />
           <content-type name="YAML" enabled="true" />
@@ -382,11 +417,14 @@ commit;]]></console>
         <show-spec-declaration-navigation-gutter value="true" />
         <enable-spellchecking value="true" />
         <enable-reference-spellchecking value="false" />
+        <show-parser-issue-notifications value="true" />
+        <show-dialect-suggestion-notifications value="true" />
       </general>
       <confirmations>
         <save-changes value="false" />
         <revert-changes value="true" />
         <exit-on-changes value="ASK" />
+        <close-temporary-console value="ASK" />
       </confirmations>
     </code-editor-settings>
     <code-completion-settings>
@@ -404,6 +442,7 @@ commit;]]></console>
           <user-schema>
             <filter-element type="OBJECT" id="table" selected="true" />
             <filter-element type="OBJECT" id="view" selected="true" />
+            <filter-element type="OBJECT" id="json view" selected="true" />
             <filter-element type="OBJECT" id="materialized view" selected="true" />
             <filter-element type="OBJECT" id="index" selected="true" />
             <filter-element type="OBJECT" id="constraint" selected="true" />
@@ -414,13 +453,19 @@ commit;]]></console>
             <filter-element type="OBJECT" id="function" selected="true" />
             <filter-element type="OBJECT" id="package" selected="true" />
             <filter-element type="OBJECT" id="type" selected="true" />
+            <filter-element type="OBJECT" id="java class" selected="true" />
+            <filter-element type="OBJECT" id="java resource" selected="true" />
             <filter-element type="OBJECT" id="dimension" selected="true" />
             <filter-element type="OBJECT" id="cluster" selected="true" />
             <filter-element type="OBJECT" id="dblink" selected="true" />
+            <filter-element type="OBJECT" id="credential" selected="true" />
+            <filter-element type="OBJECT" id="AI profile" selected="true" />
+            <filter-element type="OBJECT" id="mining model" selected="true" />
           </user-schema>
           <public-schema>
             <filter-element type="OBJECT" id="table" selected="false" />
             <filter-element type="OBJECT" id="view" selected="false" />
+            <filter-element type="OBJECT" id="json view" selected="false" />
             <filter-element type="OBJECT" id="materialized view" selected="false" />
             <filter-element type="OBJECT" id="index" selected="false" />
             <filter-element type="OBJECT" id="constraint" selected="false" />
@@ -431,13 +476,19 @@ commit;]]></console>
             <filter-element type="OBJECT" id="function" selected="false" />
             <filter-element type="OBJECT" id="package" selected="false" />
             <filter-element type="OBJECT" id="type" selected="false" />
+            <filter-element type="OBJECT" id="java class" selected="false" />
+            <filter-element type="OBJECT" id="java resource" selected="false" />
             <filter-element type="OBJECT" id="dimension" selected="false" />
             <filter-element type="OBJECT" id="cluster" selected="false" />
             <filter-element type="OBJECT" id="dblink" selected="false" />
+            <filter-element type="OBJECT" id="credential" selected="false" />
+            <filter-element type="OBJECT" id="AI profile" selected="false" />
+            <filter-element type="OBJECT" id="mining model" selected="false" />
           </public-schema>
           <any-schema>
             <filter-element type="OBJECT" id="table" selected="true" />
             <filter-element type="OBJECT" id="view" selected="true" />
+            <filter-element type="OBJECT" id="json view" selected="true" />
             <filter-element type="OBJECT" id="materialized view" selected="true" />
             <filter-element type="OBJECT" id="index" selected="true" />
             <filter-element type="OBJECT" id="constraint" selected="true" />
@@ -448,9 +499,14 @@ commit;]]></console>
             <filter-element type="OBJECT" id="function" selected="true" />
             <filter-element type="OBJECT" id="package" selected="true" />
             <filter-element type="OBJECT" id="type" selected="true" />
+            <filter-element type="OBJECT" id="java class" selected="true" />
+            <filter-element type="OBJECT" id="java resource" selected="true" />
             <filter-element type="OBJECT" id="dimension" selected="true" />
             <filter-element type="OBJECT" id="cluster" selected="true" />
             <filter-element type="OBJECT" id="dblink" selected="true" />
+            <filter-element type="OBJECT" id="credential" selected="true" />
+            <filter-element type="OBJECT" id="AI profile" selected="true" />
+            <filter-element type="OBJECT" id="mining model" selected="true" />
           </any-schema>
         </basic-filter>
         <extended-filter>
@@ -466,6 +522,7 @@ commit;]]></console>
           <user-schema>
             <filter-element type="OBJECT" id="table" selected="true" />
             <filter-element type="OBJECT" id="view" selected="true" />
+            <filter-element type="OBJECT" id="json view" selected="true" />
             <filter-element type="OBJECT" id="materialized view" selected="true" />
             <filter-element type="OBJECT" id="index" selected="true" />
             <filter-element type="OBJECT" id="constraint" selected="true" />
@@ -476,13 +533,19 @@ commit;]]></console>
             <filter-element type="OBJECT" id="function" selected="true" />
             <filter-element type="OBJECT" id="package" selected="true" />
             <filter-element type="OBJECT" id="type" selected="true" />
+            <filter-element type="OBJECT" id="java class" selected="true" />
+            <filter-element type="OBJECT" id="java resource" selected="true" />
             <filter-element type="OBJECT" id="dimension" selected="true" />
             <filter-element type="OBJECT" id="cluster" selected="true" />
             <filter-element type="OBJECT" id="dblink" selected="true" />
+            <filter-element type="OBJECT" id="credential" selected="true" />
+            <filter-element type="OBJECT" id="AI profile" selected="true" />
+            <filter-element type="OBJECT" id="mining model" selected="true" />
           </user-schema>
           <public-schema>
             <filter-element type="OBJECT" id="table" selected="true" />
             <filter-element type="OBJECT" id="view" selected="true" />
+            <filter-element type="OBJECT" id="json view" selected="true" />
             <filter-element type="OBJECT" id="materialized view" selected="true" />
             <filter-element type="OBJECT" id="index" selected="true" />
             <filter-element type="OBJECT" id="constraint" selected="true" />
@@ -496,10 +559,14 @@ commit;]]></console>
             <filter-element type="OBJECT" id="dimension" selected="true" />
             <filter-element type="OBJECT" id="cluster" selected="true" />
             <filter-element type="OBJECT" id="dblink" selected="true" />
+            <filter-element type="OBJECT" id="credential" selected="true" />
+            <filter-element type="OBJECT" id="AI profile" selected="true" />
+            <filter-element type="OBJECT" id="mining model" selected="true" />
           </public-schema>
           <any-schema>
             <filter-element type="OBJECT" id="table" selected="true" />
             <filter-element type="OBJECT" id="view" selected="true" />
+            <filter-element type="OBJECT" id="json view" selected="true" />
             <filter-element type="OBJECT" id="materialized view" selected="true" />
             <filter-element type="OBJECT" id="index" selected="true" />
             <filter-element type="OBJECT" id="constraint" selected="true" />
@@ -510,13 +577,19 @@ commit;]]></console>
             <filter-element type="OBJECT" id="function" selected="true" />
             <filter-element type="OBJECT" id="package" selected="true" />
             <filter-element type="OBJECT" id="type" selected="true" />
+            <filter-element type="OBJECT" id="java class" selected="true" />
+            <filter-element type="OBJECT" id="java resource" selected="true" />
             <filter-element type="OBJECT" id="dimension" selected="true" />
             <filter-element type="OBJECT" id="cluster" selected="true" />
             <filter-element type="OBJECT" id="dblink" selected="true" />
+            <filter-element type="OBJECT" id="credential" selected="true" />
+            <filter-element type="OBJECT" id="AI profile" selected="true" />
+            <filter-element type="OBJECT" id="mining model" selected="true" />
           </any-schema>
         </extended-filter>
       </filters>
       <sorting enabled="true">
+        <sorting-element type="OBJECT" id="json view" />
         <sorting-element type="RESERVED_WORD" id="keyword" />
         <sorting-element type="RESERVED_WORD" id="datatype" />
         <sorting-element type="OBJECT" id="column" />
@@ -562,6 +635,11 @@ commit;]]></console>
         <debug-execution-timeout value="600" />
         <parameter-history-size value="10" />
       </method-execution>
+      <method-execution>
+        <execution-timeout value="30" />
+        <debug-execution-timeout value="600" />
+        <parameter-history-size value="10" />
+      </method-execution>
     </execution-engine-settings>
     <operation-settings>
       <transactions>
@@ -588,17 +666,17 @@ commit;]]></console>
     </operation-settings>
     <ddl-file-settings>
       <extensions>
-        <mapping file-type-id="VIEW" extensions="vw" />
-        <mapping file-type-id="TRIGGER" extensions="trg" />
-        <mapping file-type-id="PROCEDURE" extensions="prc" />
-        <mapping file-type-id="FUNCTION" extensions="fnc" />
-        <mapping file-type-id="PACKAGE" extensions="pkg" />
-        <mapping file-type-id="PACKAGE_SPEC" extensions="pks" />
-        <mapping file-type-id="PACKAGE_BODY" extensions="pkb" />
-        <mapping file-type-id="TYPE" extensions="tpe" />
-        <mapping file-type-id="TYPE_SPEC" extensions="tps" />
-        <mapping file-type-id="TYPE_BODY" extensions="tpb" />
-        <mapping file-type-id="JAVA_SOURCE" extensions="sql" />
+        <mapping file-type-id="VIEW" file-name-patterns="*.vw" />
+        <mapping file-type-id="TRIGGER" file-name-patterns="*.trg" />
+        <mapping file-type-id="PROCEDURE" file-name-patterns="*.prc" />
+        <mapping file-type-id="FUNCTION" file-name-patterns="*.fnc" />
+        <mapping file-type-id="PACKAGE" file-name-patterns="*.pkg" />
+        <mapping file-type-id="PACKAGE_SPEC" file-name-patterns="*.pks" />
+        <mapping file-type-id="PACKAGE_BODY" file-name-patterns="*.pkb" />
+        <mapping file-type-id="TYPE" file-name-patterns="*.tpe" />
+        <mapping file-type-id="TYPE_SPEC" file-name-patterns="*.tps" />
+        <mapping file-type-id="TYPE_BODY" file-name-patterns="*.tpb" />
+        <mapping file-type-id="JAVA_SOURCE" file-name-patterns="*.sql" />
       </extensions>
       <general>
         <lookup-ddl-files value="true" />
@@ -608,11 +686,6 @@ commit;]]></console>
         <make-scripts-rerunnable value="true" />
       </general>
     </ddl-file-settings>
-    <assistant-settings>
-      <credential-settings>
-        <credentials />
-      </credential-settings>
-    </assistant-settings>
     <general-settings>
       <regional-settings>
         <date-format value="MEDIUM" />

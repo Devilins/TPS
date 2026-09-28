@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # bool(os.getenv('DEBUG'))
 
 # 'ALLOWED_HOSTS' should be a single string of hosts with a space between each.
@@ -26,16 +26,16 @@ DEBUG = False
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ')
 
 # SSH settings
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 # Security
-SESSION_COOKIE_HTTPONLY = True # Значение по умолчанию, можно и не писать
-CSRF_COOKIE_HTTPONLY = True  # Значение по умолчанию, можно и не писать
-SESSION_COOKIE_SAMESITE = 'Lax'  # или 'Strict' Lax - Значение по умолчанию, можно и не писать
-CSRF_COOKIE_SAMESITE = 'Lax'     # или 'Strict' Lax - Значение по умолчанию, можно и не писать
+# SESSION_COOKIE_HTTPONLY = True # Значение по умолчанию, можно и не писать
+# CSRF_COOKIE_HTTPONLY = True  # Значение по умолчанию, можно и не писать
+# SESSION_COOKIE_SAMESITE = 'Lax'  # или 'Strict' Lax - Значение по умолчанию, можно и не писать
+# CSRF_COOKIE_SAMESITE = 'Lax'     # или 'Strict' Lax - Значение по умолчанию, можно и не писать
 # Подробнее - https://docs.djangoproject.com/en/5.0/ref/settings/
 
 # Application definition
@@ -55,7 +55,16 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'django_tables2',
+    'report_ocr',
 ]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_WORKER_CONCURRENCY = 1
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

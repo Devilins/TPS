@@ -1,0 +1,78 @@
+{% extends 'tph_system/base.html' %}
+{% block content %}
+
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h4 class="card-title mb-1">
+                    {{ upload.location }} — {{ upload.report_date }}
+                    {% if upload.status == "done" %}
+                        <span class="badge bg-success">Готово</span>
+                    {% elif upload.status == "error" %}
+                        <span class="badge bg-danger">Ошибка распознавания</span>
+                    {% elif upload.status == "processing" %}
+                        <span class="badge bg-primary">Обрабатывается</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ upload.get_status_display }}</span>
+                    {% endif %}
+                </h4>
+                {% if upload.status == "error" %}
+                <p class="text-danger mb-0">{{ upload.error_message }}</p>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ upload.photo.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">Открыть исходное фото</a>
+                <a href="{% url 'report_ocr:list' %}?{{ current_filter_params }}" class="btn btn-secondary btn-sm">Назад</a>
+                <a href="{% url 'report_ocr:delete' upload.id %}?{{ current_filter_params }}" class="btn btn-danger btn-sm">Удалить</a>
+            </div>
+        </div>
+
+        {% if upload.status == "done" %}
+        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                <caption><b style="margin-left: 20px;"> Полей распознано: {{ fields|length }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Ячейка</th>
+                        <th scope="col">Поле</th>
+                        <th scope="col">Распознано</th>
+                        <th scope="col">Уверенность</th>
+                        <th scope="col">В системе</th>
+                        <th scope="col">Совпадение</th>
+                        <th scope="col">Подтвердить/исправить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fields %}
+                    <tr {% if f.needs_review %}class="table-warning"{% endif %}>
+                        <td>{% if f.crop_image %}<img src="{{ f.crop_image.url }}" style="height:32px"><br>{% endif %}</td>
+                        <td>{{ f.section }} — {{ f.field_name }} {{ f.sub_field }}</td>
+                        <td>{{ f.extracted_value|default:"—" }}</td>
+                        <td>{% if f.confidence %}{{ f.confidence|floatformat:2 }}{% endif %}</td>
+                        <td>{{ f.system_value|default:"—" }}</td>
+                        <td>
+                            {% if f.is_match == True %}<span class="badge bg-success">совпадает</span>
+                            {% elif f.is_match == False %}<span class="badge bg-danger">расхождение</span>
+                            {% else %}<span class="badge bg-secondary">—</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if f.reviewed %}
+                                <span class="badge bg-success">✔ {{ f.confirmed_value }}</span>
+                            {% else %}
+                                <form method="post" action="{% url 'report_ocr:confirm_field' f.pk %}" class="d-flex gap-1">
+                                    {% csrf_token %}
+                                    <input type="text" name="value" value="{{ f.extracted_value }}" size="8" class="form-control form-control-sm">
+                                    <button type="submit" class="btn btn-sm btn-primary">OK</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'tph_system/base.html' %}
+{% load static %}
+
+{% block func_buttons %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'report_ocr:upload' %}?{{ current_filter_params }}">
+        <button type="button" class="btn btn-sm btn-outline-primary">Загрузить отчёт</button>
+    </a>
+</li>
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container cont_store">
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <div class="card-title">
+                <h4>Сверка бумажных отчётов</h4>
+
+                <!-- Фильтр -->
+                <div class="card card-body p-2" id="cs_filter">
+                    <form method="get">
+                        <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                            <div class="form-floating col-md-auto">
+                                {{ upload_filter.form.location }}
+                                <label style="left: 0.5rem">Точка</label>
+                            </div>
+                            <div class="form-floating col-md-auto">
+                                {{ upload_filter.form.report_date }}
+                                <label style="left: 0.5rem">Дата</label>
+                            </div>
+                            <div class="form-floating col-md-auto">
+                                {{ upload_filter.form.status }}
+                                <label style="left: 0.5rem">Статус</label>
+                            </div>
+                            <div class="col-md-auto align-self-center">
+                                <button type="submit" class="btn btn-sm btn-primary">Применить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таблица отчётов -->
+        {% if paginator.num_pages > 1 %}
+        <div class="table-responsive" style="max-height: 72vh; overflow-y: auto;">
+        {% else %}
+        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
+        {% endif %}
+            <table class="table table-sm table-hover table-bordered align-middle caption-top" id="tableReportOcr">
+                <caption><b style="margin-left: 20px;"> Количество отчётов: {{ upload_count }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Точка</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Статус</th>
+                        <th scope="col">Загрузил</th>
+                        <th scope="col">Создано</th>
+                        <th scope="col">Обработано</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'report_ocr:detail' u.pk %}?{{ current_filter_params }}">{{ u.location }}</a></td>
+                        <td><a href="{% url 'report_ocr:detail' u.pk %}?{{ current_filter_params }}">{{ u.report_date }}</a></td>
+                        {% if u.status == "done" %}
+                        <td class="table-success">
+                        {% elif u.status == "error" %}
+                        <td class="table-danger">
+                        {% elif u.status == "processing" %}
+                        <td class="table-primary">
+                        {% else %}
+                        <td>
+                        {% endif %}
+                            <a href="{% url 'report_ocr:detail' u.pk %}?{{ current_filter_params }}">{{ u.get_status_display }}</a>
+                        </td>
+                        <td>{{ u.uploaded_by }}</td>
+                        <td>{{ u.created_at|date:"d M - H:i:s" }}</td>
+                        <td>{{ u.processed_at|date:"d M - H:i:s"|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Пагинация -->
+    <nav class="list-pages">
+        {% if paginator.num_pages > 1 %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 1rem; margin-bottom: 0px">
+        {% else %}
+        <ul class="pagination pagination-sm justify-content-center" style="margin-top: 0px; margin-bottom: 0px">
+        {% endif %}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    {% if current_filter_params %}
+                    <a class="page-link" href="?{{ current_filter_params }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% else %}
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% endif %}
+                </li>
+            {% endif %}
+            {% if paginator.num_pages > 1 %}
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                        <li class="page-item active">
+                            <a class="page-link" href="">{{ p }}</a>
+                        </li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+                        <li class="page-item">
+                            {% if current_filter_params %}
+                            <a class="page-link" href="?{{ current_filter_params }}&page={{ p }}">{{ p }}</a>
+                            {% else %}
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    {% if current_filter_params %}
+                    <a class="page-link" href="?{{ current_filter_params }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% else %}
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% endif %}
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+</div>
+
+{% endblock %}
