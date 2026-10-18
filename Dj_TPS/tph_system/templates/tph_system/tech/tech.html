@@ -71,8 +71,8 @@
                 <tbody>
                     {% for t in page_obj %}
                     <tr>
-                        <td>{{ t.store }}</td>
-                        <td>{{ t.name }}</td>
+                        <td><a href="{% url 'tech_update' t.id %}?{{ current_filter_params }}">{{ t.store }}</a></td>
+                        <td><a href="{% url 'tech_update' t.id %}?{{ current_filter_params }}">{{ t.name }}</a></td>
                         <td>{{ t.serial_num }}</td>
                         <td>{{ t.count }}</td>
                         <td>{{ t.date_buy }}</td>

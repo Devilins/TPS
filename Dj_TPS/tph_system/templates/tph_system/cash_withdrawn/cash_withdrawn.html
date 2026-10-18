@@ -97,8 +97,8 @@
                 <tbody>
                     {% for c in page_obj %}
                     <tr>
-                        <td>{{ c.store }}</td>
-                        <td>{{ c.staff }} </td>
+                        <td><a href="{% url 'c_w_update' c.id %}?{{ current_filter_params }}">{{ c.store }}</a></td>
+                        <td><a href="{% url 'c_w_update' c.id %}?{{ current_filter_params }}">{{ c.staff }}</a></td>
                         <td>{{ c.date }}</td>
                         <td>{{ c.withdrawn|floatformat:"g" }}</td>
                         <td>{{ c.week_beg_rec|date:"d M" }} - {{ c.week_beg_rec|add_days:6|date:"d M" }} {{ c.week_beg_rec|date:"Y" }}</td>

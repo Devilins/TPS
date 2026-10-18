@@ -165,10 +165,10 @@
                 <tbody>
                     {% for sale in page_obj %}
                     <tr>
-                        <td>{{ sale.store }}</td>
-                        <td>{{ sale.date }}</td>
-                        <td>{{ sale.staff }}</td>
-                        <td>{{ sale.photographer }}</td>
+                        <td><a href="{% url 'sales_update' sale.id %}?{{ current_filter_params }}">{{ sale.store }}</a></td>
+                        <td><a href="{% url 'sales_update' sale.id %}?{{ current_filter_params }}">{{ sale.date }}</a></td>
+                        <td><a href="{% url 'sales_update' sale.id %}?{{ current_filter_params }}">{{ sale.staff }}</a></td>
+                        <td><a href="{% url 'sales_update' sale.id %}?{{ current_filter_params }}">{{ sale.photographer }}</a></td>
                         <td>{{ sale.sale_type }}</td>
                         <td>{{ sale.payment_type }}</td>
                         <td><u>{{ sale.sum|floatformat:"g" }}</u></td>

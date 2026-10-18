@@ -12,7 +12,7 @@
         </a>
     </li>
 {% endif %}
-{% if perms.tph_system.main_page_view_cards %}
+{% if perms.tph_system.main_page_view_cards or perms.tph_system.view_all_staff_schedule %}
     <li class="nav-item">
         <a class="nav-link">
             <div class="card text-primary border-primary" style="width: 160px;">
@@ -97,7 +97,7 @@
 </div>
 
 <div class="container cont_store">
-    {% if perms.tph_system.main_page_view_cards %}
+    {% if perms.tph_system.main_page_view_cards or perms.tph_system.view_all_staff_schedule %}
     <div class="row align-items-start gy-3">
         <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
             <div class="card shadow" id="store_card">
@@ -117,7 +117,7 @@
                                 </div>
                                 <div class="col-6">
                                     {% for stf in s.list %}
-                                        {{ stf.staff }} <br>
+                                        {{ stf.staff }}{% if stf.work_time %} - {{ stf.work_time }}{% endif %} <br>
                                     {% endfor %}
                                 </div>
                             </div>
@@ -128,6 +128,7 @@
             </div>
         </div>
 
+        {% if perms.tph_system.main_page_view_cards %}
         <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6">
             <div class="card shadow" id="main_view_card">
                 <div class="card-header">
@@ -165,11 +166,14 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         <div class="col">
 
         </div>
     </div>
+    {% endif %}
 
+    {% if perms.tph_system.main_page_view_cards %}
     <div class="row align-items-start gy-3" style="margin-top: 4px;">
         <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-6" >
             <div class="card shadow" id="withdrawn_card">

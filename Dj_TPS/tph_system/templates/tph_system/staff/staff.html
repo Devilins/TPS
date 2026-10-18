@@ -80,7 +80,7 @@
                 <tbody>
                     {% for st in page_obj %}
                     <tr>
-                        <td>{{ st.name }} {{st.o_name}} {{ st.f_name }}</td>
+                        <td><a href="{% url 'staff_update' st.id %}?{{ current_filter_params }}">{{ st.name }} {{st.o_name}} {{ st.f_name }}</a></td>
                         <td>{{ st.date_empl }}</td>
                         {% if st.date_dism != null %}
                             <td>{{ st.date_dism }}</td>

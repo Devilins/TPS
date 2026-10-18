@@ -10,6 +10,25 @@
         </a>
     </li>
 {% endif %}
+{% if perms.tph_system.export_joki_week %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <div class="card text-dark border-info" style="max-width: 250px;">
+                <div class="card-header">
+                    Недельная сверка с Джоки
+                </div>
+                <!-- Форма выбора начала недели -->
+                <div class="card-body">
+                    <form method="get" action="{% url 'joki_week_export' %}" id="joki-week-form">
+                        Начало недели: <br>
+                        {{ joki_form.week_begin }}<br>
+                        <button type="submit" class="btn btn-sm btn-outline-info" id="joki-week-btn" disabled>Выгрузить</button>
+                    </form>
+                </div>
+            </div>
+        </a>
+    </li>
+{% endif %}
 {% endblock func_buttons %}
 
 {% block content %}
@@ -149,5 +168,17 @@
     </nav>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Кнопка выгрузки активна только при выбранной дате
+    const jokiBtn = document.getElementById('joki-week-btn');
+    if (jokiBtn) {
+        $('#id_week_begin').on('change input', function() {
+            jokiBtn.disabled = !this.value;
+        });
+    }
+});
+</script>
 
 {% endblock %}

@@ -26,6 +26,7 @@ urlpatterns = [
     path('reports/', reports, name='reports'),
     path('check/reports/', check_reports, name='check_reports'),
     path('check/reports/upd', chk_rep_update, name='check_reports_upd'),
+    path('check/reports/joki-week', joki_week_export, name='joki_week_export'),
     path('store/<int:pk>/update', StoreUpdateView.as_view(), name='store_update'),
     path('store/<int:pk>/delete', StoreDeleteView.as_view(), name='store_delete'),
     path('staff/<int:pk>/update', StaffUpdateView.as_view(), name='staff_update'),

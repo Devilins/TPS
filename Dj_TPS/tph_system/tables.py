@@ -1,5 +1,7 @@
 import os
+import re
 from io import BytesIO
+from urllib.parse import quote
 
 import django_tables2 as tables
 import openpyxl
@@ -7,6 +9,7 @@ from django.http import HttpResponse
 from django.utils.html import format_html
 from django_tables2.export import TableExport
 from openpyxl.styles import Font
+from openpyxl.utils import get_column_letter
 
 from Dj_TPS.settings import BASE_DIR
 from .models import *
@@ -128,3 +131,50 @@ def standard_export(table, date_from, date_by, export_format, model_name):
     """Стандартный экспорт таблицы"""
     exporter = TableExport(export_format, table)
     return exporter.response(f"{model_name} Report from {date_from or ""} to {date_by or ""}.{export_format}")
+
+
+def export_joki_week(stores_sales, date_from, date_by):
+    """Недельная сверка касс Джоки: по листу на каждую точку с продажами"""
+
+    workbook = openpyxl.Workbook()
+    workbook.remove(workbook.active)
+    headers = ['Дата', 'Точка', 'Способ оплаты', 'Сумма']
+
+    for store, sales in stores_sales:
+        # Имя листа: без запрещенных символов Excel и не длиннее 31 символа
+        worksheet = workbook.create_sheet(title=re.sub(r'[\\/*?:\[\]]', '', str(store.name))[:31])
+
+        for col_idx, header in enumerate(headers, 1):
+            worksheet.cell(row=1, column=col_idx, value=header).font = Font(bold=True)
+
+        row_idx = 1
+        for row_idx, record in enumerate(sales, 2):
+            worksheet.cell(row=row_idx, column=1, value=record.date).number_format = 'dd.mm.yyyy'
+            worksheet.cell(row=row_idx, column=2, value=str(record.store))
+            worksheet.cell(row=row_idx, column=3, value=str(record.payment_type))
+            worksheet.cell(row=row_idx, column=4, value=int(record.sum or 0))
+
+        # Итог по точке
+        total_row = row_idx + 1
+        worksheet.cell(row=total_row, column=3, value='Итого сумма').font = Font(bold=True)
+        worksheet.cell(row=total_row, column=4, value=f'=SUM(D2:D{row_idx})').font = Font(bold=True)
+
+        for col_idx, width in enumerate([12, 25, 28, 12], 1):
+            worksheet.column_dimensions[get_column_letter(col_idx)].width = width
+
+    # Если продаж нет ни на одной точке - книга не может быть пустой
+    if not workbook.sheetnames:
+        workbook.create_sheet(title='Нет данных').cell(row=1, column=1, value='Нет продаж за выбранный период')
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    response = HttpResponse(
+        output.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"Сверка касс Джоки ({date_from:%d.%m.%Y} - {date_by:%d.%m.%Y}).xlsx"
+    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quote(filename)}"
+
+    return response

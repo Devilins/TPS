@@ -478,6 +478,7 @@ class CheckReports(models.Model):
                 name='unique_store_daily_reports'
             )
         ]
+        permissions = (("export_joki_week", "Выгрузка недельной сверки касс Джоки"),)
 
     def __str__(self):
         return f'Отчет от {self.date} на {self.store} - {self.check_status}'

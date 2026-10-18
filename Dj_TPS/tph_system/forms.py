@@ -706,6 +706,14 @@ class CashStoreForm(ModelForm):
         return store
 
 
+class JokiWeekForm(Form):
+    week_begin = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
+        'class': 'form-control form-control-sm',
+        'placeholder': 'Начало недели'
+    }),
+        label='Начало недели')
+
+
 class TimeSelectForm(Form):
     beg_date = forms.DateField(widget=FengyuanChenDatePickerInput(attrs={
         'class': 'form-control',

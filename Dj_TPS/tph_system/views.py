@@ -19,7 +19,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from tph_system.forms import StoreForm, StaffForm, ConsStoreForm, TechForm, SalesForm, CashWithdrawnForm, \
     RefsAndTipsForm, SettingsForm, SalaryForm, PositionSelectFormSet, TimeSelectForm, SalaryWeeklyForm, ImplEventsForm, \
-    FinStatsMonthForm, TimeAndTypeSelectForm, CashStoreForm, CheckReportsForm
+    FinStatsMonthForm, TimeAndTypeSelectForm, CashStoreForm, CheckReportsForm, JokiWeekForm
 from .filters import *
 from .funcs import *
 
@@ -31,7 +31,7 @@ from .serializers import MonitoringSerializer, TelegramUserSerializer, UserSeria
 import django_tables2 as tables
 from django_tables2.export.export import TableExport
 from .tables import SalesReportTable, export_to_excel_template, standard_export, SalaryWeekReportTable, \
-    SalaryReportTable
+    SalaryReportTable, export_joki_week
 
 
 class MonitoringViewSet(viewsets.ModelViewSet):
@@ -2613,10 +2613,33 @@ def check_reports(request):
         'title': 'Отчеты',
         'current_filter_params': current_filter_params,
         'rep_filter': rep_filter,
+        'joki_form': JokiWeekForm(),
         'paginator': paginator,
         'page_obj': page_obj,
         'rep_count': paginator.count
     })
+
+
+@login_required
+@permission_required(perm='tph_system.export_joki_week', raise_exception=True)
+def joki_week_export(request):
+    form = JokiWeekForm(request.GET)
+    if not form.is_valid():
+        return redirect('check_reports')
+
+    # Приводим к понедельнику выбранной недели, период - до воскресенья включительно
+    week_begin = form.cleaned_data['week_begin']
+    week_begin = week_begin - timedelta(days=week_begin.weekday())
+    week_end = week_begin + timedelta(days=6)
+
+    stores_sales = []
+    for store in Store.objects.filter(name__startswith='Joki Joya', store_status='Действующая').order_by('name'):
+        sales = Sales.objects.filter(store=store, date__range=(week_begin, week_end)
+                                     ).exclude(payment_type='Предоплаченный заказ').select_related('store').order_by('date')
+        if sales.exists():
+            stores_sales.append((store, sales))
+
+    return export_joki_week(stores_sales, week_begin, week_end)
 
 
 @login_required
