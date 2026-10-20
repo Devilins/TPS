@@ -1,0 +1,30 @@
+{# Выпадающий список с чекбоксами для MultipleChoiceFilter. field - BoundField поля фильтра, label - подпись кнопки #}
+{% with selected=field.value|length %}
+<div class="dropdown">
+    <button type="button" class="btn btn-light border text-start dropdown-toggle"
+            style="height: calc(3.5rem + 2px); min-width: 11rem;"
+            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        {{ label }}{% if selected %} <span class="badge text-bg-primary">{{ selected }}</span>{% endif %}
+    </button>
+    <div class="dropdown-menu p-2" style="min-width: 14rem;">
+        {% for opt in field %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="{{ opt.data.name }}" value="{{ opt.data.value }}"
+                   id="{{ opt.id_for_label }}"{% if opt.data.selected %} checked{% endif %}>
+            <label class="form-check-label" for="{{ opt.id_for_label }}">{{ opt.choice_label }}</label>
+        </div>
+        {% endfor %}
+        <hr class="my-2">
+        <div class="d-flex justify-content-between gap-3">
+            <button type="button" class="btn btn-sm btn-link p-0"
+                    onclick="this.closest('.dropdown-menu').querySelectorAll('input[type=checkbox]').forEach(function (c) { c.checked = true; })">
+                Выбрать все
+            </button>
+            <button type="button" class="btn btn-sm btn-link p-0"
+                    onclick="this.closest('.dropdown-menu').querySelectorAll('input[type=checkbox]').forEach(function (c) { c.checked = false; })">
+                Сбросить выбор
+            </button>
+        </div>
+    </div>
+</div>
+{% endwith %}

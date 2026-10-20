@@ -104,13 +104,11 @@
                                         <label style="left: 0.5rem">Даты по</label>
                                     </div>
                                 {% endif %}
-                                <div class="form-floating col-md-auto">
-                                    {{ sale_filter.form.sale_type }}
-                                    <label style="left: 0.5rem">Что продали</label>
+                                <div class="col-md-auto">
+                                    {% include 'tph_system/includes/filter_multiselect.html' with field=sale_filter.form.sale_type label='Что продали' %}
                                 </div>
-                                <div class="form-floating col-md-auto">
-                                    {{ sale_filter.form.payment_type }}
-                                    <label style="left: 0.5rem">Тип оплаты</label>
+                                <div class="col-md-auto">
+                                    {% include 'tph_system/includes/filter_multiselect.html' with field=sale_filter.form.payment_type label='Тип оплаты' %}
                                 </div>
                             </div>
                             <div class="row gy-2 py-2 gy-xl-1 py-xl-1">

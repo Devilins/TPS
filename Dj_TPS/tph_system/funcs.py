@@ -14,6 +14,16 @@ class SaleTypeError(Exception):
     pass
 
 
+# Роли Joky Joya, у которых бывают самостоятельные продажи (сотрудник и админ, и фотограф). Такие продажи считаются как у
+# Супер универсала и суммируются к ЗП основной роли. Роль -> (название в логе, параметр минималки, параметр процента)
+JJ_SELF_SUPUNIV_ROLES = {
+    'Фотограф': ('Фотограф JJ', 'JJ_min_payment_phot', 'JJ_stnd_perc_phot'),
+    'Универсальный фотограф': ('Универсал JJ', 'JJ_min_payment_univ', 'JJ_stnd_perc_univ'),
+    'Ретушер (JJ)': ('Ретушер JJ', 'JJ_min_payment_rtch', 'JJ_stnd_perc_rtch'),
+    'Админ-ретушер (JJ)': ('Админ-ретушер JJ', 'JJ_min_payment_admin_rtch', 'JJ_stnd_perc_admin_rtch'),
+}
+
+
 # Генератор списка дат от start до end
 def date_generator(start, end):
     while start <= end:
@@ -445,7 +455,8 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                             solved='Нет'
                         )
                         print(f"ImplEvents - новая запись {error}")
-                elif sales_univ.exists():
+                # У основных ролей самостоятельные продажи (sales_univ) считаются отдельным блоком ниже, а не этой веткой
+                elif sales_univ.exists() and sch.position not in JJ_SELF_SUPUNIV_ROLES:
                     if sch.position == 'Супер универсал (JJ)':
                         c_log = c_log + 'Супер универсал JJ: '
                         # Касса Супер универсала
@@ -504,11 +515,38 @@ def sal_calc(time_start, time_end, one_staff_calc: Staff | None):  # Добав�
                         error = ImplEvents.objects.create(
                             event_type='Salary_PositionError',
                             event_message=f"В графике {sch} некорректно указана роль. Текущее значение => {sch.position} "
-                                          f"вместо Супер универсала. Влияет на расчет ЗП по {sales_adm[0]}",
+                                          f"вместо Ретушера или Админа-ретушера. Влияет на расчет ЗП по {sales_adm[0]}",
                             status='Бизнес ошибка',
                             solved='Нет'
                         )
                         print(f"ImplEvents - новая запись {error}")
+
+                # Самостоятельные продажи основных ролей (сотрудник и админ, и фотограф) - считаются как у Супер универсала.
+                # ЗП за день = max(К_осн * % роли + К_сам * % супер универсала, минималка роли). Порога и минималки
+                # супер универсала тут нет, а касса самостоятельных продаж входит в кассу сотрудника за день.
+                # К_осн - касса основной роли, ее уже посчитала ветка выше.
+                if sch.position in JJ_SELF_SUPUNIV_ROLES and sales_univ.exists():
+                    role_log, min_param, perc_param = JJ_SELF_SUPUNIV_ROLES[sch.position]
+                    cashbx_main = cashbx_staff
+                    cashbx_self = int(sales_univ.aggregate(cashbx_sum=Sum('sum'))['cashbx_sum'])
+                    min_payment = param_gets(min_param)
+                    main_perc = param_gets(perc_param)
+                    self_perc = param_gets('JJ_stnd_perc_supuniv')
+
+                    sal_main = cashbx_main * main_perc / 100
+                    sal_self = cashbx_self * self_perc / 100
+                    sal_total = round(sal_main + sal_self, 2)
+
+                    c_log = f'{role_log} + Cупер Универсал JJ: '
+                    if cashbx_main:
+                        c_log = c_log + f'{sal_main} ({cashbx_main} * {main_perc / 100}) + '
+                    c_log = c_log + f'{sal_self} ({cashbx_self} * {self_perc / 100}) = {sal_total}'
+                    if sal_total < min_payment:
+                        c_log = c_log + f' < минималки, ЗП = {min_payment}'
+                        sal_total = min_payment
+
+                    sal_staff = sal_total
+                    cashbx_staff = cashbx_main + cashbx_self
 
             # Оформление логов расчета
             if len(c_log) >= 2 and c_log[-2] == '+':

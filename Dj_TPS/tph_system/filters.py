@@ -2,11 +2,27 @@ from datetime import timedelta
 
 import django_filters
 from django_filters import CharFilter, ChoiceFilter
-from django.forms import Select, NumberInput, TextInput
+from django.forms import Select, NumberInput, TextInput, CheckboxSelectMultiple
+from django_filters.fields import MultipleChoiceField
 
 from .forms import FengyuanChenDatePickerInput
 from .funcs import dt_format
 from .models import *
+
+
+class NonEmptyMultipleChoiceField(MultipleChoiceField):
+    """Мультивыбор, игнорирующий пустые значения - иначе старые ссылки вида ?sale_type=&... (так отправлял
+    одиночный select с пустым вариантом) давали бы ошибку валидации и ложный счетчик выбранных."""
+
+    def bound_data(self, data, initial):
+        return [v for v in (data or []) if v]
+
+    def to_python(self, value):
+        return super().to_python([v for v in (value or []) if v])
+
+
+class NonEmptyMultipleChoiceFilter(django_filters.MultipleChoiceFilter):
+    field_class = NonEmptyMultipleChoiceField
 
 
 class ConsumablesStoreFilter(django_filters.FilterSet):
@@ -161,25 +177,17 @@ class SalesFilter(django_filters.FilterSet):
             'placeholder': 'Даты по'
         })
     )
-    sale_type = django_filters.ChoiceFilter(
+    # Мультивыбор: значения объединяются через ИЛИ, пустой выбор = без фильтрации.
+    # Отрисовывается выпадающим списком с чекбоксами (tph_system/includes/filter_multiselect.html).
+    sale_type = NonEmptyMultipleChoiceFilter(
         field_name='sale_type',
         choices=Sales.SLCT_ST,
-        empty_label="Пусто",
-        widget=Select(attrs={
-            'class': 'form-select form-select-sm',
-            'aria-label': 'Что продали',
-            'label': 'Что продали'
-        })
+        widget=CheckboxSelectMultiple
     )
-    payment_type = django_filters.ChoiceFilter(
+    payment_type = NonEmptyMultipleChoiceFilter(
         field_name='payment_type',
         choices=Sales.SLCT_PAYMENT,
-        empty_label="Пусто",
-        widget=Select(attrs={
-            'class': 'form-select form-select-sm',
-            'aria-label': 'Тип оплаты',
-            'label': 'Тип оплаты'
-        })
+        widget=CheckboxSelectMultiple
     )
     sum = django_filters.NumberFilter(
         lookup_expr='icontains',
