@@ -1,78 +1,262 @@
 {% extends 'tph_system/base.html' %}
 {% block content %}
 
-<div class="container cont_store">
-    <div class="card shadow" style="width: 100%;">
-        <div class="card-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+<style>
+    main .cont_store.ocr-page .ocr-head, main .cont_store.ocr-page .ocr-section { text-align: left; }
+    .ocr-section td:first-child, .ocr-section th:first-child { padding-left: .9rem; }
+    .ocr-head { background: linear-gradient(135deg, #f8f9fa 0%, #eef3fb 100%); }
+    .ocr-head .ocr-store { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+    .ocr-head .ocr-meta { color: #6c757d; font-size: .875rem; }
+    .ocr-status { font-size: .85rem; padding: .4em .8em; border-radius: 2rem; vertical-align: middle; }
+
+    .ocr-tile { border: 0; border-left: 4px solid var(--tile-color); }
+    .ocr-tile .ocr-tile-value { font-size: 1.75rem; font-weight: 700; color: var(--tile-color); line-height: 1; }
+    .ocr-tile .ocr-tile-label { color: #6c757d; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+
+    .ocr-photo-card { position: sticky; top: 5rem; }
+    .ocr-photo { width: 100%; max-height: 60vh; object-fit: contain; background: #f1f3f5; border-radius: .375rem; cursor: zoom-in; transition: transform .15s; }
+    .ocr-photo:hover { transform: scale(1.01); }
+
+    .ocr-section .card-header { background: #fff; border-bottom: 2px solid #e9ecef; }
+    .ocr-section table { margin-bottom: 0; }
+    .ocr-section th { font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; color: #6c757d; font-weight: 600; background: #f8f9fa !important; }
+    .ocr-section td { vertical-align: middle; }
+
+    .ocr-row-review td:first-child { box-shadow: inset 4px 0 0 #ffc107; }
+    .ocr-row-review { background: #fffbea; }
+    .ocr-row-done { background: #f3faf5; }
+    .ocr-row-done td:first-child { box-shadow: inset 4px 0 0 #198754; }
+
+    .ocr-crop { height: 38px; max-width: 160px; object-fit: contain; border: 1px solid #dee2e6; border-radius: .25rem; background: #fff; padding: 2px; }
+    .ocr-value { font-family: SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.05rem; font-weight: 600; }
+    .ocr-sub { font-size: .7rem; font-weight: 500; }
+    .ocr-conf { width: 70px; height: 6px; }
+    .ocr-confirm input { max-width: 110px; font-family: SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .ocr-waiting { padding: 4rem 1rem; }
+</style>
+
+<div class="container cont_store ocr-page">
+
+    <!-- Шапка -->
+    <div class="card shadow-sm mb-3 ocr-head">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <h4 class="card-title mb-1">
-                    {{ upload.location }} — {{ upload.report_date }}
+                <div class="ocr-store text-start">
+                    {{ upload.location }}
                     {% if upload.status == "done" %}
-                        <span class="badge bg-success">Готово</span>
+                        <span class="badge bg-success ocr-status">Готово</span>
                     {% elif upload.status == "error" %}
-                        <span class="badge bg-danger">Ошибка распознавания</span>
+                        <span class="badge bg-danger ocr-status">Ошибка распознавания</span>
                     {% elif upload.status == "processing" %}
-                        <span class="badge bg-primary">Обрабатывается</span>
+                        <span class="badge bg-primary ocr-status">Обрабатывается</span>
                     {% else %}
-                        <span class="badge bg-secondary">{{ upload.get_status_display }}</span>
+                        <span class="badge bg-secondary ocr-status">{{ upload.get_status_display }}</span>
                     {% endif %}
-                </h4>
-                {% if upload.status == "error" %}
-                <p class="text-danger mb-0">{{ upload.error_message }}</p>
-                {% endif %}
+                </div>
+                <div class="fs-5 mt-1 text-start">Отчёт за {{ upload.report_date|date:"d E Y" }}</div>
+                <div class="ocr-meta mt-1">
+                    Загрузил: <b>{{ upload.uploaded_by.get_full_name|default:upload.uploaded_by|default:"—" }}</b>
+                    · {{ upload.created_at|date:"d.m.Y H:i" }}
+                    {% if upload.processed_at %} · обработан {{ upload.processed_at|date:"d.m.Y H:i" }}{% endif %}
+                </div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ upload.photo.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">Открыть исходное фото</a>
-                <a href="{% url 'report_ocr:list' %}?{{ current_filter_params }}" class="btn btn-secondary btn-sm">Назад</a>
-                <a href="{% url 'report_ocr:delete' upload.id %}?{{ current_filter_params }}" class="btn btn-danger btn-sm">Удалить</a>
+                <a href="{% url 'report_ocr:list' %}?{{ current_filter_params }}" class="btn btn-outline-secondary btn-sm">← К списку</a>
+                <a href="{{ upload.photo.url }}" target="_blank" class="btn btn-outline-primary btn-sm">Исходное фото</a>
+                <a href="{% url 'report_ocr:delete' upload.id %}?{{ current_filter_params }}" class="btn btn-outline-danger btn-sm">Удалить</a>
+            </div>
+        </div>
+    </div>
+
+    {% if upload.status == "error" %}
+    <!-- Ошибка -->
+    <div class="alert alert-danger shadow-sm d-flex gap-3 align-items-start" role="alert">
+        <div class="fs-3 lh-1">⚠</div>
+        <div>
+            <div class="fw-semibold">Не удалось распознать бланк</div>
+            <div class="small">{{ upload.error_message|default:"Причина не указана" }}</div>
+            <div class="small mt-2 text-body-secondary">Проверьте, что на фото бланк целиком, ровно и без бликов, затем удалите отчёт и загрузите фото заново.</div>
+        </div>
+    </div>
+
+    {% elif upload.status != "done" %}
+    <!-- В очереди / обрабатывается -->
+    <div class="card shadow-sm">
+        <div class="card-body text-center ocr-waiting">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h5 class="mb-1">{% if upload.status == "processing" %}Распознаём бланк…{% else %}Отчёт в очереди на распознавание{% endif %}</h5>
+            <p class="text-body-secondary mb-0">Обычно это занимает около минуты. Страница обновится автоматически.</p>
+        </div>
+    </div>
+    <script>setTimeout(function () { window.location.reload(); }, 10000);</script>
+
+    {% else %}
+    <!-- Сводка -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md">
+            <div class="card shadow-sm ocr-tile h-100" style="--tile-color: #0d6efd;">
+                <div class="card-body py-3">
+                    <div class="ocr-tile-value">{{ stats.total }}</div>
+                    <div class="ocr-tile-label mt-1">Полей распознано</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card shadow-sm ocr-tile h-100" style="--tile-color: #198754;">
+                <div class="card-body py-3">
+                    <div class="ocr-tile-value">{{ stats.match }}</div>
+                    <div class="ocr-tile-label mt-1">Совпадает с системой</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card shadow-sm ocr-tile h-100" style="--tile-color: #dc3545;">
+                <div class="card-body py-3">
+                    <div class="ocr-tile-value">{{ stats.mismatch }}</div>
+                    <div class="ocr-tile-label mt-1">Расхождений</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card shadow-sm ocr-tile h-100" style="--tile-color: #e0a800;">
+                <div class="card-body py-3">
+                    <div class="ocr-tile-value">{{ stats.review }}</div>
+                    <div class="ocr-tile-label mt-1">Требуют проверки</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md">
+            <div class="card shadow-sm ocr-tile h-100" style="--tile-color: #6f42c1;">
+                <div class="card-body py-3">
+                    <div class="ocr-tile-value">{{ stats.reviewed_pct }}%</div>
+                    <div class="ocr-tile-label mt-1">Проверено ({{ stats.reviewed }} из {{ stats.total }})</div>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar" style="width: {{ stats.reviewed_pct }}%; background: #6f42c1;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Фото бланка -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm ocr-photo-card">
+                <div class="card-header bg-white fw-semibold">Фото бланка</div>
+                <div class="card-body p-2">
+                    <a href="{{ upload.photo.url }}" target="_blank">
+                        <img src="{{ upload.photo.url }}" class="ocr-photo" alt="Фото бланка">
+                    </a>
+                    <div class="small text-body-secondary text-center mt-2">Нажмите, чтобы открыть в полном размере</div>
+                </div>
             </div>
         </div>
 
-        {% if upload.status == "done" %}
-        <div class="table-responsive" style="max-height: 77vh; overflow-y: auto;">
-            <table class="table table-sm table-hover table-bordered align-middle caption-top">
-                <caption><b style="margin-left: 20px;"> Полей распознано: {{ fields|length }} </b></caption>
-                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
-                    <tr>
-                        <th scope="col">Ячейка</th>
-                        <th scope="col">Поле</th>
-                        <th scope="col">Распознано</th>
-                        <th scope="col">Уверенность</th>
-                        <th scope="col">В системе</th>
-                        <th scope="col">Совпадение</th>
-                        <th scope="col">Подтвердить/исправить</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for f in fields %}
-                    <tr {% if f.needs_review %}class="table-warning"{% endif %}>
-                        <td>{% if f.crop_image %}<img src="{{ f.crop_image.url }}" style="height:32px"><br>{% endif %}</td>
-                        <td>{{ f.section }} — {{ f.field_name }} {{ f.sub_field }}</td>
-                        <td>{{ f.extracted_value|default:"—" }}</td>
-                        <td>{% if f.confidence %}{{ f.confidence|floatformat:2 }}{% endif %}</td>
-                        <td>{{ f.system_value|default:"—" }}</td>
-                        <td>
-                            {% if f.is_match == True %}<span class="badge bg-success">совпадает</span>
-                            {% elif f.is_match == False %}<span class="badge bg-danger">расхождение</span>
-                            {% else %}<span class="badge bg-secondary">—</span>{% endif %}
-                        </td>
-                        <td>
-                            {% if f.reviewed %}
-                                <span class="badge bg-success">✔ {{ f.confirmed_value }}</span>
-                            {% else %}
-                                <form method="post" action="{% url 'report_ocr:confirm_field' f.pk %}" class="d-flex gap-1">
-                                    {% csrf_token %}
-                                    <input type="text" name="value" value="{{ f.extracted_value }}" size="8" class="form-control form-control-sm">
-                                    <button type="submit" class="btn btn-sm btn-primary">OK</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                    </tr>
+        <!-- Поля по секциям -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div class="d-flex flex-wrap gap-1">
+                    {% for sec in sections %}
+                    <a href="#sec-{{ forloop.counter }}" class="btn btn-sm btn-light border">
+                        {{ sec.name }}
+                        {% if sec.review_count %}<span class="badge bg-warning text-dark ms-1">{{ sec.review_count }}</span>{% endif %}
+                    </a>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="onlyReview">
+                    <label class="form-check-label small" for="onlyReview">Только требующие проверки</label>
+                </div>
+            </div>
+
+            {% for sec in sections %}
+            <div class="card shadow-sm mb-3 ocr-section" id="sec-{{ forloop.counter }}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold">{{ sec.name }}</h6>
+                    <div class="small text-body-secondary">
+                        полей: {{ sec.fields|length }}
+                        {% if sec.review_count %}<span class="badge bg-warning text-dark ms-1">на проверку: {{ sec.review_count }}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Поле</th>
+                                <th>Ячейка на бланке</th>
+                                <th class="text-center">Распознано</th>
+                                <th>Уверенность</th>
+                                <th class="text-center">В системе</th>
+                                <th>Итог</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in sec.fields %}
+                            <tr class="{% if f.reviewed %}ocr-row-done{% elif f.needs_review %}ocr-row-review{% else %}ocr-row-ok{% endif %}">
+                                <td>
+                                    <div class="fw-medium">{{ f.field_name }}</div>
+                                    {% if f.sub_label %}<span class="badge text-bg-light border ocr-sub">{{ f.sub_label }}</span>{% endif %}
+                                </td>
+                                <td>{% if f.crop_image %}<img src="{{ f.crop_image.url }}" class="ocr-crop" alt="">{% else %}<span class="text-body-secondary">—</span>{% endif %}</td>
+                                <td class="text-center ocr-value">{{ f.extracted_value|default:"—" }}</td>
+                                <td>
+                                    {% if f.confidence is not None %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress ocr-conf">
+                                            <div class="progress-bar {% if f.confidence >= 0.85 %}bg-success{% elif f.confidence >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                 style="width: {% widthratio f.confidence 1 100 %}%"></div>
+                                        </div>
+                                        <span class="small text-body-secondary">{% widthratio f.confidence 1 100 %}%</span>
+                                    </div>
+                                    {% else %}<span class="text-body-secondary">—</span>{% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="ocr-value">{{ f.system_value|default:"—" }}</div>
+                                    {% if f.is_match == True %}<span class="badge rounded-pill text-bg-success">совпадает</span>
+                                    {% elif f.is_match == False %}<span class="badge rounded-pill text-bg-danger">расхождение</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% if f.reviewed %}
+                                        <span class="badge rounded-pill text-bg-success fs-6">✔ {{ f.confirmed_value }}</span>
+                                        {% if f.reviewed_at %}<div class="small text-body-secondary mt-1">{{ f.reviewed_at|date:"d.m H:i" }}</div>{% endif %}
+                                    {% else %}
+                                        <form method="post" action="{% url 'report_ocr:confirm_field' f.pk %}" class="d-flex gap-1 ocr-confirm">
+                                            {% csrf_token %}
+                                            <input type="text" name="value" value="{{ f.extracted_value }}" class="form-control form-control-sm">
+                                            <button type="submit" class="btn btn-sm {% if f.needs_review %}btn-warning{% else %}btn-outline-success{% endif %}">OK</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card shadow-sm"><div class="card-body text-center text-body-secondary py-5">Распознанных полей нет</div></div>
+            {% endfor %}
         </div>
-        {% endif %}
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Фильтр «Только требующие проверки»: прячем остальные строки и опустевшие секции
+        var sw = document.getElementById('onlyReview');
+        sw.addEventListener('change', function () {
+            document.querySelectorAll('.ocr-section').forEach(function (sec) {
+                var visible = 0;
+                sec.querySelectorAll('tbody tr').forEach(function (tr) {
+                    var show = !sw.checked || tr.classList.contains('ocr-row-review');
+                    tr.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+                sec.style.display = visible ? '' : 'none';
+            });
+        });
+    });
+    </script>
+    {% endif %}
 </div>
 {% endblock %}

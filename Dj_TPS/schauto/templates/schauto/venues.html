@@ -1,0 +1,111 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+{% if perms.schauto.add_venue %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-venue-form">
+                Добавить центр
+            </button>
+        </a>
+    </li>
+{% endif %}
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container container-fluid">
+    {% include 'schauto/includes/messages.html' %}
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <div class="card-title">
+                <h4>Центры, в которые ездят выездные</h4>
+
+                <div class="card card-body p-2" id="v_filter">
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="col-md-3 col-sm-4">{{ v_filter.form.name }}</div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ v_filter.form.brand }}
+                                    <label style="left: 0.5rem">Бренд</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ v_filter.form.is_active }}
+                                    <label style="left: 0.5rem">Планирование</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 69vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                <caption><b style="margin-left: 20px;"> Количество центров: {{ count }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Название</th>
+                        <th scope="col">Бренд</th>
+                        <th scope="col">Адрес</th>
+                        <th scope="col">Сложность</th>
+                        <th scope="col">Фототочка в ERP</th>
+                        <th scope="col">Вкладка в таблице</th>
+                        <th scope="col">В планировании</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in page_obj %}
+                    <tr>
+                        <td>{% if perms.schauto.change_venue %}<a href="{% url 'schauto:venue_update' v.id %}?{{ current_filter_params }}">{{ v.name }}</a>{% else %}{{ v.name }}{% endif %}</td>
+                        <td>{{ v.get_brand_display }}</td>
+                        <td class="small">{% if v.address %}{{ v.address }}{% else %}<span class="text-danger">не указан</span>{% endif %}</td>
+                        <td>{{ v.difficulty }}</td>
+                        <td>{{ v.store|default_if_none:"" }}</td>
+                        <td>{{ v.sheet_tab_name }}</td>
+                        <td>{{ v.is_active|yesno:"Да,Нет" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="modal-venue-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Добавление центра</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            {% for f in form %}
+                            <label class="form-label mb-0" for="{{ f.id_for_label }}"><i>{{ f.label }}</i></label>
+                            {{ f }}<span class="text-danger">{{ f.errors }}</span><br>
+                            {% endfor %}
+                            <span class="text-danger">{{ error }}</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Сохранить</button>
+                            <button class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'schauto/includes/pagination.html' %}
+</div>
+
+{% if error %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new bootstrap.Modal(document.getElementById('modal-venue-form')).show();
+    });
+</script>
+{% endif %}
+{% endblock %}

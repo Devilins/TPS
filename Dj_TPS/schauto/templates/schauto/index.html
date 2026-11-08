@@ -1,0 +1,179 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+<style>
+    .sa-wrap { max-width: 1080px; margin: 0 auto; }
+    .sa-tile { transition: transform .12s ease, box-shadow .12s ease; }
+    .sa-tile:hover { transform: translateY(-2px); box-shadow: var(--bs-box-shadow) !important; }
+    .sa-ico { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
+    .sa-ico svg { width: 24px; height: 24px; }
+    .sa-state svg { width: 18px; height: 18px; display: block; }
+    .sa-wrap svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sa-wrap svg .sa-fill { fill: currentColor; stroke: none; }
+</style>
+
+{# Иконки (Feather, MIT) - встроенные, чтобы не зависеть от внешних шрифтов #}
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="sa-plan" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></symbol>
+    <symbol id="sa-orders" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></symbol>
+    <symbol id="sa-mapping" viewBox="0 0 24 24"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></symbol>
+    <symbol id="sa-venues" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="sa-routes" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></symbol>
+    <symbol id="sa-staff" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="sa-check" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+    <symbol id="sa-warn" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="sa-dot" viewBox="0 0 24 24"><circle class="sa-fill" cx="12" cy="12" r="4"/></symbol>
+</svg>
+
+<div class="container container-fluid">
+    <div class="sa-wrap">
+        {% include 'schauto/includes/messages.html' %}
+
+        <div class="mb-3 pt-3">
+            {# фон страницы в проекте фиксированный светлый при любой теме, поэтому у текста вне карточек цвета тоже фиксированные #}
+            <h3 class="mb-1 text-dark">Планирование выездных фотографов</h3>
+        </div>
+
+        {# --- общий статус --- #}
+        {% if attention %}
+        <div class="alert alert-warning shadow-sm d-flex gap-3 align-items-start" role="alert">
+            <span class="sa-state text-warning-emphasis"><svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><use href="#sa-warn"/></svg></span>
+            <div>
+                <div class="fw-semibold">Чтобы распределение было точным, обратите внимание:</div>
+                <ul class="mb-0 ps-3">
+                    {% for item in attention %}
+                    <li>{% if item.url %}<a class="alert-link" href="{{ item.url }}">{{ item.label }}</a>{% else %}{{ item.label }}{% endif %}: <b>{{ item.value }}</b>{% if item.hint %} <span class="small text-body-secondary">- {{ item.hint }}</span>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-success shadow-sm d-flex gap-3 align-items-center" role="alert">
+            <span class="sa-state text-success"><svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><use href="#sa-check"/></svg></span>
+            <div><b>Данные готовы к распределению.</b> Центры, маршруты, навыки и сопоставления заполнены, ручной правки заказов не требуется.</div>
+        </div>
+        {% endif %}
+
+        {# --- разделы --- #}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
+            {% if perms.schauto.view_planrun %}
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-success-subtle text-success-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-plan"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'schauto:plan' %}">Распределение</a>
+                            <div class="small text-body-secondary mt-1">Рассчитать, проверить, поправить и применить распределение</div>
+                            <div class="mt-2"><span class="badge rounded-pill text-bg-{% if orders_open %}primary{% else %}secondary{% endif %}">ждут исполнителя: {{ orders_open }}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if perms.schauto.view_photoorder %}
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-primary-subtle text-primary-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-orders"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'schauto:orders' %}">Заказы</a>
+                            <div class="small text-body-secondary mt-1">Загрузка из таблиц, фильтры и статусы заказов</div>
+                            <div class="mt-2">{% if orders_needs_fix %}<span class="badge rounded-pill text-bg-danger">на ручную правку: {{ orders_needs_fix }}</span>{% else %}<span class="badge rounded-pill text-bg-secondary">ручной правки нет</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if perms.schauto.import_orders %}
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-warning-subtle text-warning-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-mapping"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'schauto:mapping' %}">Сопоставления</a>
+                            <div class="small text-body-secondary mt-1">Имена из таблиц - сотрудникам, адреса выездов - центрам</div>
+                            <div class="mt-2">{% if unmatched_names or unmatched_places %}<span class="badge rounded-pill text-bg-danger">не сопоставлено: {{ unmatched_names|add:unmatched_places }}</span>{% else %}<span class="badge rounded-pill text-bg-success">всё сопоставлено</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-info-subtle text-info-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-venues"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'schauto:venues' %}">Центры</a>
+                            <div class="small text-body-secondary mt-1">Адреса, сложность и привязка к фототочкам</div>
+                            <div class="mt-2">{% if venues_no_address %}<span class="badge rounded-pill text-bg-danger">без адреса: {{ venues_no_address }}</span>{% else %}<span class="badge rounded-pill text-bg-secondary">в планировании: {{ venues_count }}</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-secondary-subtle text-secondary-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-routes"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'schauto:routes' %}">Маршруты</a>
+                            <div class="small text-body-secondary mt-1">Время в пути между центрами на общественном транспорте</div>
+                            <div class="mt-2">{% if pairs_missing %}<span class="badge rounded-pill text-bg-danger">пар без маршрута: {{ pairs_missing }}</span>{% else %}<span class="badge rounded-pill text-bg-success">все пары заполнены</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if perms.tph_system.view_staff %}
+            <div class="col">
+                <div class="card h-100 shadow-sm sa-tile position-relative">
+                    <div class="card-body d-flex gap-3">
+                        <span class="sa-ico bg-danger-subtle text-danger-emphasis"><svg viewBox="0 0 24 24"><use href="#sa-staff"/></svg></span>
+                        <div>
+                            <a class="stretched-link text-decoration-none text-body fw-semibold fs-5" href="{% url 'staff' %}?dism_status=Работает">Сотрудники</a>
+                            <div class="small text-body-secondary mt-1">Тип сотрудника, навык и лимит заказов в день</div>
+                            <div class="mt-2">{% if outbound_no_limit or outbound_no_skill %}<span class="badge rounded-pill text-bg-danger">нужно заполнить: {{ outbound_no_limit|add:outbound_no_skill }}</span>{% else %}<span class="badge rounded-pill text-bg-secondary">выездных: {{ outbound_count }}</span>{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# --- готовность данных --- #}
+        <h5 class="mb-3 text-dark">Готовность данных</h5>
+        <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">Центры и маршруты</div>
+                    <ul class="list-group list-group-flush px-3 py-1">
+                        {% include 'schauto/includes/metric_row.html' with label='Центры в планировании' value=venues_count neutral=True note=venues_note %}
+                        {% include 'schauto/includes/metric_row.html' with label='Центры без адреса' value=venues_no_address bad=venues_no_address %}
+                        {% include 'schauto/includes/metric_row.html' with label='Пары центров без маршрута' value=pairs_text bad=pairs_missing %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">Сотрудники</div>
+                    <ul class="list-group list-group-flush px-3 py-1">
+                        {% include 'schauto/includes/metric_row.html' with label='Выездные фотографы (работают)' value=outbound_count neutral=True %}
+                        {% include 'schauto/includes/metric_row.html' with label='Выездные без оценки навыка' value=outbound_no_skill bad=outbound_no_skill %}
+                        {% include 'schauto/includes/metric_row.html' with label='Выездные без лимита заказов в день' value=outbound_no_limit bad=outbound_no_limit %}
+                        {% include 'schauto/includes/metric_row.html' with label='Ретушёры (работают)' value=retouchers_count neutral=True note=retouchers_note %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">Заказы <span class="fw-normal small text-body-secondary">(с сегодняшнего дня)</span></div>
+                    <ul class="list-group list-group-flush px-3 py-1">
+                        {% include 'schauto/includes/metric_row.html' with label='Ждут исполнителя' value=orders_open neutral=True %}
+                        {% include 'schauto/includes/metric_row.html' with label='Требуют ручной правки' value=orders_needs_fix bad=orders_needs_fix %}
+                        {% include 'schauto/includes/metric_row.html' with label='Не сопоставлено имён' value=unmatched_names bad=unmatched_names %}
+                        {% include 'schauto/includes/metric_row.html' with label='Не сопоставлено адресов выездов' value=unmatched_places bad=unmatched_places %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

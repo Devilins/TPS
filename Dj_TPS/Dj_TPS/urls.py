@@ -19,7 +19,8 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/get_user/<str:username>/', SingleUserViewSet.as_view({'get': 'retrieve'}), name='get_user'),
-    path("report-ocr/", include("report_ocr.urls")),
+    path("reports/ocr/", include("report_ocr.urls")),
+    path("schauto/", include("schauto.urls")),
 ]
 
 # urlpatterns += router.urls

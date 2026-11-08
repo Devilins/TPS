@@ -49,6 +49,10 @@
                                     {{ s_filter.form.dism_status }}
                                     <label style="left: 0.5rem">Статус</label>
                                 </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ s_filter.form.staff_type }}
+                                    <label style="left: 0.5rem">Тип</label>
+                                </div>
                                 <div class="col-md-auto align-self-center">
                                     <button type="submit" class="btn btn-sm btn-primary">Применить</button>
                                 </div>
@@ -74,6 +78,8 @@
                         <th scope="col">Дата увольнения</th>
                         <th scope="col">Статус</th>
                         <th scope="col">Логин</th>
+                        <th scope="col">Тип</th>
+                        <th scope="col">Навыки</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
@@ -89,6 +95,8 @@
                         {% endif %}
                         <td>{{ st.dism_status }}</td>
                         <td>{{ st.st_username }}</td>
+                        <td>{{ st.staff_type }}</td>
+                        <td>{{ st.skill_score|default_if_none:"" }}</td>
                         <td>
                             <button type="button" class="btn btn-link py-0">
                                 <a href="{% url 'staff_update' st.id %}?{{ current_filter_params }}">
@@ -119,7 +127,14 @@
                             {{ form.date_empl }}<br>
                             {{ form.date_dism }}<br>
                             {{ form.dism_status }}<br>
-                            {{ form.st_username }}
+                            {{ form.st_username }}<br>
+                            {{ form.staff_type }}<br>
+                            {{ form.skill_score }}<br>
+                            {{ form.max_orders_per_day }}<br>
+                            <div class="form-check">{{ form.retouches_own }}
+                                <label class="form-check-label" for="{{ form.retouches_own.id_for_label }}">{{ form.retouches_own.label }}</label>
+                            </div>
+                            <span class="text-danger">{{ form.skill_score.errors }}{{ form.max_orders_per_day.errors }}</span>
                             <span>{{ error }}</span>
                         </div>
                         <div class="modal-footer">
@@ -179,4 +194,11 @@
 
 </div>
 
+{% if error %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new bootstrap.Modal(document.getElementById('modal-staff-form')).show();
+    });
+</script>
+{% endif %}
 {% endblock %}

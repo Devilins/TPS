@@ -3,9 +3,15 @@
 
 {% block func_buttons %}
 <li class="nav-item">
+    {% if upload_enabled %}
     <a class="nav-link" href="{% url 'report_ocr:upload' %}?{{ current_filter_params }}">
         <button type="button" class="btn btn-sm btn-outline-primary">Загрузить отчёт</button>
     </a>
+    {% else %}
+    <a class="nav-link">
+        <button type="button" class="btn btn-sm btn-outline-primary" disabled>Загрузить отчёт</button>
+    </a>
+    {% endif %}
 </li>
 {% endblock func_buttons %}
 
@@ -20,6 +26,7 @@
                 <div class="card card-body p-2" id="cs_filter">
                     <form method="get">
                         <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                            {% if view_all %}
                             <div class="form-floating col-md-auto">
                                 {{ upload_filter.form.location }}
                                 <label style="left: 0.5rem">Точка</label>
@@ -28,6 +35,7 @@
                                 {{ upload_filter.form.report_date }}
                                 <label style="left: 0.5rem">Дата</label>
                             </div>
+                            {% endif %}
                             <div class="form-floating col-md-auto">
                                 {{ upload_filter.form.status }}
                                 <label style="left: 0.5rem">Статус</label>

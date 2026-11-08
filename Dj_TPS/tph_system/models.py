@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import truncatechars
@@ -11,6 +12,11 @@ class Staff(models.Model):
         ('Уволен', 'Уволен'),
         ('Работает', 'Работает')
     )
+    SLCT_STAFF_TYPE = (
+        ('Штат', 'Штат'),
+        ('Выездной', 'Выездной'),
+        ('Ретушер', 'Ретушер')
+    )
     f_name = models.CharField(max_length=30, verbose_name=u"Фамилия")
     name = models.CharField(max_length=30, verbose_name=u"Имя")
     o_name = models.CharField(max_length=30, blank=True, verbose_name=u"Отчество")
@@ -19,6 +25,14 @@ class Staff(models.Model):
     dism_status = models.CharField(max_length=30, default="Работает", verbose_name=u"Статус", choices=SLCT_DISM_STATUS)
     st_username = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True,
                                     verbose_name=u"Учетная запись")
+    # Поля для планирования выездных (приложение schauto). Штат - обычные сотрудники точек, их планировщик не трогает
+    staff_type = models.CharField(max_length=20, default="Штат", choices=SLCT_STAFF_TYPE, verbose_name=u"Тип")
+    skill_score = models.PositiveSmallIntegerField(null=True, blank=True,
+                                                   validators=[MinValueValidator(1), MaxValueValidator(10)],
+                                                   verbose_name=u"Оценка навыков (1-10)")
+    retouches_own = models.BooleanField(default=True, verbose_name=u"Сам обрабатывает фото")
+    max_orders_per_day = models.PositiveSmallIntegerField(null=True, blank=True, validators=[MinValueValidator(1)],
+                                                          verbose_name=u"Макс. заказов в день")
     date_upd = models.DateTimeField(auto_now=True, editable=False, blank=True, verbose_name=u"Дата изменения")
     user_edited = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT,
                                     verbose_name=u"Кем было изменено", related_name='staff_user_edited')

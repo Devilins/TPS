@@ -97,10 +97,19 @@ class StaffFilter(django_filters.FilterSet):
             'aria-label': 'Статус',
             'label': 'Статус'
         }))
+    staff_type = django_filters.ChoiceFilter(
+        field_name='staff_type',
+        choices=Staff.SLCT_STAFF_TYPE,
+        empty_label="Пусто",
+        widget=Select(attrs={
+            'class': 'form-select form-select-sm',
+            'aria-label': 'Тип',
+            'label': 'Тип'
+        }))
 
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status', 'staff_type']
 
 
 class TechFilter(django_filters.FilterSet):

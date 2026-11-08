@@ -1,0 +1,78 @@
+{% extends 'tph_system/base.html' %}
+
+{% block content %}
+<div class="container container-fluid">
+    {% include 'schauto/includes/messages.html' %}
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <div class="card-title">
+                <h4>Распределение выездных фотографов</h4>
+                <div class="text-muted small mb-2">
+                    Расчёт предлагает исполнителей для заказов, у которых в таблице никого нет, и объясняет каждый выбор.
+                    Это черновик: в график и в Google-таблицы он ничего не записывает.
+                </div>
+
+                {% if perms.schauto.run_planning %}
+                <div class="card card-body p-2" id="plan_form">
+                    <div class="container text-left">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ form.date_from }}
+                                    <label style="left: 0.5rem">Заказы с</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ form.date_to }}
+                                    <label style="left: 0.5rem">Заказы по</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary"
+                                            onclick="this.disabled = true; this.form.submit(); this.innerText = 'Считаю…';">Распределить</button>
+                                </div>
+                            </div>
+                            {% if error %}<div class="alert alert-danger py-2 mt-2 mb-0">{{ error }}</div>{% endif %}
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                <caption><b style="margin-left: 20px;"> Количество расчётов: {{ count }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Когда распределено</th>
+                        <th scope="col">Период</th>
+                        <th scope="col">Заказов</th>
+                        <th scope="col">Распределено частей</th>
+                        <th scope="col">Не распределено</th>
+                        <th scope="col">Предупреждений</th>
+                        <th scope="col">Статус</th>
+                        <th scope="col">Кем</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in page_obj %}
+                    <tr>
+                        <td class="text-nowrap"><a href="{% url 'schauto:plan_detail' r.pk %}">{{ r.created_at|date:"d.m.Y H:i" }}</a></td>
+                        <td class="text-nowrap"><a href="{% url 'schauto:plan_detail' r.pk %}">{{ r.date_from|date:"d.m.Y" }} - {{ r.date_to|date:"d.m.Y" }}</a></td>
+                        <td><a href="{% url 'schauto:plan_detail' r.pk %}">{{ r.summary.orders }}</a></td>
+                        <td>{{ r.summary.assigned }} из {{ r.summary.parts }}</td>
+                        <td class="{% if r.summary.unassigned %}text-danger fw-bold{% endif %}">{{ r.summary.unassigned }}</td>
+                        <td>{{ r.warnings|length }}</td>
+                        <td><span class="badge {% if r.status == 'applied' %}text-bg-success{% elif r.status == 'partial' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ r.get_status_display }}</span></td>
+                        <td>{{ r.created_by|default_if_none:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-3">Расчётов ещё не было</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% include 'schauto/includes/pagination.html' %}
+</div>
+{% endblock %}

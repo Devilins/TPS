@@ -25,7 +25,7 @@
    ```python
    urlpatterns = [
        ...
-       path("report-ocr/", include("report_ocr.urls")),
+       path("reports/ocr/", include("report_ocr.urls")),
    ]
    if settings.DEBUG:
        urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -65,7 +65,7 @@ ROI-карта пока только для Laserland (`pipeline/roi_maps/laserl
 
 ## Как это работает
 
-1. Куратор на странице `/report-ocr/upload/` выбирает точку, дату, прикладывает фото.
+1. Куратор на странице `/reports/ocr/upload/` выбирает точку, дату, прикладывает фото.
 2. `views.upload_view` сохраняет `ReportUpload` и ставит `tasks.process_report`
    в очередь Celery — форма не ждёт обработки, сразу отдаёт страницу отчёта.
 3. Таск: выравнивает фото по 4 угловым меткам (`pipeline/markers.py`),
@@ -73,7 +73,7 @@ ROI-карта пока только для Laserland (`pipeline/roi_maps/laserl
    свою CNN (`pipeline/digits.py`), сравнивает с `get_system_report_data`,
    сохраняет `FieldResult` на каждое поле — включая вырезанную картинку
    ячейки (для ревью и как будущий обучающий пример).
-4. На `/report-ocr/report/<id>/` куратор видит все поля, отсортированные так,
+4. На `/reports/ocr/report/<id>/` куратор видит все поля, отсортированные так,
    что вверху — то, что просит внимания (`needs_review`: низкая уверенность
    OR расхождение с CRM). Подтверждает или правит значение — это пишется в
    `confirmed_value` и одновременно является идеально размеченным примером

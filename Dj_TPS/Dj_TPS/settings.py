@@ -57,7 +57,17 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_tables2',
     'report_ocr',
+    'schauto.apps.SchautoConfig',
 ]
+
+# Планирование выездных (schauto): ID Google-таблиц с заказами - по одной на бренд.
+# Для разработки - ID копий таблиц, не боевых (в .env прод-ID лежат закомментированными)
+SCHAUTO_SHEET_IDS = {
+    'LL': os.getenv('SCHAUTO_SHEET_ID_LL', ''),
+    'JJ': os.getenv('SCHAUTO_SHEET_ID_JJ', ''),
+}
+# Ключ сервисного аккаунта Google для записи исполнителей в таблицы заказов (JSON-файл вне репозитория)
+SCHAUTO_GOOGLE_CREDENTIALS_FILE = os.getenv('SCHAUTO_GOOGLE_CREDENTIALS_FILE', '')
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

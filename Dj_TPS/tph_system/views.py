@@ -1137,7 +1137,7 @@ def staff(request):
         else:
             error = 'Ошибка в заполнении формы'
 
-    form = StaffForm()
+    form = form_p if error else StaffForm()  # при ошибке показываем форму с введёнными значениями и ошибками
 
     # Пагинатор
     paginator = Paginator(staffs, 25)

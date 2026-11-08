@@ -49,9 +49,19 @@ class StaffForm(ModelForm):
         self.fields['st_username'].empty_label = "Выберите Логин"
         self.fields['dism_status'].empty_label = "Выберите статус"
 
+    def clean(self):
+        cleaned_data = super().clean()
+        staff_type = cleaned_data.get('staff_type')
+        if staff_type in ('Выездной', 'Ретушер') and not cleaned_data.get('skill_score'):
+            self.add_error('skill_score', 'Для выездных и ретушеров нужна оценка навыков')
+        if staff_type == 'Выездной' and not cleaned_data.get('max_orders_per_day'):
+            self.add_error('max_orders_per_day', 'Для выездных нужен лимит заказов в день')
+        return cleaned_data
+
     class Meta:
         model = Staff
-        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status', 'st_username']
+        fields = ['f_name', 'name', 'o_name', 'date_empl', 'date_dism', 'dism_status', 'st_username',
+                  'staff_type', 'skill_score', 'retouches_own', 'max_orders_per_day']
 
         labels = {
             'f_name': 'Фамилия',
@@ -60,7 +70,11 @@ class StaffForm(ModelForm):
             'date_empl': 'Дата найма',
             'date_dism': 'Дата увольнения',
             'dism_status': 'Статус',
-            'st_username': 'Логин'
+            'st_username': 'Логин',
+            'staff_type': 'Тип',
+            'skill_score': 'Оценка навыков (1-10)',
+            'retouches_own': 'Сам обрабатывает фото',
+            'max_orders_per_day': 'Макс. заказов в день'
         }
 
         widgets = {
@@ -91,6 +105,24 @@ class StaffForm(ModelForm):
             "st_username": Select(attrs={
                 'class': 'form-select',
                 'placeholder': 'Логин'
+            }),
+            "staff_type": Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Тип'
+            }),
+            "skill_score": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Оценка навыков (1-10)',
+                'min': 1,
+                'max': 10
+            }),
+            "retouches_own": CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            "max_orders_per_day": NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Макс. заказов в день (для выездных)',
+                'min': 1
             })
         }
 

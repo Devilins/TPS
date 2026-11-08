@@ -1,0 +1,8 @@
+{# Строка показателя готовности: label, value; bad - проблема (красным), neutral - просто число; note - пояснение мелким шрифтом #}
+<li class="list-group-item d-flex align-items-center gap-2 px-0 py-2 bg-transparent">
+    <span class="sa-state {% if neutral %}text-body-tertiary{% elif bad %}text-danger{% else %}text-success{% endif %}" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><use href="#{% if neutral %}sa-dot{% elif bad %}sa-warn{% else %}sa-check{% endif %}"/></svg>
+    </span>
+    <span class="flex-grow-1 lh-sm">{{ label }}{% if note %}<span class="d-block small text-body-secondary">{{ note }}</span>{% endif %}</span>
+    <span class="fw-semibold text-nowrap {% if bad and not neutral %}text-danger{% endif %}">{{ value }}</span>
+</li>

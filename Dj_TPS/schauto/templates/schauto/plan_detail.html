@@ -1,0 +1,293 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'schauto:plan' %}">
+            <span class="btn btn-sm btn-outline-secondary">Все распределения</span>
+        </a>
+    </li>
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container container-fluid">
+    {% include 'schauto/includes/messages.html' %}
+    <div class="card shadow mb-3" style="width: 100%;">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h4 class="card-title mb-1">Распределение: {{ run.date_from|date:"d.m.Y" }} - {{ run.date_to|date:"d.m.Y" }}
+                    <span class="badge fs-6 align-middle {% if run.status == 'applied' %}text-bg-success{% elif run.status == 'partial' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ run.get_status_display }}</span>
+                </h4>
+                {% if can_rollback %}
+                <form method="post" action="{% url 'schauto:plan_action' run.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="rollback" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Откатить применение?\n\nИмена фотографов будут убраны из Google-таблиц (только те, что вписало это применение и которые с тех пор не менялись), созданные смены удалены из графика (если по ним нет продаж и расчёта зарплаты), заказы снова станут свободными. Расчёт вернётся в черновик.');">Откатить применение</button>
+                </form>
+                {% endif %}
+                {% if can_delete %}
+                <form method="post" action="{% url 'schauto:plan_action' run.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="delete" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('Удалить распределение?\n\nЧерновик будет удалён вместе со всеми назначениями, объяснениями и вашими подтверждениями. Google-таблицы, график работы и заказы не затрагиваются - в них этот черновик ничего не менял. Восстановить расчёт нельзя, его можно только рассчитать заново.');">Удалить распределение</button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="text-muted small">
+                Рассчитан {{ run.created_at|date:"d.m.Y H:i" }}{% if run.created_by %}, {{ run.created_by }}{% endif %}.
+                {% if run.status == 'draft' %}Это черновик{% if can_edit %}: проверьте исполнителей, при необходимости поменяйте и нажмите «Применить распределение»{% endif %}. До применения в график и в Google-таблицы ничего не записывается.
+                {% elif run.status == 'applied' %}Применён {{ run.applied_at|date:"d.m.Y H:i" }}{% if run.applied_by %}, {{ run.applied_by }}{% endif %}: исполнители вписаны в Google-таблицы и в график работы.
+                {% elif run.status == 'partial' %}Применён частично ({{ run.applied_at|date:"d.m.Y H:i" }}): часть записей не удалась, причины указаны в строках. Исправьте их и нажмите «Применить распределение» ещё раз - то, что уже вписано, повторно не пишется.
+                {% elif run.status == 'rolling_back' %}Откатывается прямо сейчас - обновите страницу через минуту.
+                {% else %}Применяется прямо сейчас - обновите страницу через минуту.{% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row text-center g-2">
+                <div class="col"><div class="border rounded p-2"><div class="fs-4">{{ run.summary.orders }}</div><div class="small text-muted">заказов ждали исполнителя</div></div></div>
+                <div class="col"><div class="border rounded p-2"><div class="fs-4 text-success">{{ run.summary.assigned }}</div><div class="small text-muted">частей распределено расчётом (из {{ run.summary.parts }})</div></div></div>
+                <div class="col"><div class="border rounded p-2"><div class="fs-4 {% if run.summary.unassigned %}text-danger{% endif %}">{{ run.summary.unassigned }}</div><div class="small text-muted">частей без исполнителя в расчёте</div></div></div>
+                <div class="col"><div class="border rounded p-2"><div class="fs-4">{{ run.summary.staff }}</div><div class="small text-muted">фотографов в расчёте</div></div></div>
+                <div class="col"><div class="border rounded p-2"><div class="fs-4">{{ run.summary.fixed_orders }}</div><div class="small text-muted">назначены вручную (учтены)</div></div></div>
+            </div>
+
+            {% if run.warnings %}
+            <div class="alert alert-warning mt-3 mb-0 py-2">
+                <b>Обратите внимание ({{ run.warnings|length }}):</b>
+                <ul class="mb-0 small">
+                    {% for w in run.warnings %}<li>{{ w }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if check %}
+            {% if check.blocking_count %}
+            <div class="alert alert-danger mt-3 mb-0 py-2">
+                <b>Блокирующих проблем: {{ check.blocking_count }}</b> - подтвердить их нельзя, поменяйте исполнителя (причины указаны красным в строках ниже).
+                <ul class="mb-0 small">{% for e in check.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            </div>
+            {% endif %}
+            {% if check.unconfirmed %}
+            <div class="alert alert-warning mt-3 mb-0 py-2">
+                <b>Ждут вашего решения: {{ check.unconfirmed|length }}</b> - фотографу не хватает времени на дорогу и запас между заказами или заказ выходит за время из графика
+                (не хватает от {{ shortfalls.0 }} до {{ shortfalls|last }} мин). Если фотограф успеет, отметьте в строке «Успеет, подтверждаю» - тогда распределение можно применить как есть; иначе поменяйте исполнителя.
+                {% if can_edit %}
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <span class="small">Подтвердить сразу все, где не хватает не больше</span>
+                    <input type="number" name="upto" form="plan-form" value="10" min="0" max="600" class="form-control form-control-sm" style="width: 5rem;" aria-label="Минут">
+                    <span class="small">мин</span>
+                    <button type="submit" name="action" value="confirm_upto" form="plan-form" class="btn btn-sm btn-outline-warning">Подтвердить</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if check.ok %}
+            <div class="alert alert-success mt-3 mb-0 py-2">
+                <b>Проверка по текущим данным: проблем не найдено{% if check.confirmed %} (кроме подтверждённых вами вручную: {{ check.confirmed|length }}){% endif %}.</b>
+                У всех частей есть фотограф, он не в отпуске, отгуле и не на больничном, успевает между заказами (с учётом ваших подтверждений) и не превышает дневной лимит.
+            </div>
+            {% elif check.confirmed %}
+            <div class="small mt-2 text-body">Подтверждено вами вручную: {{ check.confirmed|length }} (отмечены в строках; галочку можно снять).</div>
+            {% endif %}
+            {% if check.row_warnings %}<div class="small mt-1 text-body">Предупреждения (не мешают применению): {{ check.row_warnings|length }}, см. жёлтым в строках.</div>{% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow mb-3" style="width: 100%;">
+        <div class="card-header"><b>Нагрузка по фотографам</b></div>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead><tr><th>Фотограф</th><th>Заказов</th><th>Частей</th><th>Часов съёмки</th></tr></thead>
+                <tbody>
+                    {% for r in load_rows %}
+                    <tr><td>{{ r.staff }}</td><td>{{ r.orders }}</td><td>{{ r.parts }}</td><td>{{ r.hours }}</td></tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">Никому не назначено</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow mb-3" style="width: 100%;">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto"><b>Показать в распределении:</b></div>
+                <div class="col-md-3 col-sm-5">
+                    <select name="staff" class="form-select form-select-sm" aria-label="Исполнитель">
+                        <option value="">Все исполнители</option>
+                        {% for pk, name in staff_options %}<option value="{{ pk }}"{% if staff_filter == pk|stringformat:"s" %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary">Применить</button></div>
+            </form>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'schauto:plan_action' run.pk %}" id="plan-form">
+        {% csrf_token %}
+        <input type="hidden" name="page" value="{{ page_obj.number }}">
+        <input type="hidden" name="staff" value="{{ staff_filter }}">
+
+        {% if unassigned %}
+        <div class="card shadow mb-3 border-danger" style="width: 100%;">
+            <div class="card-header text-danger"><b>Без исполнителя: {{ unassigned|length }}</b>
+                <span class="small text-muted">- выберите фотографа вручную (у каждого указана причина, почему расчёт никого не поставил)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead><tr><th>Дата</th><th>Время</th><th>Центр</th><th style="min-width: 220px;">Исполнитель</th><th>Почему никому</th></tr></thead>
+                    <tbody>
+                        {% for a in unassigned %}
+                        <tr>
+                            <td class="text-nowrap">{{ a.date|date:"d.m.Y (D)" }}</td>
+                            <td class="text-nowrap">{{ a.time_display }}{% if a.parts_total > 1 %} <span class="text-muted small">(часть {{ a.part_no }}/{{ a.parts_total }})</span>{% endif %}</td>
+                            <td>{{ a.order.venue }}</td>
+                            <td>
+                                {% if can_edit %}
+                                <select name="staff_{{ a.pk }}" class="form-select form-select-sm">
+                                    <option value="" selected>— не назначен —</option>
+                                    {% for s in staff_choices %}<option value="{{ s.pk }}">{{ s }}</option>{% endfor %}
+                                </select>
+                                {% endif %}
+                                {% for e in a.errors %}<div class="small text-danger">{{ e }}</div>{% endfor %}
+                            </td>
+                            <td class="small">
+                                {% if a.rejected %}<ul class="mb-0 ps-3">{% for r in a.rejected %}<li>{{ r }}</li>{% endfor %}</ul>
+                                {% else %}{% for r in a.reasons %}{{ r }}{% endfor %}{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card shadow mb-3" style="width: 100%;">
+            <div class="card-header">
+                <div class="row g-2 align-items-center">
+                    <div class="col"><b>Предлагаемое распределение</b>
+                        {% if can_edit %}<span class="small text-muted">- исполнителя можно поменять в списке; сохраните изменения перед переходом на другую страницу</span>{% endif %}
+                    </div>
+                    {% if can_edit %}
+                    <div class="col-auto">
+                        <button type="submit" name="action" value="save" class="btn btn-sm btn-outline-primary">Сохранить изменения</button>
+                        <button type="submit" name="action" value="check" class="btn btn-sm btn-outline-secondary">Проверить</button>
+                        <button type="submit" name="action" value="apply" class="btn btn-sm btn-success"
+                                onclick="return confirm('Применить распределение?\n\nПроверки будут выполнены, после чего фотографы будут вписаны в Google-таблицы и в график работы.');">Применить распределение</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+                <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                    <caption><b style="margin-left: 20px;"> Количество назначений: {{ count }}{% if problem_rows %} <span class="text-danger">(с проблемами: {{ problem_rows }})</span>{% endif %} </b></caption>
+                    <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                        <tr>
+                            <th scope="col">Дата</th>
+                            <th scope="col">Время</th>
+                            <th scope="col">Центр</th>
+                            <th scope="col" style="min-width: 220px;">Исполнитель</th>
+                            <th scope="col" title="Сложность: центр + длительность + продление">Сложн.</th>
+                            <th scope="col">Почему он</th>
+                            <th scope="col">Таблица</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in page_obj %}
+                        <tr{% if a.errors %} class="table-danger"{% elif a.softs %} class="table-warning"{% endif %}>
+                            <td class="text-nowrap">{{ a.date|date:"d.m.Y (D)" }}</td>
+                            <td class="text-nowrap">{{ a.time_display }}{% if a.parts_total > 1 %} <span class="badge text-bg-info" title="Заказ с перерывом: часть {{ a.part_no }} из {{ a.parts_total }}">часть {{ a.part_no }}/{{ a.parts_total }}</span>{% endif %}</td>
+                            <td>{{ a.order.venue }}</td>
+                            <td>
+                                {% if can_edit and not a.is_done %}
+                                <select name="staff_{{ a.pk }}" class="form-select form-select-sm">
+                                    <option value="">— не назначен —</option>
+                                    {% for s in staff_choices %}<option value="{{ s.pk }}"{% if s.pk == a.staff_id %} selected{% endif %}>{{ s }}</option>{% endfor %}
+                                </select>
+                                {% else %}<b>{{ a.staff }}</b>{% endif %}
+                                {% if a.edited %}<div class="small text-warning-emphasis">изменено вручную{% if a.auto_staff %} (расчёт предлагал: {{ a.auto_staff }}){% endif %}</div>{% endif %}
+                                {% for e in a.errors %}<div class="small text-danger">{{ e }}</div>{% endfor %}
+                                {% for p in a.softs %}
+                                <div class="small text-warning-emphasis">
+                                    {% if can_edit %}<input type="hidden" name="shown" value="{{ p.sig }}">
+                                    <label class="d-block fw-semibold"><input type="checkbox" class="form-check-input me-1" name="confirm" value="{{ p.sig }}">Успеет, подтверждаю</label>{% endif %}
+                                    {{ p.text }}
+                                </div>
+                                {% endfor %}
+                                {% for p in a.confirmed_problems %}
+                                <div class="small text-success">
+                                    {% if can_edit %}<input type="hidden" name="shown" value="{{ p.sig }}">
+                                    <label class="d-block fw-semibold"><input type="checkbox" class="form-check-input me-1" name="confirm" value="{{ p.sig }}" checked>Подтверждено вручную</label>{% else %}<b>Подтверждено вручную:</b>{% endif %}
+                                    {{ p.text }}
+                                </div>
+                                {% endfor %}
+                                {% for w in a.warns %}<div class="small text-warning-emphasis">{{ w }}</div>{% endfor %}
+                                {% if a.sheet_status %}
+                                <div class="small {% if a.is_done %}text-success{% else %}text-danger{% endif %}">
+                                    {{ a.sheet_status_display }}{% if not a.is_done and a.sheet_detail %}: {{ a.sheet_detail }}{% endif %}{% if a.schedule_status %}; {{ a.get_schedule_status_display|lower }}{% endif %}{% if a.ret_status_display %}; {{ a.ret_status_display }}{% endif %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ a.need|floatformat:1 }}</td>
+                            <td class="small">
+                                <details>
+                                    <summary>{{ a.reasons.0 }}</summary>
+                                    {% if a.edited %}<div class="text-warning-emphasis">Объяснение относится к исходному расчёту.</div>{% endif %}
+                                    <ul class="mb-1 mt-1 ps-3">
+                                        {% for r in a.reasons|slice:"1:" %}<li>{{ r }}</li>{% endfor %}
+                                    </ul>
+                                    {% if a.alternatives %}<div class="text-muted">Рядом по штрафу: {{ a.alternatives|join:"; " }}</div>{% endif %}
+                                    {% if a.rejected %}<div class="text-muted mt-1">Не подходят: {{ a.rejected|join:"; " }}</div>{% endif %}
+                                </details>
+                            </td>
+                            <td class="text-nowrap small">
+                                {% if a.order.sheet_url %}<a href="{{ a.order.sheet_url }}" target="_blank" rel="noopener">{{ a.order.tab_name }}, стр. {{ a.order.sheet_row }}</a>
+                                {% else %}{{ a.order.tab_name }}, стр. {{ a.order.sheet_row }}{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted py-3">Нет назначений</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+    {% include 'schauto/includes/pagination.html' %}
+
+    {% if fixed_rows %}
+    <div class="card shadow mb-3" style="width: 100%;">
+        <div class="card-header"><b>Уже назначено вручную в таблицах (учтено как занятость)</b></div>
+        <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+            <table class="table table-sm table-bordered align-middle mb-0">
+                <thead><tr><th>Дата</th><th>Время</th><th>Центр</th><th>Фотограф</th></tr></thead>
+                <tbody>
+                    {% for f in fixed_rows %}
+                    <tr><td class="text-nowrap">{{ f.date|date:"d.m.Y (D)" }}</td><td class="text-nowrap">{{ f.start }}-{{ f.end }}</td><td>{{ f.venue }}</td><td>{{ f.staff }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if run.apply_log %}
+    <div class="card shadow mb-3" style="width: 100%;">
+        <div class="card-header"><b>История применения</b></div>
+        <ul class="list-group list-group-flush small">
+            {% for e in run.apply_log %}
+            <li class="list-group-item">{{ e.at|slice:":16"|cut:"T" }}{% if e.by %}, {{ e.by }}{% endif %}:
+                {% if e.action == 'rollback' %}<b>откат</b> - из таблиц убрано заказов {{ e.sheet }}, удалено смен {{ e.schedule }}{% if e.errors %}; не удалось: {{ e.errors|join:"; " }}{% endif %}{% if e.kept %}; оставлено: {{ e.kept|join:"; " }}{% endif %}
+                {% elif e.error %}применение: сбой ({{ e.error }})
+                {% else %}применение - в таблицы вписано заказов {{ e.sheet }}{% if e.retoucher %} (в «Ретушер» - {{ e.retoucher }}){% endif %}, смен в графике создано {{ e.schedule }}{% if e.errors %}; не удалось: {{ e.errors|join:"; " }}{% endif %}{% endif %}
+                {% if e.confirmed %}<div class="text-warning-emphasis">Применено с подтверждёнными вручную проблемами ({{ e.confirmed|length }}):
+                    <ul class="mb-0 ps-3">{% for c in e.confirmed %}<li>{{ c.text }}{% if c.by %} - подтвердил {{ c.by }}{% if c.at %}, {{ c.at }}{% endif %}{% endif %}</li>{% endfor %}</ul></div>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

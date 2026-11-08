@@ -1,0 +1,141 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+{% if perms.schauto.import_orders %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-orders-import">
+                Загрузить из таблиц
+            </button>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'schauto:mapping' %}">
+            <span class="btn btn-sm btn-outline-secondary">Сопоставления</span>
+        </a>
+    </li>
+{% endif %}
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container container-fluid">
+    {% include 'schauto/includes/messages.html' %}
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <div class="card-title">
+                <h4>Заказы выездных</h4>
+                <div class="text-muted small mb-2">
+                    Последняя загрузка: {% if last_import %}{{ last_import|date:"d.m.Y H:i" }}{% else %}ещё не было{% endif %}
+                </div>
+
+                <div class="card card-body p-2" id="o_filter">
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ o_filter.form.date_from }}
+                                    <label style="left: 0.5rem">Даты с</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ o_filter.form.date_by }}
+                                    <label style="left: 0.5rem">Даты по</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ o_filter.form.venue }}
+                                    <label style="left: 0.5rem">Центр</label>
+                                </div>
+                            </div>
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ o_filter.form.brand }}
+                                    <label style="left: 0.5rem">Таблица</label>
+                                </div>
+                                <div class="form-floating col-md-3 col-sm-4">
+                                    {{ o_filter.form.status }}
+                                    <label style="left: 0.5rem">Статус</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 66vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                <caption><b style="margin-left: 20px;"> Количество заказов: {{ count }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Время</th>
+                        <th scope="col">Центр</th>
+                        <th scope="col">Фотограф</th>
+                        <th scope="col">Ретушёр</th>
+                        <th scope="col">Статус</th>
+                        <th scope="col">Замечания</th>
+                        <th scope="col">Таблица</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in page_obj %}
+                    <tr{% if o.status == 'needs_fix' %} class="table-warning"{% elif o.status == 'gone' %} class="text-muted"{% endif %}>
+                        <td class="text-nowrap">{{ o.date|date:"d.m.Y" }}</td>
+                        <td class="text-nowrap">
+                            {% if o.time_start %}{{ o.intervals_display }}{% if o.extra_minutes %} <span class="text-muted">+{{ o.extra_minutes }} мин</span>{% endif %}
+                            {% if o.can_split %}<span class="badge text-bg-info" title="Перерыв от часа: части заказа можно отдать разным фотографам или вставить в перерыв другой заказ">можно разделить</span>{% endif %}
+                            {% else %}<span title="Как в таблице">«{{ o.raw_time }}»</span>{% endif %}
+                        </td>
+                        <td>{% if o.venue %}{{ o.venue }}{% elif o.place_raw %}<span class="text-danger" title="Центр не определён">{{ o.place_raw }}</span>{% else %}—{% endif %}</td>
+                        <td>{% if o.photographer %}{{ o.photographer }}{% elif o.photographer_raw %}{% if o.people_matched %}{% for s in o.photographers.all %}{{ s }}{% if not forloop.last %} + {% endif %}{% endfor %}{% else %}<span class="text-danger" title="Не все имена сопоставлены с сотрудниками">{{ o.photographer_raw }}</span>{% endif %}{% else %}—{% endif %}</td>
+                        <td>{% if o.retoucher %}{{ o.retoucher }}{% elif o.retoucher_raw %}<span class="text-danger" title="Имя не сопоставлено с сотрудником">{{ o.retoucher_raw }}</span>{% elif o.no_retouch %}<span class="text-muted">исходники</span>{% else %}—{% endif %}</td>
+                        <td>{{ o.get_status_display }}</td>
+                        <td class="small">{{ o.notes }}</td>
+                        <td class="text-nowrap small">
+                            {% if o.sheet_url %}<a href="{{ o.sheet_url }}" target="_blank" rel="noopener">{{ o.tab_name }}, стр. {{ o.sheet_row }}</a>
+                            {% else %}{{ o.tab_name }}, стр. {{ o.sheet_row }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if perms.schauto.import_orders %}
+        <div class="modal fade" id="modal-orders-import" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Загрузка заказов из Google-таблиц</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'schauto:orders_import' %}">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            <p class="small text-muted">
+                                Читается только окно дат (по умолчанию: 14 дней назад и 120 вперёд). Загрузка безопасна:
+                                в таблицах ничего не меняется, повторная загрузка обновляет, а не дублирует заказы.
+                                {% if brands_configured|length < 2 %}<br><b class="text-danger">Настроены не все таблицы: проверьте SCHAUTO_SHEET_ID_LL / SCHAUTO_SHEET_ID_JJ.</b>{% endif %}
+                            </p>
+                            <label class="form-label mb-0"><i>{{ import_form.brand.label }}</i></label>
+                            {{ import_form.brand }}<br>
+                            <label class="form-label mb-0"><i>{{ import_form.date_from.label }}</i></label>
+                            {{ import_form.date_from }}<br>
+                            <label class="form-label mb-0"><i>{{ import_form.date_to.label }}</i></label>
+                            {{ import_form.date_to }}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit" onclick="this.disabled = true; this.form.submit(); this.innerText = 'Загружаю…';">Загрузить</button>
+                            <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% include 'schauto/includes/pagination.html' %}
+</div>
+{% endblock %}

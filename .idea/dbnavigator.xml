@@ -11,6 +11,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseAssistantManager">
     <assistants>
+      <assistant-state connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
+        <tools />
+        <mcp-servers />
+      </assistant-state>
       <assistant-state connection-id="688bec83-c60c-46c7-ab0d-7d1041532910" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
         <tools />
         <mcp-servers />
@@ -110,6 +114,9 @@ commit;]]></console>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files />
   </component>
+  <component name="DBNavigator.Project.DatabasePrerequisiteManager">
+    <prerequisites />
+  </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="688bec83-c60c-46c7-ab0d-7d1041532910" />
   </component>
@@ -126,6 +133,9 @@ commit;]]></console>
   <component name="DBNavigator.Project.ObjectQuickFilterManager">
     <last-used-operator value="EQUAL" />
     <filters />
+  </component>
+  <component name="DBNavigator.Project.ParserDiagnosticsManager">
+    <diagnostics-history />
   </component>
   <component name="DBNavigator.Project.Settings">
     <states>

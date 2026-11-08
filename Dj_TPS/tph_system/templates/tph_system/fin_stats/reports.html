@@ -25,6 +25,11 @@
     </a>
 </li>
 {% endif %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'report_ocr:list' %}">
+        <button type="button" class="btn btn-sm btn-outline-success">Сверка отчетов</button>
+    </a>
+</li>
 {% endblock func_buttons %}
 
 {% block content %}

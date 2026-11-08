@@ -40,6 +40,7 @@ class ReportUpload(models.Model):
             )
         ]
         ordering = ["-report_date", "-created_at"]
+        permissions = (("view_all_report_uploads", "Видимость всех сверок бумажных отчетов"),)
 
     def __str__(self):
         return f"{self.location} — {self.report_date}"

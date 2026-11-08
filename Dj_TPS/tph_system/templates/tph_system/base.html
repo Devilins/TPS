@@ -230,6 +230,10 @@
           <li class="nav-item"><a{% if request.path|startswith:'/schedule/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'schedule' %}">
               <img src="{% static 'tph_system/images/i_schedule.png' %}">График сотрудников</a></li>
           {% endif %}
+          {% if perms.schauto.view_venue %}
+          <li class="nav-item"><a{% if request.path|startswith:'/schauto/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'schauto:index' %}">
+              <img src="{% static 'tph_system/images/i_planning.png' %}"> Планирование </a></li>
+          {% endif %}
           {% if perms.tph_system.view_sales %}
           <li class="nav-item"><a{% if request.path|startswith:'/sales/' %} class="nav-link active" {%else%} class="nav-link" {% endif %} href="{% url 'sales' %}">
               <img src="{% static 'tph_system/images/i_sales.png' %}">Продажи</a></li>

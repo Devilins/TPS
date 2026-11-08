@@ -1,0 +1,148 @@
+{% extends 'tph_system/base.html' %}
+
+{% block func_buttons %}
+{% if perms.schauto.add_route %}
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-route-form">
+                Добавить маршрут
+            </button>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modal-route-import">
+                Загрузить из CSV
+            </button>
+        </a>
+    </li>
+{% endif %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'schauto:routes_export' %}">
+            <span class="btn btn-sm btn-outline-secondary">Скачать CSV (шаблон)</span>
+        </a>
+    </li>
+{% endblock func_buttons %}
+
+{% block content %}
+<div class="container container-fluid">
+    {% include 'schauto/includes/messages.html' %}
+    <div class="card shadow" style="width: 100%;">
+        <div class="card-header">
+            <div class="card-title">
+                <h4>Маршруты между центрами (общественный транспорт)</h4>
+
+                <div class="card card-body p-2" id="r_filter">
+                    <div class="container text-left">
+                        <form method="get">
+                            <div class="row gy-2 py-2 gy-xl-1 py-xl-1">
+                                <div class="form-floating col-md-4 col-sm-6">
+                                    {{ r_filter.form.from_venue }}
+                                    <label style="left: 0.5rem">Откуда</label>
+                                </div>
+                                <div class="form-floating col-md-4 col-sm-6">
+                                    {{ r_filter.form.to_venue }}
+                                    <label style="left: 0.5rem">Куда</label>
+                                </div>
+                                <div class="col-md-auto align-self-center">
+                                    <button type="submit" class="btn btn-sm btn-primary">Применить</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 69vh; overflow-y: auto;">
+            <table class="table table-sm table-hover table-bordered align-middle caption-top">
+                <caption><b style="margin-left: 20px;"> Количество маршрутов: {{ count }} </b></caption>
+                <thead style="position: sticky; top: 0; z-index: 10; background: white;">
+                    <tr>
+                        <th scope="col">Откуда</th>
+                        <th scope="col">Куда</th>
+                        <th scope="col">Вариант</th>
+                        <th scope="col">Минут</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in page_obj %}
+                    <tr>
+                        <td>{% if perms.schauto.change_route %}<a href="{% url 'schauto:route_update' r.id %}?{{ current_filter_params }}">{{ r.from_venue }}</a>{% else %}{{ r.from_venue }}{% endif %}</td>
+                        <td>{{ r.to_venue }}</td>
+                        <td>{{ r.description }}</td>
+                        <td>{{ r.duration_min }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="modal-route-form" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Добавление маршрута</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            {% for error in form.non_field_errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                            {% for f in form %}
+                            {% if f.name == 'create_reverse' %}
+                            <div class="form-check">{{ f }} <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label></div>
+                            {% else %}
+                            <label class="form-label mb-0" for="{{ f.id_for_label }}"><i>{{ f.label }}</i></label>
+                            {{ f }}<span class="text-danger">{{ f.errors }}</span><br>
+                            {% endif %}
+                            {% endfor %}
+                            <span class="text-danger">{{ error }}</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Сохранить</button>
+                            <button class="btn btn-danger" type="reset" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-route-import" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Загрузка маршрутов из CSV</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'schauto:routes_import' %}" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            <p class="small text-muted">
+                                Столбцы: <code>Откуда;Куда;Минут;Вариант</code>. Проще всего скачать шаблон кнопкой
+                                «Скачать CSV», заполнить столбец «Минут» и загрузить обратно. Строки с пустым временем
+                                пропускаются. Если в файле есть ошибка, не загружается ничего.
+                            </p>
+                            {{ import_form.file }}<br>
+                            <div class="form-check">{{ import_form.mirror }} <label class="form-check-label" for="{{ import_form.mirror.id_for_label }}">{{ import_form.mirror.label }}</label></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit">Загрузить</button>
+                            <button class="btn btn-danger" type="button" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'schauto/includes/pagination.html' %}
+</div>
+
+{% if error %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new bootstrap.Modal(document.getElementById('modal-route-form')).show();
+    });
+</script>
+{% endif %}
+{% endblock %}
